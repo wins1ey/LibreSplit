@@ -12,8 +12,6 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <chrono>
-#include <thread>
 
 using namespace std;
 
@@ -149,37 +147,29 @@ void Client(int pid, string ipAddress, uint32_t& loading, uint32_t& newGame, uin
     }
 
     uint32_t prevLoading = 0;
-    int pause_res = 0;
-    int unpause_res = 0;
-
     uint32_t prevNewGame = 0;
-    int startTimer_res = 0;
-
     uint32_t prevRankingScreen = 0;
     uint32_t prevBossGraffiti = 0;
-    int split_res = 0;
     
     while (true) {
         ReadProcessMemory(pid, loading, newGame, rankingScreen, bossGraffiti);
 
         if (loading == 1 && prevLoading != 1) {
-            pause_res = send(sock, pausegametime, strlen(pausegametime), 0);
+            send(sock, pausegametime, strlen(pausegametime), 0);
         } else if (loading == 0 && prevLoading != 0) {
-            unpause_res = send(sock, unpausegametime, strlen(unpausegametime), 0);
+            send(sock, unpausegametime, strlen(unpausegametime), 0);
         }
         prevLoading = loading;
 
         if(newGame != 1 && prevNewGame == 1) {
-            startTimer_res = send(sock, starttimer, strlen(starttimer), 0);
-        } else if(newGame != 0 && prevNewGame == 0) {
-            // um do what you want ig
+            send(sock, starttimer, strlen(starttimer), 0);
         }
         prevNewGame = newGame;
 
         if(bossGraffiti == 7 && prevBossGraffiti != 7) {
-            split_res = send(sock, split, strlen(split), 0);
+            send(sock, split, strlen(split), 0);
         } else if(rankingScreen == 1 && prevRankingScreen != 1) {
-            split_res = send(sock, split, strlen(split), 0);
+            send(sock, split, strlen(split), 0);
         }
         prevRankingScreen = rankingScreen;
         prevBossGraffiti = bossGraffiti;
@@ -189,7 +179,7 @@ void Client(int pid, string ipAddress, uint32_t& loading, uint32_t& newGame, uin
 
 int main(int argc, char *argv[]) {
 
-    cout << "What is your local IP address (LiveSplit Server settings will tell you if you don't know.)\n" << endl;
+    cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
     cin >> ipAddress;
 
     const char *processName = "pidof jetsetradio.exe";
@@ -203,9 +193,6 @@ int main(int argc, char *argv[]) {
             break;
         }
     }
-    uint32_t loading = 0;
-    uint32_t newGame = 0;
-    uint32_t rankingScreen = 0;
     Client(stockthepid.pid, ipAddress, loading, newGame, rankingScreen, bossGraffiti);
     return 0;
 }
