@@ -104,6 +104,8 @@ void sendCommands(int pid)
         }
         prevRankingScreen = rankingScreen;
         prevBossGraffiti = bossGraffiti;
+
+        sleep(0.0001); // Sleep to avoid CPU explosio
     }
 }
 
