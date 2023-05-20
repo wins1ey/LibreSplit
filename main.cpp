@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <thread>
 
 #include "readmem.hpp"
 #include "client.hpp"
@@ -26,6 +27,8 @@ ReadMemory readMemory;
 LiveSplitClient lsClient;
 
 string ipAddress = "";
+
+uint32_t loading, newGame, rankingScreen, bossGraffiti;
 
 uint32_t memLoading;
 uint32_t memNewGame;
@@ -69,6 +72,15 @@ void Func_StockPid(const char *processtarget)
     }
 }
 
+void readAddresses(int pid)
+{
+    loading = readMemory.readMem(memLoading, pid, 0x98FAAC, loadingLocal, loadingRemote);
+    newGame = readMemory.readMem(memNewGame, pid, 0xB5A278, newGameLocal, newGameRemote);
+    rankingScreen = readMemory.readMem(memRankingScreen, pid, 0x98FB1C, rankingScreenLocal, rankingScreenRemote);
+    bossGraffiti = readMemory.readMem(memBossGraffiti, pid, 0x95D2B8, bossGraffitiLocal, bossGraffitiRemote);
+
+}
+
 void sendCommands(int pid)
 {
     lsClient.Client(pid, ipAddress);
@@ -80,11 +92,12 @@ void sendCommands(int pid)
 
     while(true)
     {
-        uint32_t loading = readMemory.readMem(memLoading, pid, 0x98FAAC, loadingLocal, loadingRemote);
-        uint32_t newGame = readMemory.readMem(memNewGame, pid, 0xB5A278, newGameLocal, newGameRemote);
-        uint32_t rankingScreen = readMemory.readMem(memRankingScreen, pid, 0x98FB1C, rankingScreenLocal, rankingScreenRemote);
-        uint32_t bossGraffiti = readMemory.readMem(memBossGraffiti, pid, 0x95D2B8, bossGraffitiLocal, bossGraffitiRemote);
+        std::thread t1(readAddresses, pid);
+        std::thread t2(readAddresses, pid);
 
+        t1.join();
+        t2.join();
+        
         if (loading == 1 && prevLoading != 1) {
             lsClient.sendLSCommand("pausegametime\r\n");
         } else if (loading == 0 && prevLoading != 0) {

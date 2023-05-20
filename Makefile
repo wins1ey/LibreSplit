@@ -1,4 +1,5 @@
-CFLAGS = -std=c++17 -O2
+CFLAGS = -std=c++17 -O2 -pthread
 
 JSRLinuxAutosplitter: *.cpp *.hpp
-	g++ $(CFLAGS) -o JSRLinuxAutosplitter *.cpp *.hpp
+	mkdir build
+	g++ $(CFLAGS) -o build/JSRLinuxAutosplitter *.cpp *.hpp
