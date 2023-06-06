@@ -109,7 +109,7 @@ int main(int argc, char *argv[]) {
     cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
     cin >> ipAddress;
 
-    const char *processName = "pidof AmidEvil-Win64-Shipping.exe";
+    const char *processName = "pgrep [A]midEvil-Win64";
     while (true) {
         Func_StockPid(processName);
         if (stockthepid.pid == 0) {
