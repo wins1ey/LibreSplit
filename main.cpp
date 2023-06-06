@@ -98,25 +98,7 @@ void sendCommands(int pid)
         t1.join();
         t2.join();
         
-        if (loading == 1 && prevLoading != 1) {
-            lsClient.sendLSCommand("pausegametime\r\n");
-        } else if (loading == 0 && prevLoading != 0) {
-            lsClient.sendLSCommand("unpausegametime\r\n");
-        }
-        prevLoading = loading;
 
-        if(newGame != 1 && prevNewGame == 1) {
-            lsClient.sendLSCommand("starttimer\r\n");
-        }
-        prevNewGame = newGame;
-
-        if(bossGraffiti == 7 && prevBossGraffiti != 7) {
-            lsClient.sendLSCommand("split\r\n");
-        } else if(rankingScreen == 1 && prevRankingScreen != 1) {
-            lsClient.sendLSCommand("split\r\n");
-        }
-        prevRankingScreen = rankingScreen;
-        prevBossGraffiti = bossGraffiti;
 
         sleep(0.0001); // Sleep to avoid CPU explosio
     }
