@@ -109,11 +109,11 @@ int main(int argc, char *argv[]) {
     cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
     cin >> ipAddress;
 
-    const char *processName = "pidof jetsetradio.exe";
+    const char *processName = "pidof AmidEvil-Win64-Shipping.exe";
     while (true) {
         Func_StockPid(processName);
         if (stockthepid.pid == 0) {
-            cout << "Jet Set Radio isn't running. Retrying in 5 seconds...\n";
+            cout << "AMID EVIL isn't running. Retrying in 5 seconds...\n";
             sleep(5);
             system("clear");
         } else {
