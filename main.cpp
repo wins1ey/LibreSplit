@@ -64,10 +64,10 @@ void Func_StockPid(const char *processtarget)
     stockthepid.pid = strtoul(stockthepid.buff, nullptr, 10);
 
     if (stockthepid.pid == 0) {
-        cout << "Jet Set Radio isn't running.\n";
+        cout << "AMID EVIL isn't running.\n";
         pclose(stockthepid.pid_pipe);
     } else {
-        cout << "Jet Set Radio is running - PID NUMBER -> " << stockthepid.pid << endl;
+        cout << "AMID EVIL is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
     }
 }
