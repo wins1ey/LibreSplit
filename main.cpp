@@ -28,24 +28,24 @@ LiveSplitClient lsClient;
 
 string ipAddress = "";
 
-uint32_t loading, newGame, rankingScreen, bossGraffiti;
+uint32_t start, loading, menuStage, paused;
 
+uint32_t memStart;
 uint32_t memLoading;
-uint32_t memNewGame;
-uint32_t memRankingScreen;
-uint32_t memBossGraffiti;
+uint32_t memMenuStage;
+uint32_t memPaused;
+
+struct iovec startLocal;
+struct iovec startRemote;
 
 struct iovec loadingLocal;
 struct iovec loadingRemote;
 
-struct iovec newGameLocal;
-struct iovec newGameRemote;
+struct iovec menuStageLocal;
+struct iovec menuStageRemote;
 
-struct iovec rankingScreenLocal;
-struct iovec rankingScreenRemote;
-
-struct iovec bossGraffitiLocal;
-struct iovec bossGraffitiRemote;
+struct iovec pausedLocal;
+struct iovec pausedRemote;
 
 struct StockPid
 {
@@ -74,10 +74,10 @@ void Func_StockPid(const char *processtarget)
 
 void readAddresses(int pid)
 {
-    loading = readMemory.readMem(memLoading, pid, 0x98FAAC, loadingLocal, loadingRemote);
-    newGame = readMemory.readMem(memNewGame, pid, 0xB5A278, newGameLocal, newGameRemote);
-    rankingScreen = readMemory.readMem(memRankingScreen, pid, 0x98FB1C, rankingScreenLocal, rankingScreenRemote);
-    bossGraffiti = readMemory.readMem(memBossGraffiti, pid, 0x95D2B8, bossGraffitiLocal, bossGraffitiRemote);
+    start = readMemory.readMem(memStart, pid, 0x6BAFFD0, startLocal, startRemote);
+    loading = readMemory.readMem(memLoading, pid, 0x6E76B0C, loadingLocal, loadingRemote);
+    menuStage = readMemory.readMem(memMenuStage, pid, 0x6F75F14, menuStageLocal, menuStageRemote);
+    paused = readMemory.readMem(memPaused, pid, 0x6B95A68, pausedLocal, pausedRemote);
 
 }
 
@@ -85,10 +85,10 @@ void sendCommands(int pid)
 {
     lsClient.Client(pid, ipAddress);
 
+    uint32_t prevStart;
     uint32_t prevLoading;
-    uint32_t prevNewGame;
-    uint32_t prevRankingScreen;
-    uint32_t prevBossGraffiti;
+    uint32_t prevMenuStage;
+    uint32_t prevPaused;
 
     while(true)
     {
