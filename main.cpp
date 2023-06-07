@@ -97,8 +97,29 @@ void sendCommands(int pid)
 
         t1.join();
         t2.join();
-        
 
+        // Autosplitter (doesn't work yet)
+
+        if (loading == 0 && prevLoading == 1) {
+            lsClient.sendLSCommand("starttimer\r\n");
+        } else if (start == 0 && prevStart == 2) {
+            lsClient.sendLSCommand("starttimer\r\n");
+        }
+        prevLoading = loading;
+        prevStart = start;
+
+        if (menuStage = 3 & prevMenuStage == 2 && paused != 28 && paused != 3) {
+            lsClient.sendLSCommand("split\r\n");
+        }
+        prevMenuStage = menuStage;
+        
+        if (loading == 1) {
+            lsClient.sendLSCommand("pausegametime\r\n");
+        } else if (menuStage == 3 && paused == 4) {
+            lsClient.sendLSCommand("pausegametime\r\n");
+        } else if (loading != 1 && menuStage != 3 && paused != 4) {
+            lsClient.sendLSCommand("unpausegametime\r\n");
+        }
 
         sleep(0.0001); // Sleep to avoid CPU explosio
     }
