@@ -28,7 +28,7 @@ class ReadMemory
 
             memLocal.iov_base = &value;  // Use the value variable
             memLocal.iov_len = sizeof(value);
-            memRemote.iov_base = (void*)memAddress;
+            memRemote.iov_base = (void*)(uintptr_t)memAddress;
             memRemote.iov_len = sizeof(value);
 
             ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
