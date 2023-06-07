@@ -100,9 +100,7 @@ void sendCommands(int pid)
 
         // Autosplitter (doesn't work yet)
 
-        if (loading == 0 && prevLoading == 1) {
-            lsClient.sendLSCommand("starttimer\r\n");
-        } else if (start == 0 && prevStart == 2) {
+        if (start == 0 && prevStart == 2) {
             lsClient.sendLSCommand("starttimer\r\n");
         }
         prevLoading = loading;
