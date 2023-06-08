@@ -58,16 +58,19 @@ struct StockPid
 void Func_StockPid(const char *processtarget)
 {
     stockthepid.pid_pipe = popen(processtarget, "r");
-    if (!fgets(stockthepid.buff, 512, stockthepid.pid_pipe)) {
+    if (!fgets(stockthepid.buff, 512, stockthepid.pid_pipe))
+    {
         cout << "Error reading process ID: " << strerror(errno) << endl;
     }
 
     stockthepid.pid = strtoul(stockthepid.buff, nullptr, 10);
 
-    if (stockthepid.pid == 0) {
+    if (stockthepid.pid == 0)
+    {
         cout << "AMID EVIL isn't running.\n";
         pclose(stockthepid.pid_pipe);
-    } else {
+    } else
+    {
         cout << "AMID EVIL is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
     }
@@ -132,7 +135,8 @@ void sendCommands(int pid)
     }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 
     for (int i = 0; i < argc; i++)
     {
@@ -146,13 +150,16 @@ int main(int argc, char *argv[]) {
     cin >> ipAddress;
 
     const char *processName = "pgrep [A]midEvil-Win64";
-    while (true) {
+    while (true)
+    {
         Func_StockPid(processName);
-        if (stockthepid.pid == 0) {
+        if (stockthepid.pid == 0)
+        {
             cout << "AMID EVIL isn't running. Retrying in 5 seconds...\n";
             sleep(5);
             system("clear");
-        } else {
+        } else
+        {
             break;
         }
     }

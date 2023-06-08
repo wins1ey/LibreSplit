@@ -41,7 +41,7 @@ class ReadMemory
             {
                 cout << "Error reading process memory: short read of " << memNread << " bytes" << endl;
                 exit(-1);
-        }
+            }
 
             return value;  // Return the read value
         }
