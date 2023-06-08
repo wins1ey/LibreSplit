@@ -26,6 +26,7 @@ using std::cin;
 ReadMemory readMemory;
 LiveSplitClient lsClient;
 
+bool episode = false;
 string ipAddress = "";
 
 uint64_t start, loading, menuStage, paused;
@@ -78,7 +79,6 @@ void readAddresses(int pid)
     loading = readMemory.readMem(memLoading, pid, 0x142E76B0C, loadingLocal, loadingRemote);
     menuStage = readMemory.readMem(memMenuStage, pid, 0x142F75F14, menuStageLocal, menuStageRemote);
     paused = readMemory.readMem(memPaused, pid, 0x142B95A68, pausedLocal, pausedRemote);
-
 }
 
 void sendCommands(int pid)
@@ -100,11 +100,14 @@ void sendCommands(int pid)
 
         // Autosplitter
 
-        if (start == 0 && prevStart == 2)
+        if (episode == true && (loading == 0 && prevLoading == 1))
         {
             lsClient.sendLSCommand("starttimer\r\n");
         }
-        prevStart = start;
+        else if (start == 0 && prevStart == 2)
+        {
+            lsClient.sendLSCommand("starttimer\r\n");
+        }
 
         if ((loading == 1 && prevLoading == 0) || (menuStage == 3 & paused == 4) && (prevMenuStage != 3 || prevPaused != 4))
         {
@@ -114,12 +117,14 @@ void sendCommands(int pid)
         {
             lsClient.sendLSCommand("unpausegametime\r\n");
         }
-        prevLoading = loading;
 
         if ((menuStage == 3 && prevMenuStage == 2) && paused != 28 && paused != 3)
         {
             lsClient.sendLSCommand("split\r\n");
         }
+
+        prevStart = start;
+        prevLoading = loading;
         prevMenuStage = menuStage;
         prevPaused = paused;
 
@@ -128,6 +133,14 @@ void sendCommands(int pid)
 }
 
 int main(int argc, char *argv[]) {
+
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-ep") == 0)
+        {
+            episode = true;
+        }
+    }
 
     cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
     cin >> ipAddress;
