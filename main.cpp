@@ -98,26 +98,28 @@ void sendCommands(int pid)
         t1.join();
         t2.join();
 
-        // Autosplitter (doesn't work yet)
+        // Autosplitter
 
-        if (start == 0 && prevStart == 2) {
+        if (start == 0 && prevStart == 2)
+        {
             lsClient.sendLSCommand("starttimer\r\n");
+            cout << "Started" << endl;
         }
-        prevLoading = loading;
         prevStart = start;
 
-        if (menuStage = 3 & prevMenuStage == 2 && paused != 28 && paused != 3) {
-            lsClient.sendLSCommand("split\r\n");
+        if ((loading == 1 && prevLoading == 0) || (menuStage == 3 & paused == 4) && (prevMenuStage != 3 || prevPaused != 4))
+        {
+            lsClient.sendLSCommand("pausegametime\r\n");
+            cout << "Paused" << endl;
         }
-        prevMenuStage = menuStage;
-        
-        if (loading == 1) {
-            lsClient.sendLSCommand("pausegametime\r\n");
-        } else if (menuStage == 3 && paused == 4) {
-            lsClient.sendLSCommand("pausegametime\r\n");
-        } else if (loading != 1 && menuStage != 3 && paused != 4) {
+        else if ((loading != 1 && prevLoading == 1) && ((menuStage != 3 || paused != 4)))
+        {
             lsClient.sendLSCommand("unpausegametime\r\n");
+            cout << "Unpaused" << endl;
         }
+        prevLoading = loading;
+        prevMenuStage = menuStage;
+        prevPaused = paused;
 
         sleep(0.0001); // Sleep to avoid CPU explosio
     }
