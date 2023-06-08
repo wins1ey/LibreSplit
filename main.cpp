@@ -28,7 +28,7 @@ LiveSplitClient lsClient;
 
 string ipAddress = "";
 
-uint32_t start, loading, menuStage, paused;
+uint64_t start, loading, menuStage, paused;
 
 uint32_t memStart;
 uint32_t memLoading;
@@ -74,10 +74,10 @@ void Func_StockPid(const char *processtarget)
 
 void readAddresses(int pid)
 {
-    start = readMemory.readMem(memStart, pid, 0x6BAFFD0, startLocal, startRemote);
-    loading = readMemory.readMem(memLoading, pid, 0x6E76B0C, loadingLocal, loadingRemote);
-    menuStage = readMemory.readMem(memMenuStage, pid, 0x6F75F14, menuStageLocal, menuStageRemote);
-    paused = readMemory.readMem(memPaused, pid, 0x6B95A68, pausedLocal, pausedRemote);
+    start = readMemory.readMem(memStart, pid, 0x142BAFFD0, startLocal, startRemote);
+    loading = readMemory.readMem(memLoading, pid, 0x142E76B0C, loadingLocal, loadingRemote);
+    menuStage = readMemory.readMem(memMenuStage, pid, 0x142F75F14, menuStageLocal, menuStageRemote);
+    paused = readMemory.readMem(memPaused, pid, 0x142B95A68, pausedLocal, pausedRemote);
 
 }
 
@@ -97,8 +97,29 @@ void sendCommands(int pid)
 
         t1.join();
         t2.join();
-        
 
+        // Autosplitter
+
+        if (start == 0 && prevStart == 2)
+        {
+            lsClient.sendLSCommand("starttimer\r\n");
+            cout << "Started" << endl;
+        }
+        prevStart = start;
+
+        if ((loading == 1 && prevLoading == 0) || (menuStage == 3 & paused == 4) && (prevMenuStage != 3 || prevPaused != 4))
+        {
+            lsClient.sendLSCommand("pausegametime\r\n");
+            cout << "Paused" << endl;
+        }
+        else if ((loading != 1 && prevLoading == 1) && ((menuStage != 3 || paused != 4)))
+        {
+            lsClient.sendLSCommand("unpausegametime\r\n");
+            cout << "Unpaused" << endl;
+        }
+        prevLoading = loading;
+        prevMenuStage = menuStage;
+        prevPaused = paused;
 
         sleep(0.0001); // Sleep to avoid CPU explosio
     }
