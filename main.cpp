@@ -26,6 +26,7 @@ using std::cin;
 ReadMemory readMemory;
 LiveSplitClient lsClient;
 
+bool episode = false;
 string ipAddress = "";
 
 uint64_t start, loading, menuStage, paused;
@@ -57,16 +58,19 @@ struct StockPid
 void Func_StockPid(const char *processtarget)
 {
     stockthepid.pid_pipe = popen(processtarget, "r");
-    if (!fgets(stockthepid.buff, 512, stockthepid.pid_pipe)) {
+    if (!fgets(stockthepid.buff, 512, stockthepid.pid_pipe))
+    {
         cout << "Error reading process ID: " << strerror(errno) << endl;
     }
 
     stockthepid.pid = strtoul(stockthepid.buff, nullptr, 10);
 
-    if (stockthepid.pid == 0) {
+    if (stockthepid.pid == 0)
+    {
         cout << "AMID EVIL isn't running.\n";
         pclose(stockthepid.pid_pipe);
-    } else {
+    } else
+    {
         cout << "AMID EVIL is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
     }
@@ -78,7 +82,6 @@ void readAddresses(int pid)
     loading = readMemory.readMem(memLoading, pid, 0x142E76B0C, loadingLocal, loadingRemote);
     menuStage = readMemory.readMem(memMenuStage, pid, 0x142F75F14, menuStageLocal, menuStageRemote);
     paused = readMemory.readMem(memPaused, pid, 0x142B95A68, pausedLocal, pausedRemote);
-
 }
 
 void sendCommands(int pid)
@@ -100,11 +103,14 @@ void sendCommands(int pid)
 
         // Autosplitter
 
-        if (start == 0 && prevStart == 2)
+        if (episode == true && (loading == 0 && prevLoading == 1))
         {
             lsClient.sendLSCommand("starttimer\r\n");
         }
-        prevStart = start;
+        else if (start == 0 && prevStart == 2)
+        {
+            lsClient.sendLSCommand("starttimer\r\n");
+        }
 
         if ((loading == 1 && prevLoading == 0) || (menuStage == 3 & paused == 4) && (prevMenuStage != 3 || prevPaused != 4))
         {
@@ -114,12 +120,14 @@ void sendCommands(int pid)
         {
             lsClient.sendLSCommand("unpausegametime\r\n");
         }
-        prevLoading = loading;
 
         if ((menuStage == 3 && prevMenuStage == 2) && paused != 28 && paused != 3)
         {
             lsClient.sendLSCommand("split\r\n");
         }
+
+        prevStart = start;
+        prevLoading = loading;
         prevMenuStage = menuStage;
         prevPaused = paused;
 
@@ -127,19 +135,31 @@ void sendCommands(int pid)
     }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
+
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-ep") == 0)
+        {
+            episode = true;
+        }
+    }
 
     cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
     cin >> ipAddress;
 
     const char *processName = "pgrep [A]midEvil-Win64";
-    while (true) {
+    while (true)
+    {
         Func_StockPid(processName);
-        if (stockthepid.pid == 0) {
+        if (stockthepid.pid == 0)
+        {
             cout << "AMID EVIL isn't running. Retrying in 5 seconds...\n";
             sleep(5);
             system("clear");
-        } else {
+        } else
+        {
             break;
         }
     }
