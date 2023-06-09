@@ -30,6 +30,8 @@ bool episode = false;
 string ipAddress = "";
 string processName;
 
+int pid;
+
 uint64_t start, loading, menuStage, paused;
 
 uint32_t memStart;
@@ -75,18 +77,22 @@ void Func_StockPid(const char *processtarget)
     {
         cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
+        pid = stockthepid.pid;
     }
+
 }
 
-void readAddresses(int pid)
+int readAddresses()
 {
     start = readMemory.readMem(memStart, pid, 0x142BAFFD0, startLocal, startRemote);
     loading = readMemory.readMem(memLoading, pid, 0x142E76B0C, loadingLocal, loadingRemote);
     menuStage = readMemory.readMem(memMenuStage, pid, 0x142F75F14, menuStageLocal, menuStageRemote);
     paused = readMemory.readMem(memPaused, pid, 0x142B95A68, pausedLocal, pausedRemote);
+
+    return 0;
 }
 
-void sendCommands(int pid)
+int sendCommands()
 {
     lsClient.Client(pid, ipAddress);
 
@@ -97,8 +103,8 @@ void sendCommands(int pid)
 
     while(true)
     {
-        std::thread t1(readAddresses, pid);
-        std::thread t2(readAddresses, pid);
+        std::thread t1(readAddresses);
+        std::thread t2(readAddresses);
 
         t1.join();
         t2.join();
@@ -135,6 +141,8 @@ void sendCommands(int pid)
 
         sleep(0.0001); // Sleep to avoid CPU explosio
     }
+
+    return 0;
 }
 
 int processID(lua_State* L)
@@ -151,6 +159,9 @@ int processID(lua_State* L)
 
 int main(int argc, char *argv[])
 {
+
+    cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
+    cin >> ipAddress;
 
     string path = "autosplitters";
     vector<string> file_names;
@@ -178,6 +189,8 @@ int main(int argc, char *argv[])
     luaL_dofile(L, chosenAutosplitter.c_str());
 
     lua_close(L);
+
+    sendCommands();
 
     return 0;
 
