@@ -28,6 +28,7 @@ LiveSplitClient lsClient;
 
 bool episode = false;
 string ipAddress = "";
+string processName;
 
 uint64_t start, loading, menuStage, paused;
 
@@ -67,11 +68,11 @@ void Func_StockPid(const char *processtarget)
 
     if (stockthepid.pid == 0)
     {
-        cout << "AMID EVIL isn't running.\n";
+        cout << processName + " isn't running.\n";
         pclose(stockthepid.pid_pipe);
     } else
     {
-        cout << "AMID EVIL is running - PID NUMBER -> " << stockthepid.pid << endl;
+        cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
     }
 }
@@ -137,12 +138,12 @@ void sendCommands(int pid)
 
 int processID(lua_State* L)
 {
-    string processName = lua_tostring(L, 1);
+    processName = lua_tostring(L, 1);
     string command = "pidof " + processName;
-    const char *testName = command.c_str();
-    cout << testName << endl;
+    const char *cCommand = command.c_str();
+    cout << cCommand << endl;
 
-    Func_StockPid(testName);
+    Func_StockPid(cCommand);
 
     return 0;
 }
@@ -159,6 +160,7 @@ int main(int argc, char *argv[])
         file_names.push_back(entry.path().string());
         counter++;
     }
+
     int userChoice;
     cout << "Which autosplitter would you like to use? (Enter the number) ";
     cin >> userChoice;
@@ -172,7 +174,6 @@ int main(int argc, char *argv[])
     lua_setglobal(L, "processID");
 
 
-    //luaL_dofile(L, "autosplitters/amid-evil.lua");
     luaL_dofile(L, chosenAutosplitter.c_str());
 
     lua_close(L);
