@@ -64,6 +64,7 @@ int Func_StockPid(const char *processtarget)
         cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
         pid = stockthepid.pid;
+        lsClient.Client(pid, ipAddress);
     }
 
     return 0;
@@ -90,64 +91,29 @@ int readAddress(lua_State* L)
     return 1;
 }
 
-
-
-/*
-int sendCommands()
+int startTimer(lua_State* L)
 {
-    lsClient.Client(pid, ipAddress);
-
-    uint32_t prevStart;
-    uint32_t prevLoading;
-    uint32_t prevMenuStage;
-    uint32_t prevPaused;
-
-    while(true)
-    {
-        //std::thread t1(readAddresses);
-        //std::thread t2(readAddresses);
-
-        //t1.join();
-        //t2.join();
-
-        // Autosplitter
-
-        if (episode == true && (loading == 0 && prevLoading == 1))
-        {
-            lsClient.sendLSCommand("starttimer\r\n");
-        }
-        else if (start == 0 && prevStart == 2)
-        {
-            lsClient.sendLSCommand("starttimer\r\n");
-        }
-
-        if ((loading == 1 && prevLoading == 0) || (menuStage == 3 & paused == 4) && (prevMenuStage != 3 || prevPaused != 4))
-        {
-            lsClient.sendLSCommand("pausegametime\r\n");
-        }
-        else if ((loading != 1 && prevLoading == 1) && ((menuStage != 3 || paused != 4)))
-        {
-            lsClient.sendLSCommand("unpausegametime\r\n");
-        }
-
-        if ((menuStage == 3 && prevMenuStage == 2) && paused != 28 && paused != 3)
-        {
-            lsClient.sendLSCommand("split\r\n");
-        }
-
-        prevStart = start;
-        prevLoading = loading;
-        prevMenuStage = menuStage;
-        prevPaused = paused;
-
-        sleep(0.0001); // Sleep to avoid CPU explosio
-    }
-
+    lsClient.sendLSCommand("starttimer\r\n");
     return 0;
 }
-*/
 
+int pauseGameTime(lua_State* L)
+{
+    lsClient.sendLSCommand("pausegametime\r\n");
+    return 0;
+}
 
+int unpauseGameTime(lua_State* L)
+{
+    lsClient.sendLSCommand("unpausegametime\r\n");
+    return 0;
+}
+
+int split(lua_State* L)
+{
+    lsClient.sendLSCommand("split\r\n");
+    return 0;
+}
 
 int main(int argc, char *argv[])
 {
@@ -178,6 +144,14 @@ int main(int argc, char *argv[])
     lua_setglobal(L, "processID");
     lua_pushcfunction(L, readAddress);
     lua_setglobal(L, "readAddress");
+    lua_pushcfunction(L, startTimer);
+    lua_setglobal(L, "startTimer");
+    lua_pushcfunction(L, pauseGameTime);
+    lua_setglobal(L, "pauseGameTime");
+    lua_pushcfunction(L, unpauseGameTime);
+    lua_setglobal(L, "unpauseGameTime");
+    lua_pushcfunction(L, split);
+    lua_setglobal(L, "split");
 
     luaL_dofile(L, chosenAutosplitter.c_str());
     lua_close(L);
