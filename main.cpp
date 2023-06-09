@@ -31,25 +31,11 @@ string ipAddress = "";
 string processName;
 
 int pid;
+uint64_t address;
+uint32_t memValue;
 
-uint64_t start, loading, menuStage, paused;
-
-uint32_t memStart;
-uint32_t memLoading;
-uint32_t memMenuStage;
-uint32_t memPaused;
-
-struct iovec startLocal;
-struct iovec startRemote;
-
-struct iovec loadingLocal;
-struct iovec loadingRemote;
-
-struct iovec menuStageLocal;
-struct iovec menuStageRemote;
-
-struct iovec pausedLocal;
-struct iovec pausedRemote;
+struct iovec valueLocal;
+struct iovec valueRemote;
 
 struct StockPid
 {
@@ -58,7 +44,7 @@ struct StockPid
     FILE *pid_pipe;
 } stockthepid;
 
-void Func_StockPid(const char *processtarget)
+int Func_StockPid(const char *processtarget)
 {
     stockthepid.pid_pipe = popen(processtarget, "r");
     if (!fgets(stockthepid.buff, 512, stockthepid.pid_pipe))
@@ -80,18 +66,19 @@ void Func_StockPid(const char *processtarget)
         pid = stockthepid.pid;
     }
 
-}
-
-int readAddresses()
-{
-    start = readMemory.readMem(memStart, pid, 0x142BAFFD0, startLocal, startRemote);
-    loading = readMemory.readMem(memLoading, pid, 0x142E76B0C, loadingLocal, loadingRemote);
-    menuStage = readMemory.readMem(memMenuStage, pid, 0x142F75F14, menuStageLocal, menuStageRemote);
-    paused = readMemory.readMem(memPaused, pid, 0x142B95A68, pausedLocal, pausedRemote);
-
     return 0;
 }
 
+int readAddress(lua_State* L)
+{
+    address = lua_tointeger(L, 1);
+    uint32_t value = readMemory.readMem(memValue, pid, address, valueLocal, valueRemote);
+    lua_pushinteger(L, value);
+
+    return 1;
+}
+
+/*
 int sendCommands()
 {
     lsClient.Client(pid, ipAddress);
@@ -103,11 +90,11 @@ int sendCommands()
 
     while(true)
     {
-        std::thread t1(readAddresses);
-        std::thread t2(readAddresses);
+        //std::thread t1(readAddresses);
+        //std::thread t2(readAddresses);
 
-        t1.join();
-        t2.join();
+        //t1.join();
+        //t2.join();
 
         // Autosplitter
 
@@ -144,6 +131,7 @@ int sendCommands()
 
     return 0;
 }
+*/
 
 int processID(lua_State* L)
 {
@@ -184,13 +172,11 @@ int main(int argc, char *argv[])
 
     lua_pushcfunction(L, processID);
     lua_setglobal(L, "processID");
-
+    lua_pushcfunction(L, readAddress);
+    lua_setglobal(L, "readAddress");
 
     luaL_dofile(L, chosenAutosplitter.c_str());
-
     lua_close(L);
-
-    sendCommands();
 
     return 0;
 
