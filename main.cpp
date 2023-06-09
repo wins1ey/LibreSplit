@@ -13,15 +13,15 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <thread>
+#include <filesystem>
+#include <vector>
+
+#include <lua.hpp>
 
 #include "readmem.hpp"
 #include "client.hpp"
 
-using std::string;
-using std::cout;
-using std::endl;
-using std::string;
-using std::cin;
+using namespace std;
 
 ReadMemory readMemory;
 LiveSplitClient lsClient;
@@ -135,8 +135,52 @@ void sendCommands(int pid)
     }
 }
 
+int processID(lua_State* L)
+{
+    string processName = lua_tostring(L, 1);
+    string command = "pidof " + processName;
+    const char *testName = command.c_str();
+    cout << testName << endl;
+
+    Func_StockPid(testName);
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
+
+    string path = "autosplitters";
+    vector<string> file_names;
+    int counter = 1;
+    for (const auto & entry : filesystem::directory_iterator(path))
+    {
+        cout << counter << ". " << entry.path().filename() << endl;
+        file_names.push_back(entry.path().string());
+        counter++;
+    }
+    int userChoice;
+    cout << "Which autosplitter would you like to use? (Enter the number) ";
+    cin >> userChoice;
+    string chosenAutosplitter = file_names[userChoice - 1];
+    cout << "You chose " << chosenAutosplitter << endl;
+
+    lua_State* L = luaL_newstate();
+    luaL_openlibs(L);
+
+    lua_pushcfunction(L, processID);
+    lua_setglobal(L, "processID");
+
+
+    //luaL_dofile(L, "autosplitters/amid-evil.lua");
+    luaL_dofile(L, chosenAutosplitter.c_str());
+
+    lua_close(L);
+
+    return 0;
+
+
+/*
 
     for (int i = 0; i < argc; i++)
     {
@@ -165,4 +209,6 @@ int main(int argc, char *argv[])
     }
     sendCommands(stockthepid.pid);
     return 0;
+
+*/
 }
