@@ -30,24 +30,12 @@ bool episode = false;
 string ipAddress = "";
 string processName;
 
-uint64_t start, loading, menuStage, paused;
+int pid;
+uint64_t address;
+uint32_t memValue;
 
-uint32_t memStart;
-uint32_t memLoading;
-uint32_t memMenuStage;
-uint32_t memPaused;
-
-struct iovec startLocal;
-struct iovec startRemote;
-
-struct iovec loadingLocal;
-struct iovec loadingRemote;
-
-struct iovec menuStageLocal;
-struct iovec menuStageRemote;
-
-struct iovec pausedLocal;
-struct iovec pausedRemote;
+struct iovec valueLocal;
+struct iovec valueRemote;
 
 struct StockPid
 {
@@ -56,7 +44,7 @@ struct StockPid
     FILE *pid_pipe;
 } stockthepid;
 
-void Func_StockPid(const char *processtarget)
+int Func_StockPid(const char *processtarget)
 {
     stockthepid.pid_pipe = popen(processtarget, "r");
     if (!fgets(stockthepid.buff, 512, stockthepid.pid_pipe))
@@ -70,70 +58,16 @@ void Func_StockPid(const char *processtarget)
     {
         cout << processName + " isn't running.\n";
         pclose(stockthepid.pid_pipe);
-    } else
+    }
+    else
     {
         cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
+        pid = stockthepid.pid;
+        lsClient.Client(pid, ipAddress);
     }
-}
 
-void readAddresses(int pid)
-{
-    start = readMemory.readMem(memStart, pid, 0x142BAFFD0, startLocal, startRemote);
-    loading = readMemory.readMem(memLoading, pid, 0x142E76B0C, loadingLocal, loadingRemote);
-    menuStage = readMemory.readMem(memMenuStage, pid, 0x142F75F14, menuStageLocal, menuStageRemote);
-    paused = readMemory.readMem(memPaused, pid, 0x142B95A68, pausedLocal, pausedRemote);
-}
-
-void sendCommands(int pid)
-{
-    lsClient.Client(pid, ipAddress);
-
-    uint32_t prevStart;
-    uint32_t prevLoading;
-    uint32_t prevMenuStage;
-    uint32_t prevPaused;
-
-    while(true)
-    {
-        std::thread t1(readAddresses, pid);
-        std::thread t2(readAddresses, pid);
-
-        t1.join();
-        t2.join();
-
-        // Autosplitter
-
-        if (episode == true && (loading == 0 && prevLoading == 1))
-        {
-            lsClient.sendLSCommand("starttimer\r\n");
-        }
-        else if (start == 0 && prevStart == 2)
-        {
-            lsClient.sendLSCommand("starttimer\r\n");
-        }
-
-        if ((loading == 1 && prevLoading == 0) || (menuStage == 3 & paused == 4) && (prevMenuStage != 3 || prevPaused != 4))
-        {
-            lsClient.sendLSCommand("pausegametime\r\n");
-        }
-        else if ((loading != 1 && prevLoading == 1) && ((menuStage != 3 || paused != 4)))
-        {
-            lsClient.sendLSCommand("unpausegametime\r\n");
-        }
-
-        if ((menuStage == 3 && prevMenuStage == 2) && paused != 28 && paused != 3)
-        {
-            lsClient.sendLSCommand("split\r\n");
-        }
-
-        prevStart = start;
-        prevLoading = loading;
-        prevMenuStage = menuStage;
-        prevPaused = paused;
-
-        sleep(0.0001); // Sleep to avoid CPU explosio
-    }
+    return 0;
 }
 
 int processID(lua_State* L)
@@ -148,8 +82,44 @@ int processID(lua_State* L)
     return 0;
 }
 
+int readAddress(lua_State* L)
+{
+    address = lua_tointeger(L, 1);
+    uint32_t value = readMemory.readMem(memValue, pid, address, valueLocal, valueRemote);
+    lua_pushinteger(L, value);
+
+    return 1;
+}
+
+int startTimer(lua_State* L)
+{
+    lsClient.sendLSCommand("starttimer\r\n");
+    return 0;
+}
+
+int pauseGameTime(lua_State* L)
+{
+    lsClient.sendLSCommand("pausegametime\r\n");
+    return 0;
+}
+
+int unpauseGameTime(lua_State* L)
+{
+    lsClient.sendLSCommand("unpausegametime\r\n");
+    return 0;
+}
+
+int split(lua_State* L)
+{
+    lsClient.sendLSCommand("split\r\n");
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
+
+    cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
+    cin >> ipAddress;
 
     string path = "autosplitters";
     vector<string> file_names;
@@ -172,10 +142,18 @@ int main(int argc, char *argv[])
 
     lua_pushcfunction(L, processID);
     lua_setglobal(L, "processID");
-
+    lua_pushcfunction(L, readAddress);
+    lua_setglobal(L, "readAddress");
+    lua_pushcfunction(L, startTimer);
+    lua_setglobal(L, "startTimer");
+    lua_pushcfunction(L, pauseGameTime);
+    lua_setglobal(L, "pauseGameTime");
+    lua_pushcfunction(L, unpauseGameTime);
+    lua_setglobal(L, "unpauseGameTime");
+    lua_pushcfunction(L, split);
+    lua_setglobal(L, "split");
 
     luaL_dofile(L, chosenAutosplitter.c_str());
-
     lua_close(L);
 
     return 0;
@@ -203,7 +181,8 @@ int main(int argc, char *argv[])
             cout << "AMID EVIL isn't running. Retrying in 5 seconds...\n";
             sleep(5);
             system("clear");
-        } else
+        }
+        else
         {
             break;
         }
