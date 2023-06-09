@@ -70,7 +70,8 @@ void Func_StockPid(const char *processtarget)
     {
         cout << processName + " isn't running.\n";
         pclose(stockthepid.pid_pipe);
-    } else
+    }
+    else
     {
         cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
@@ -203,7 +204,8 @@ int main(int argc, char *argv[])
             cout << "AMID EVIL isn't running. Retrying in 5 seconds...\n";
             sleep(5);
             system("clear");
-        } else
+        }
+        else
         {
             break;
         }
