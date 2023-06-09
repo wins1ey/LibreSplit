@@ -69,6 +69,18 @@ int Func_StockPid(const char *processtarget)
     return 0;
 }
 
+int processID(lua_State* L)
+{
+    processName = lua_tostring(L, 1);
+    string command = "pidof " + processName;
+    const char *cCommand = command.c_str();
+    cout << cCommand << endl;
+
+    Func_StockPid(cCommand);
+
+    return 0;
+}
+
 int readAddress(lua_State* L)
 {
     address = lua_tointeger(L, 1);
@@ -77,6 +89,8 @@ int readAddress(lua_State* L)
 
     return 1;
 }
+
+
 
 /*
 int sendCommands()
@@ -133,17 +147,7 @@ int sendCommands()
 }
 */
 
-int processID(lua_State* L)
-{
-    processName = lua_tostring(L, 1);
-    string command = "pidof " + processName;
-    const char *cCommand = command.c_str();
-    cout << cCommand << endl;
 
-    Func_StockPid(cCommand);
-
-    return 0;
-}
 
 int main(int argc, char *argv[])
 {
