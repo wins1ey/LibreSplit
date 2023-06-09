@@ -14,4 +14,3 @@ Linux auto splitter for LiveSplit Server.
 
 ## Credits
 - [Loomeh](https://loomeh.github.io/Portfolio/) for making [LinuxAutosplitter](https://github.com/Loomeh/LinuxAutosplitter)
-- Psych0sis for making the AMID EVIL autosplitter for LiveSplit
