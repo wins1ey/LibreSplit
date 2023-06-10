@@ -88,10 +88,8 @@ int processID(lua_State* L)
 
 int readAddress(lua_State* L)
 {
-    uint64_t address = lua_tointeger(L, 1);
-    bool isThisAWindowsAddress = lua_toboolean(L, 2);
-    int baseAddress = lua_tointeger(L, 3);
-    uint32_t value = readMemory.readMem(memValue, pid, address, valueLocal, valueRemote, isThisAWindowsAddress, baseAddress);
+    uint64_t address = lua_tointeger(L, 1) + lua_tointeger(L, 2);
+    uint32_t value = readMemory.readMem(memValue, pid, address, valueLocal, valueRemote);
     lua_pushinteger(L, value);
 
     this_thread::sleep_for(chrono::microseconds(1));

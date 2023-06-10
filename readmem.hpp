@@ -22,7 +22,7 @@ using std::cin;
 class ReadMemory
 {
     public:
-        uint32_t readMem(uint32_t mem, int pid, uint64_t memAddress, struct iovec memLocal, struct iovec memRemote, bool isThisAWindowsAddress, int baseAddress)
+        uint32_t readMem(uint32_t mem, int pid, uint64_t memAddress, struct iovec memLocal, struct iovec memRemote)
         {
             uint32_t value;  // Variable to store the read value
 
@@ -30,14 +30,7 @@ class ReadMemory
             memLocal.iov_len = sizeof(value);
             memRemote.iov_len = sizeof(value);
 
-            if(isThisAWindowsAddress == true)
-            {
-                memRemote.iov_base = (void*)(memAddress + baseAddress);
-            }
-            else
-            {
-                memRemote.iov_base = (void*)memAddress;
-            }
+            memRemote.iov_base = (void*)memAddress;
 
             ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
             if (memNread == -1)
