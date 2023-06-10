@@ -1,4 +1,4 @@
-CFLAGS = -std=c++17 -O2 -pthread -I /usr/include/lua5.3/ -llua5.3
+CFLAGS = -std=c++17 -O2 -pthread -I /usr/include/lua5.*/ -llua
 
 LinuxAutoSplitter: *.cpp *.hpp
 	mkdir -p build
