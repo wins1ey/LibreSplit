@@ -17,6 +17,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <curl/curl.h>
 
 #include <lua.hpp>
 
@@ -45,11 +46,6 @@ struct StockPid
     FILE *pid_pipe;
 } stockthepid;
 
-int downloader()
-{
-    return 0;
-}
-
 int Func_StockPid(const char *processtarget)
 {
     stockthepid.pid_pipe = popen(processtarget, "r");
@@ -69,6 +65,28 @@ int Func_StockPid(const char *processtarget)
     }
     else {
         pclose(stockthepid.pid_pipe);
+    }
+
+    return 0;
+}
+
+int downloader()
+{
+    cout << "Downloader...\n";
+    CURL *curl;
+    CURLcode res;
+    string url = "https://raw.githubusercontent.com/Wins1ey/AutoSplitters/main/downloadable.csv";
+    string filename = "autosplitters/downloadable.csv";
+    curl = curl_easy_init();
+    if(curl)
+    {
+        FILE *fp = fopen(filename.c_str(),"wb");
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        res = curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+        fclose(fp);
     }
 
     return 0;
@@ -116,6 +134,7 @@ int main(int argc, char *argv[])
         if (strcmp(argv[i], "-downloader") == 0)
         {
             downloader();
+            return 0;
         }
     }
 
