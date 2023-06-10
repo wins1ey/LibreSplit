@@ -70,17 +70,17 @@ int Func_StockPid(const char *processtarget)
     return 0;
 }
 
-int downloader()
+int downloadFile(string url)
 {
-    cout << "Auto Splitter Downloader\n";
     CURL *curl;
     CURLcode res;
-    string url = "https://raw.githubusercontent.com/Wins1ey/AutoSplitters/main/downloadable.csv";
-    string filename = "autosplitters/downloadable.csv";
+    string filename = url.substr(url.find_last_of("/") + 1);
+    string filepath = "autosplitters/" + filename;
+
     curl = curl_easy_init();
-    if(curl)
+    if (curl)
     {
-        FILE *fp = fopen(filename.c_str(),"wb");
+        FILE *fp = fopen(filepath.c_str(),"wb");
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
@@ -89,6 +89,15 @@ int downloader()
         fclose(fp);
     }
 
+    return 0;
+}
+
+int downloader()
+{
+    cout << "Auto Splitter Downloader\n";
+    CURL *curl;
+    CURLcode res;
+    downloadFile("https://raw.githubusercontent.com/Wins1ey/AutoSplitters/main/downloadable.csv");
 
     ifstream file("autosplitters/downloadable.csv");
     string line;
