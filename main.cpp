@@ -31,8 +31,8 @@ string ipAddress = "";
 string processName;
 
 int pid = 0;
-uint64_t address;
 uint32_t memValue;
+
 
 struct iovec valueLocal;
 struct iovec valueRemote;
@@ -88,8 +88,10 @@ int processID(lua_State* L)
 
 int readAddress(lua_State* L)
 {
-    address = lua_tointeger(L, 1);
-    uint32_t value = readMemory.readMem(memValue, pid, address, valueLocal, valueRemote);
+    uint64_t address = lua_tointeger(L, 1);
+    bool isThisAWindowsAddress = lua_toboolean(L, 2);
+    int baseAddress = lua_tointeger(L, 3);
+    uint32_t value = readMemory.readMem(memValue, pid, address, valueLocal, valueRemote, isThisAWindowsAddress, baseAddress);
     lua_pushinteger(L, value);
 
     this_thread::sleep_for(chrono::microseconds(1));
