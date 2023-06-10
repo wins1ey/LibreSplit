@@ -92,6 +92,8 @@ int readAddress(lua_State* L)
     uint32_t value = readMemory.readMem(memValue, pid, address, valueLocal, valueRemote);
     lua_pushinteger(L, value);
 
+    this_thread::sleep_for(chrono::microseconds(1));
+
     return 1;
 }
 
