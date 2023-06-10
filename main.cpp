@@ -33,7 +33,6 @@ string processName;
 int pid = 0;
 uint32_t memValue;
 
-
 struct iovec valueLocal;
 struct iovec valueRemote;
 
