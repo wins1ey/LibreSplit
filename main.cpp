@@ -95,8 +95,6 @@ int downloadFile(string url)
 int downloader()
 {
     cout << "Auto Splitter Downloader\n";
-    CURL *curl;
-    CURLcode res;
     downloadFile("https://raw.githubusercontent.com/Wins1ey/AutoSplitters/main/downloadable.csv");
 
     ifstream file("autosplitters/downloadable.csv");
@@ -135,7 +133,7 @@ int downloader()
         int singleChoice = choiceOfAutoSplitters[i];
         if (singleChoice > 0 && singleChoice <= gameNamesVector.size())
         {
-            cout << "Downloading " + gameNamesVector[singleChoice - 1] + "...\n";
+            cout << "Downloading " + gameNamesVector[singleChoice - 1] + "'s auto splitter\n";
             downloadFile(urlsVector[singleChoice - 1]);
         }
     }
