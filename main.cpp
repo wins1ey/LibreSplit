@@ -92,30 +92,14 @@ int readAddress(lua_State* L)
     uint32_t value = readMemory.readMem(memValue, pid, address, valueLocal, valueRemote);
     lua_pushinteger(L, value);
 
+    this_thread::sleep_for(chrono::microseconds(1));
+
     return 1;
 }
 
-int startTimer(lua_State* L)
+int sendCommand(lua_State* L)
 {
-    lsClient.sendLSCommand("starttimer\r\n");
-    return 0;
-}
-
-int pauseGameTime(lua_State* L)
-{
-    lsClient.sendLSCommand("pausegametime\r\n");
-    return 0;
-}
-
-int unpauseGameTime(lua_State* L)
-{
-    lsClient.sendLSCommand("unpausegametime\r\n");
-    return 0;
-}
-
-int split(lua_State* L)
-{
-    lsClient.sendLSCommand("split\r\n");
+    lsClient.sendLSCommand(lua_tostring(L, 1));
     return 0;
 }
 
@@ -161,14 +145,8 @@ int main(int argc, char *argv[])
     lua_setglobal(L, "processID");
     lua_pushcfunction(L, readAddress);
     lua_setglobal(L, "readAddress");
-    lua_pushcfunction(L, startTimer);
-    lua_setglobal(L, "startTimer");
-    lua_pushcfunction(L, pauseGameTime);
-    lua_setglobal(L, "pauseGameTime");
-    lua_pushcfunction(L, unpauseGameTime);
-    lua_setglobal(L, "unpauseGameTime");
-    lua_pushcfunction(L, split);
-    lua_setglobal(L, "split");
+    lua_pushcfunction(L, sendCommand);
+    lua_setglobal(L, "sendCommand");
 
     luaL_dofile(L, chosenAutosplitter.c_str());
     lua_close(L);
