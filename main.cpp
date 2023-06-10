@@ -73,7 +73,6 @@ int processID(lua_State* L)
     processName = lua_tostring(L, 1);
     string command = "pidof " + processName;
     const char *cCommand = command.c_str();
-    cout << cCommand << endl;
 
     Func_StockPid(cCommand);
     while (pid == 0)
@@ -127,7 +126,9 @@ int main(int argc, char *argv[])
     cin >> ipAddress;
 
     string path = "autosplitters";
+    string chosenAutosplitter;
     vector<string> file_names;
+
     int counter = 1;
     for (const auto & entry : filesystem::directory_iterator(path))
     {
@@ -136,11 +137,22 @@ int main(int argc, char *argv[])
         counter++;
     }
 
-    int userChoice;
-    cout << "Which autosplitter would you like to use? (Enter the number) ";
-    cin >> userChoice;
-    string chosenAutosplitter = file_names[userChoice - 1];
-    cout << "You chose " << chosenAutosplitter << endl;
+    if (file_names.size() == 1)
+    {
+        chosenAutosplitter = file_names[0];
+    }
+    else if (file_names.size() > 1)
+    {
+        int userChoice;
+        cout << "Which auto splitter would you like to use? (Enter the number) ";
+        cin >> userChoice;
+        chosenAutosplitter = file_names[userChoice - 1];
+    }
+    else {
+        cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder and restart the program.\n";
+        return 0;
+    }
+    cout <<  chosenAutosplitter << endl;
 
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
@@ -165,7 +177,6 @@ int main(int argc, char *argv[])
 
 
 /*
-
     for (int i = 0; i < argc; i++)
     {
         if (strcmp(argv[i], "-ep") == 0)
@@ -173,27 +184,5 @@ int main(int argc, char *argv[])
             episode = true;
         }
     }
-
-    cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
-    cin >> ipAddress;
-
-    const char *processName = "pgrep [A]midEvil-Win64";
-    while (true)
-    {
-        Func_StockPid(processName);
-        if (stockthepid.pid == 0)
-        {
-            cout << "AMID EVIL isn't running. Retrying in 5 seconds...\n";
-            sleep(5);
-            system("clear");
-        }
-        else
-        {
-            break;
-        }
-    }
-    sendCommands(stockthepid.pid);
-    return 0;
-
 */
 }
