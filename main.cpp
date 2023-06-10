@@ -105,7 +105,6 @@ int sendCommand(lua_State* L)
 
 int main(int argc, char *argv[])
 {
-
     cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
     cin >> ipAddress;
 
@@ -152,15 +151,4 @@ int main(int argc, char *argv[])
     lua_close(L);
 
     return 0;
-
-
-/*
-    for (int i = 0; i < argc; i++)
-    {
-        if (strcmp(argv[i], "-ep") == 0)
-        {
-            episode = true;
-        }
-    }
-*/
 }
