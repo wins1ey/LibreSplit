@@ -72,7 +72,7 @@ int Func_StockPid(const char *processtarget)
 
 int downloader()
 {
-    cout << "Downloader...\n";
+    cout << "Auto Splitter Downloader\n";
     CURL *curl;
     CURLcode res;
     string url = "https://raw.githubusercontent.com/Wins1ey/AutoSplitters/main/downloadable.csv";
@@ -89,6 +89,18 @@ int downloader()
         fclose(fp);
     }
 
+    ifstream file("autosplitters/downloadable.csv");
+    string line;
+    int i = 1;
+    while (getline(file, line))
+    {
+        istringstream iss(line);
+        string gameName;
+        string url;
+        getline(iss, gameName, ',');
+        getline(iss, url, ',');
+        cout << i + ". " + gameName + "\n";
+    }
     return 0;
 }
 
