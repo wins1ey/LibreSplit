@@ -104,8 +104,12 @@ int sendCommand(lua_State* L)
 
 int main(int argc, char *argv[])
 {
-    cout << "What is your local IP address? (LiveSplit Server settings will tell you if you don't know.)\n";
-    cin >> ipAddress;
+    cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
+    getline(cin, ipAddress);
+    if (ipAddress.empty())
+    {
+        ipAddress = "127.0.0.1";
+    }
 
     string path = "autosplitters";
     string chosenAutosplitter;
