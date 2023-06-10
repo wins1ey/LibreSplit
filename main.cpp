@@ -15,6 +15,8 @@
 #include <thread>
 #include <filesystem>
 #include <vector>
+#include <fstream>
+#include <sstream>
 
 #include <lua.hpp>
 
@@ -42,6 +44,11 @@ struct StockPid
     char buff[512];
     FILE *pid_pipe;
 } stockthepid;
+
+int downloader()
+{
+    return 0;
+}
 
 int Func_StockPid(const char *processtarget)
 {
@@ -104,6 +111,14 @@ int sendCommand(lua_State* L)
 
 int main(int argc, char *argv[])
 {
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-downloader") == 0)
+        {
+            downloader();
+        }
+    }
+
     cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
     getline(cin, ipAddress);
     if (ipAddress.empty())
