@@ -136,6 +136,7 @@ int downloader()
         if (singleChoice > 0 && singleChoice <= gameNamesVector.size())
         {
             cout << "Downloading " + gameNamesVector[singleChoice - 1] + "...\n";
+            downloadFile(urlsVector[singleChoice - 1]);
         }
     }
 
