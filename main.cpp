@@ -187,13 +187,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
-    getline(cin, ipAddress);
-    if (ipAddress.empty())
-    {
-        ipAddress = "127.0.0.1";
-    }
-
     string path = "autosplitters";
     string chosenAutosplitter;
     vector<string> file_names;
@@ -222,6 +215,13 @@ int main(int argc, char *argv[])
         return 0;
     }
     cout <<  chosenAutosplitter << endl;
+
+    cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
+    getline(cin, ipAddress);
+    if (ipAddress.empty())
+    {
+        ipAddress = "127.0.0.1";
+    }
 
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
