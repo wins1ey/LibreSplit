@@ -99,7 +99,8 @@ int downloader()
         string url;
         getline(iss, gameName, ',');
         getline(iss, url, ',');
-        cout << i + ". " + gameName + "\n";
+        cout << i << ". " + gameName + "\n";
+        i++;
     }
     return 0;
 }
