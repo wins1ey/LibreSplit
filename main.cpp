@@ -30,7 +30,7 @@ bool episode = false;
 string ipAddress = "";
 string processName;
 
-int pid;
+int pid = 0;
 uint64_t address;
 uint32_t memValue;
 
@@ -54,17 +54,15 @@ int Func_StockPid(const char *processtarget)
 
     stockthepid.pid = strtoul(stockthepid.buff, nullptr, 10);
 
-    if (stockthepid.pid == 0)
-    {
-        cout << processName + " isn't running.\n";
-        pclose(stockthepid.pid_pipe);
-    }
-    else
+    if (stockthepid.pid != 0)
     {
         cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
         pid = stockthepid.pid;
         lsClient.Client(pid, ipAddress);
+    }
+    else {
+        pclose(stockthepid.pid_pipe);
     }
 
     return 0;
@@ -78,6 +76,13 @@ int processID(lua_State* L)
     cout << cCommand << endl;
 
     Func_StockPid(cCommand);
+    while (pid == 0)
+    {
+        cout << processName + " isn't running. Retrying in 5 seconds...\n";
+        sleep(5);
+        system("clear");
+        Func_StockPid(cCommand);
+    }
 
     return 0;
 }
