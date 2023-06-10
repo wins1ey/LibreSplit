@@ -32,7 +32,7 @@ class ReadMemory
 
             if(isThisAWindowsAddress == true)
             {
-                memRemote.iov_base = (void*)memAddress + baseAddress;
+                memRemote.iov_base = (void*)(memAddress + baseAddress);
             }
             else
             {
