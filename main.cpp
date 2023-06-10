@@ -89,9 +89,12 @@ int downloader()
         fclose(fp);
     }
 
+
     ifstream file("autosplitters/downloadable.csv");
     string line;
     int i = 1;
+    vector<string> gameNamesVector;
+    vector<string> urlsVector;
     while (getline(file, line))
     {
         istringstream iss(line);
@@ -101,7 +104,32 @@ int downloader()
         getline(iss, url, ',');
         cout << i << ". " + gameName + "\n";
         i++;
+        gameNamesVector.push_back(gameName);
+        urlsVector.push_back(url);
     }
+    file.close();
+
+    cout << "Which auto splitters would you like to download? (Numbers separated by spaces): ";
+    vector<int> choiceOfAutoSplitters;
+    int singleChoice;
+    while (cin >> singleChoice)
+    {
+        choiceOfAutoSplitters.push_back(singleChoice);
+        if (cin.peek() == '\n')
+        {
+            break;
+        }
+    }
+
+    for (int i = 0; i < choiceOfAutoSplitters.size(); i++)
+    {
+        int singleChoice = choiceOfAutoSplitters[i];
+        if (singleChoice > 0 && singleChoice <= gameNamesVector.size())
+        {
+            cout << "Downloading " + gameNamesVector[singleChoice - 1] + "...\n";
+        }
+    }
+
     return 0;
 }
 
