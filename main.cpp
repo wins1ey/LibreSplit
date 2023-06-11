@@ -61,7 +61,7 @@ void Func_StockPid(const char *processtarget)
         cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
         pid = stockthepid.pid;
-        lsClient.Client(pid, ipAddress);
+        lsClient.Client(ipAddress);
     }
     else {
         pclose(stockthepid.pid_pipe);
