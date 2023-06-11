@@ -88,8 +88,23 @@ int processID(lua_State* L)
 int readAddress(lua_State* L)
 {
     uint64_t address = lua_tointeger(L, 1) + lua_tointeger(L, 2);
-    uint32_t value = readMemory.readMem(memValue, pid, address, valueLocal, valueRemote);
-    lua_pushinteger(L, value);
+    int addressSize = lua_tointeger(L, 3);
+
+    if (addressSize = 8)
+    {
+        uint64_t value = readMemory.readMem8(memValue, pid, address, valueLocal, valueRemote);
+        lua_pushinteger(L, value);
+    }
+    else if (addressSize = 32)
+    {
+        uint64_t value = readMemory.readMem32(memValue, pid, address, valueLocal, valueRemote);
+        lua_pushinteger(L, value);
+    }
+    else if (addressSize = 64)
+    {
+        uint64_t value = readMemory.readMem64(memValue, pid, address, valueLocal, valueRemote);
+        lua_pushinteger(L, value);
+    }
 
     this_thread::sleep_for(chrono::microseconds(1));
 
