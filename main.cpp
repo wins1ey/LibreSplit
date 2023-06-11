@@ -152,6 +152,7 @@ void checkDirectories()
     if (!filesystem::exists(autoSplittersDirectory))
     {
         filesystem::create_directory(autoSplittersDirectory);
+        downloader.startDownloader(autoSplittersDirectory);
     }
 
 
