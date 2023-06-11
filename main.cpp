@@ -148,7 +148,7 @@ void chooseAutoSplitter()
     executablePath = string( result, (count > 0) ? count : 0 );
     executableDirectory = executablePath.substr(0, executablePath.find_last_of("/"));
 
-    autoSplittersDirectory = executableDirectory + "/autosplitters";
+    autoSplittersDirectory = executableDirectory + "/autosplitters/";
 
     // Make the autosplitters directory if it doesn't exist
     if (!filesystem::exists(autoSplittersDirectory))
@@ -180,21 +180,13 @@ void chooseAutoSplitter()
     }
     else {
         cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder or download some here.\n";
-        downloader.startDownloader();
+        downloader.startDownloader(autoSplittersDirectory);
     }
     cout <<  chosenAutoSplitter << endl;
 }
 
 int main(int argc, char *argv[])
 {
-    for (int i = 0; i < argc; i++)
-    {
-        if (strcmp(argv[i], "-downloader") == 0)
-        {
-            downloader.startDownloader();
-            return 0;
-        }
-    }
     chooseAutoSplitter();
 
     cin.ignore();
