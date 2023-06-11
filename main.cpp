@@ -26,6 +26,8 @@
 
 using namespace std;
 
+lua_State* L = luaL_newstate();
+
 ReadMemory readMemory;
 LiveSplitClient lsClient;
 Downloader downloader;
@@ -63,6 +65,12 @@ void Func_StockPid(const char *processtarget)
     else {
         pclose(stockthepid.pid_pipe);
     }
+}
+
+void runAutoSplitter()
+{
+    luaL_dofile(L, chosenAutoSplitter.c_str());
+    lua_close(L);
 }
 
 int processID(lua_State* L)
@@ -180,9 +188,7 @@ int main(int argc, char *argv[])
         ipAddress = "127.0.0.1";
     }
 
-    lua_State* L = luaL_newstate();
     luaL_openlibs(L);
-
     lua_pushcfunction(L, processID);
     lua_setglobal(L, "processID");
     lua_pushcfunction(L, readAddress);
@@ -190,8 +196,7 @@ int main(int argc, char *argv[])
     lua_pushcfunction(L, sendCommand);
     lua_setglobal(L, "sendCommand");
 
-    luaL_dofile(L, chosenAutoSplitter.c_str());
-    lua_close(L);
+    runAutoSplitter();
 
     return 0;
 }
