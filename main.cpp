@@ -61,7 +61,6 @@ void Func_StockPid(const char *processtarget)
         cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
         pid = stockthepid.pid;
-        lsClient.Client(ipAddress);
     }
     else {
         pclose(stockthepid.pid_pipe);
@@ -203,6 +202,7 @@ int main(int argc, char *argv[])
     if (ipAddress.empty()) {
         ipAddress = "127.0.0.1";
     }
+    lsClient.Client(ipAddress);
 
     luaL_openlibs(L);
     lua_pushcfunction(L, processID);
