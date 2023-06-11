@@ -31,10 +31,6 @@ string ipAddress = "";
 string processName;
 
 int pid = 0;
-uint32_t memValue;
-
-struct iovec valueLocal;
-struct iovec valueRemote;
 
 struct StockPid
 {
@@ -92,17 +88,17 @@ int readAddress(lua_State* L)
 
     if (addressSize = 8)
     {
-        uint64_t value = readMemory.readMem8(memValue, pid, address, valueLocal, valueRemote);
+        uint64_t value = readMemory.readMem8(pid, address);
         lua_pushinteger(L, value);
     }
     else if (addressSize = 32)
     {
-        uint64_t value = readMemory.readMem32(memValue, pid, address, valueLocal, valueRemote);
+        uint64_t value = readMemory.readMem32(pid, address);
         lua_pushinteger(L, value);
     }
     else if (addressSize = 64)
     {
-        uint64_t value = readMemory.readMem64(memValue, pid, address, valueLocal, valueRemote);
+        uint64_t value = readMemory.readMem64(pid, address);
         lua_pushinteger(L, value);
     }
 
