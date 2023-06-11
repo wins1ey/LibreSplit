@@ -30,7 +30,7 @@ ReadMemory readMemory;
 LiveSplitClient lsClient;
 
 bool episode = false;
-string ipAddress = "";
+string ipAddress;
 string processName;
 
 int pid = 0;
@@ -219,6 +219,7 @@ int main(int argc, char *argv[])
     }
     cout <<  chosenAutosplitter << endl;
 
+    cin.ignore();
     cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
     getline(cin, ipAddress);
     if (ipAddress.empty())
