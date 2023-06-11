@@ -194,9 +194,12 @@ int main(int argc, char *argv[])
     int counter = 1;
     for (const auto & entry : filesystem::directory_iterator(path))
     {
+        if (entry.path().extension() == ".lua")
+        {
         cout << counter << ". " << entry.path().filename() << endl;
         file_names.push_back(entry.path().string());
         counter++;
+        }
     }
 
     if (file_names.size() == 1)
