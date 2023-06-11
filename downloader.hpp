@@ -14,13 +14,16 @@ using std::istringstream;
 
 class Downloader
 {
+    string directory;
+
     public:
-        void startDownloader()
+        void startDownloader(string autoSplittersDirectory)
         {
+            directory = autoSplittersDirectory;
             cout << "Auto Splitter Downloader\n";
             downloadFile("https://raw.githubusercontent.com/Wins1ey/AutoSplitters/main/downloadable.csv");
 
-            ifstream file("autosplitters/downloadable.csv");
+            ifstream file(directory + "downloadable.csv");
             string line;
             int i = 1;
             vector<string> gameNamesVector;
@@ -50,6 +53,7 @@ class Downloader
                     break;
                 }
             }
+            cin.ignore();
 
             for (int i = 0; i < choiceOfAutoSplitters.size(); i++)
             {
@@ -67,7 +71,7 @@ class Downloader
             CURL *curl;
             CURLcode res;
             string filename = url.substr(url.find_last_of("/") + 1);
-            string filepath = "autosplitters/" + filename;
+            string filepath = directory + filename;
 
             curl = curl_easy_init();
             if (curl)

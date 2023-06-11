@@ -26,7 +26,7 @@ class LiveSplitClient
     public:
         int sock;
 
-        void Client(int pid, string ipAddress)
+        void Client(string ipAddress)
         {
             sock = socket(AF_INET, SOCK_STREAM, 0);
             if (sock == -1)
