@@ -32,9 +32,11 @@ ReadMemory readMemory;
 LiveSplitClient lsClient;
 Downloader downloader;
 
+string autoSplittersDirectory;
 string chosenAutoSplitter;
 string ipAddress;
 string processName;
+vector<string> fileNames;
 
 int pid = 0;
 
@@ -133,12 +135,10 @@ int sendCommand(lua_State* L)
     return 0;
 }
 
-void chooseAutoSplitter()
+void checkDirectories()
 {
-    vector<string> fileNames;
     string executablePath;
     string executableDirectory;
-    string autoSplittersDirectory;
 
     // Get the path to the executable
     char result[ PATH_MAX ];
@@ -164,7 +164,10 @@ void chooseAutoSplitter()
         counter++;
         }
     }
+}
 
+void chooseAutoSplitter()
+{
     switch (fileNames.size())
     {
         case 0:
@@ -204,6 +207,8 @@ void setIpAddress()
 
 int main(int argc, char *argv[])
 {
+    checkDirectories();
+    
     luaL_openlibs(L);
     lua_pushcfunction(L, processID);
     lua_setglobal(L, "processID");
