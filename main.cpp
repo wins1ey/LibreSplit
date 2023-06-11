@@ -103,6 +103,11 @@ int readAddress(lua_State* L)
         uint64_t value = readMemory.readMem64(pid, address);
         lua_pushinteger(L, value);
     }
+    else
+    {
+        cout << "Invalid address size. Please use 8, 32, or 64.\n";
+        exit(-1);
+    }
 
     this_thread::sleep_for(chrono::microseconds(1));
 
