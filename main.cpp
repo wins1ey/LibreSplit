@@ -118,7 +118,8 @@ int readAddress(lua_State* L)
     }
     catch (const std::exception& e)
     {
-        cout << "Error reading memory: " << e.what() << endl;
+        cout << e.what() << endl;
+        exit(-1);
     }
 
 
