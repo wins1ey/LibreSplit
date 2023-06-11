@@ -219,6 +219,14 @@ int main(int argc, char *argv[])
     lua_pushcfunction(L, sendCommand);
     lua_setglobal(L, "sendCommand");
 
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-downloader") == 0)
+        {
+            downloader.startDownloader(autoSplittersDirectory);
+        }
+    }
+
     chooseAutoSplitter();
     setIpAddress();
     runAutoSplitter();
