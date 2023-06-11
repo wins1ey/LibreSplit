@@ -193,10 +193,13 @@ int main(int argc, char *argv[])
 
     cin.ignore();
     cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
-    getline(cin, ipAddress);
-    if (ipAddress.empty())
+    if (cin.get() == '\n')
     {
         ipAddress = "127.0.0.1";
+    }
+    else
+    {
+        getline(cin, ipAddress);
     }
 
     luaL_openlibs(L);
