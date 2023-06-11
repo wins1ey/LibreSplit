@@ -30,7 +30,6 @@ ReadMemory readMemory;
 LiveSplitClient lsClient;
 Downloader downloader;
 
-bool episode = false;
 string chosenAutoSplitter;
 string ipAddress;
 string processName;
