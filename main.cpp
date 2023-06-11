@@ -20,17 +20,13 @@
 #include <curl/curl.h>
 #include <lua.hpp>
 
-#include "readmem.hpp"
-#include "client.hpp"
-#include "downloader.hpp"
+#include "client.h"
+#include "readmem.h"
+#include "downloader.h"
 
 using namespace std;
 
 lua_State* L = luaL_newstate();
-
-ReadMemory readMemory;
-LiveSplitClient lsClient;
-Downloader downloader;
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
@@ -103,13 +99,13 @@ int readAddress(lua_State* L)
         switch(addressSize)
         {
             case 8:
-                value = readMemory.readMem8(pid, address);
+                value = readMem8(pid, address);
                 break;
             case 32:
-                value = readMemory.readMem32(pid, address);
+                value = readMem32(pid, address);
                 break;
             case 64:
-                value = readMemory.readMem64(pid, address);
+                value = readMem64(pid, address);
                 break;
             default:
                 cout << "Invalid address size. Please use 8, 32, or 64.\n";
@@ -131,7 +127,7 @@ int readAddress(lua_State* L)
 
 int sendCommand(lua_State* L)
 {
-    lsClient.sendLSCommand(lua_tostring(L, 1));
+    sendLSCommand(lua_tostring(L, 1));
     return 0;
 }
 
@@ -152,7 +148,7 @@ void checkDirectories()
     if (!filesystem::exists(autoSplittersDirectory))
     {
         filesystem::create_directory(autoSplittersDirectory);
-        downloader.startDownloader(autoSplittersDirectory);
+        startDownloader(autoSplittersDirectory);
     }
 
 
@@ -176,7 +172,7 @@ void chooseAutoSplitter()
         case 0:
         {
             cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder or download some here.\n";
-            downloader.startDownloader(autoSplittersDirectory);
+            startDownloader(autoSplittersDirectory);
             chooseAutoSplitter();
             break;
         }
@@ -205,7 +201,7 @@ void setIpAddress()
     if (ipAddress.empty()) {
         ipAddress = "127.0.0.1";
     }
-    lsClient.Client(ipAddress);
+    Client(ipAddress);
 }
 
 int main(int argc, char *argv[])
@@ -224,7 +220,7 @@ int main(int argc, char *argv[])
     {
         if (strcmp(argv[i], "-downloader") == 0)
         {
-            downloader.startDownloader(autoSplittersDirectory);
+            startDownloader(autoSplittersDirectory);
         }
     }
 
