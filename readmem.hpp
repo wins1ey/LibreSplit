@@ -13,10 +13,8 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-using std::string;
 using std::cout;
 using std::endl;
-using std::string;
 using std::cin;
 
 class ReadMemory
