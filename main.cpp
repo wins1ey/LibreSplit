@@ -87,33 +87,24 @@ int readAddress(lua_State* L)
 {
     uint64_t address = lua_tointeger(L, 1) + lua_tointeger(L, 2);
     int addressSize = lua_tointeger(L, 3);
+    uint64_t value;
 
     switch(addressSize)
     {
         case 8:
-        {
-            uint64_t value8 = readMemory.readMem8(pid, address);
-            lua_pushinteger(L, value8);
+            value = readMemory.readMem8(pid, address);
             break;
-        }
         case 32:
-        {
-            uint64_t value32 = readMemory.readMem32(pid, address);
-            lua_pushinteger(L, value32);
+            value = readMemory.readMem32(pid, address);
             break;
-        }
         case 64:
-        {
-            uint64_t value64 = readMemory.readMem64(pid, address);
-            lua_pushinteger(L, value64);
+            value = readMemory.readMem64(pid, address);
             break;
-        }
         default:
-        { 
             cout << "Invalid address size. Please use 8, 32, or 64.\n";
             exit(-1);
-        }
     }
+    lua_pushinteger(L, value);
 
     this_thread::sleep_for(chrono::microseconds(1));
 
