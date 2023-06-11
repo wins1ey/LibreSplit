@@ -139,17 +139,19 @@ void chooseAutoSplitter()
 {
     vector<string> file_names;
     string executablePath;
-    string autoSplittersPath;
+    string executableDirectory;
+    string autoSplittersDirectory;
 
     // Get the path to the executable
     char result[ PATH_MAX ];
     ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
     executablePath = string( result, (count > 0) ? count : 0 );
+    executableDirectory = executablePath.substr(0, executablePath.find_last_of("/"));
 
-    autoSplittersPath = executablePath + "/autosplitters";
+    autoSplittersDirectory = executableDirectory + "/autosplitters";
 
     int counter = 1;
-    for (const auto & entry : filesystem::directory_iterator(autoSplittersPath))
+    for (const auto & entry : filesystem::directory_iterator(autoSplittersDirectory))
     {
         if (entry.path().extension() == ".lua")
         {
