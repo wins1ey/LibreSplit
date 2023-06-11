@@ -137,7 +137,7 @@ int sendCommand(lua_State* L)
 
 void chooseAutoSplitter()
 {
-    vector<string> file_names;
+    vector<string> fileNames;
     string executablePath;
     string executableDirectory;
     string autoSplittersDirectory;
@@ -162,27 +162,27 @@ void chooseAutoSplitter()
         if (entry.path().extension() == ".lua")
         {
         cout << counter << ". " << entry.path().filename() << endl;
-        file_names.push_back(entry.path().string());
+        fileNames.push_back(entry.path().string());
         counter++;
         }
     }
 
-    if (file_names.size() == 0)
+    if (fileNames.size() == 0)
     {
         cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder or download some here.\n";
         downloader.startDownloader(autoSplittersDirectory);
         chooseAutoSplitter();
     }
-    else if (file_names.size() == 1)
+    else if (fileNames.size() == 1)
     {
-        chosenAutoSplitter = file_names[0];
+        chosenAutoSplitter = fileNames[0];
     }
-    else if (file_names.size() > 1)
+    else if (fileNames.size() > 1)
     {
         int userChoice;
         cout << "Which auto splitter would you like to use? (Enter the number) ";
         cin >> userChoice;
-        chosenAutoSplitter = file_names[userChoice - 1];
+        chosenAutoSplitter = fileNames[userChoice - 1];
     }
     cout <<  chosenAutoSplitter << endl;
 }
