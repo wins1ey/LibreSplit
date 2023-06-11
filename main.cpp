@@ -192,17 +192,18 @@ void chooseAutoSplitter()
     cout <<  chosenAutoSplitter << endl;
 }
 
-int main(int argc, char *argv[])
+void setIpAddress()
 {
-    chooseAutoSplitter();
-
     cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
     getline(std::cin, ipAddress);
     if (ipAddress.empty()) {
         ipAddress = "127.0.0.1";
     }
     lsClient.Client(ipAddress);
+}
 
+int main(int argc, char *argv[])
+{
     luaL_openlibs(L);
     lua_pushcfunction(L, processID);
     lua_setglobal(L, "processID");
@@ -211,6 +212,8 @@ int main(int argc, char *argv[])
     lua_pushcfunction(L, sendCommand);
     lua_setglobal(L, "sendCommand");
 
+    chooseAutoSplitter();
+    setIpAddress();
     runAutoSplitter();
 
     return 0;
