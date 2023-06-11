@@ -31,6 +31,7 @@ LiveSplitClient lsClient;
 Downloader downloader;
 
 bool episode = false;
+string chosenAutoSplitter;
 string ipAddress;
 string processName;
 
@@ -104,19 +105,9 @@ int sendCommand(lua_State* L)
     return 0;
 }
 
-int main(int argc, char *argv[])
+void chooseAutoSplitter()
 {
-    for (int i = 0; i < argc; i++)
-    {
-        if (strcmp(argv[i], "-downloader") == 0)
-        {
-            downloader.startDownloader();
-            return 0;
-        }
-    }
-
     string path = "autosplitters";
-    string chosenAutosplitter;
     vector<string> file_names;
 
     int counter = 1;
@@ -132,20 +123,34 @@ int main(int argc, char *argv[])
 
     if (file_names.size() == 1)
     {
-        chosenAutosplitter = file_names[0];
+        chosenAutoSplitter = file_names[0];
     }
     else if (file_names.size() > 1)
     {
         int userChoice;
         cout << "Which auto splitter would you like to use? (Enter the number) ";
         cin >> userChoice;
-        chosenAutosplitter = file_names[userChoice - 1];
+        chosenAutoSplitter = file_names[userChoice - 1];
     }
     else {
-        cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder and restart the program.\n";
-        return 0;
+        cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder or download some here.\n";
+        downloader.startDownloader();
     }
-    cout <<  chosenAutosplitter << endl;
+    cout <<  chosenAutoSplitter << endl;
+}
+
+int main(int argc, char *argv[])
+{
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-downloader") == 0)
+        {
+            downloader.startDownloader();
+            return 0;
+        }
+    }
+
+    chooseAutoSplitter();
 
     cin.ignore();
     cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
@@ -165,7 +170,7 @@ int main(int argc, char *argv[])
     lua_pushcfunction(L, sendCommand);
     lua_setglobal(L, "sendCommand");
 
-    luaL_dofile(L, chosenAutosplitter.c_str());
+    luaL_dofile(L, chosenAutoSplitter.c_str());
     lua_close(L);
 
     return 0;
