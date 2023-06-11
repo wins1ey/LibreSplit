@@ -19,7 +19,6 @@
 #include <sstream>
 #include <curl/curl.h>
 #include <lua.hpp>
-#include <boost/filesystem.hpp>
 
 #include "readmem.hpp"
 #include "client.hpp"
