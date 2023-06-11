@@ -19,6 +19,7 @@
 #include <sstream>
 #include <curl/curl.h>
 #include <lua.hpp>
+#include <boost/filesystem.hpp>
 
 #include "readmem.hpp"
 #include "client.hpp"
@@ -136,11 +137,19 @@ int sendCommand(lua_State* L)
 
 void chooseAutoSplitter()
 {
-    string path = "autosplitters";
     vector<string> file_names;
+    string executablePath;
+    string autoSplittersPath;
+
+    // Get the path to the executable
+    char result[ PATH_MAX ];
+    ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
+    executablePath = string( result, (count > 0) ? count : 0 );
+
+    autoSplittersPath = executablePath + "/autosplitters";
 
     int counter = 1;
-    for (const auto & entry : filesystem::directory_iterator(path))
+    for (const auto & entry : filesystem::directory_iterator(autoSplittersPath))
     {
         if (entry.path().extension() == ".lua")
         {
@@ -178,7 +187,6 @@ int main(int argc, char *argv[])
             return 0;
         }
     }
-
     chooseAutoSplitter();
 
     cin.ignore();
