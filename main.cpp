@@ -167,7 +167,13 @@ void chooseAutoSplitter()
         }
     }
 
-    if (file_names.size() == 1)
+    if (file_names.size() == 0)
+    {
+        cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder or download some here.\n";
+        downloader.startDownloader(autoSplittersDirectory);
+        chooseAutoSplitter();
+    }
+    else if (file_names.size() == 1)
     {
         chosenAutoSplitter = file_names[0];
     }
@@ -177,10 +183,6 @@ void chooseAutoSplitter()
         cout << "Which auto splitter would you like to use? (Enter the number) ";
         cin >> userChoice;
         chosenAutoSplitter = file_names[userChoice - 1];
-    }
-    else {
-        cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder or download some here.\n";
-        downloader.startDownloader(autoSplittersDirectory);
     }
     cout <<  chosenAutoSplitter << endl;
 }
