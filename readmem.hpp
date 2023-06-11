@@ -19,8 +19,11 @@ using std::cin;
 
 class ReadMemory
 {
+    struct iovec memLocal;
+    struct iovec memRemote;
+
     public:
-        uint8_t readMem8(uint32_t mem, int pid, uint64_t memAddress, struct iovec memLocal, struct iovec memRemote)
+        uint8_t readMem8(int pid, uint64_t memAddress)
         {
             uint32_t value;  // Variable to store the read value
 
@@ -44,7 +47,7 @@ class ReadMemory
             return value;  // Return the read value
         }
 
-        uint64_t readMem64(uint32_t mem, int pid, uint64_t memAddress, struct iovec memLocal, struct iovec memRemote)
+        uint64_t readMem64(int pid, uint64_t memAddress)
         {
             uint32_t value;  // Variable to store the read value
 
@@ -68,7 +71,7 @@ class ReadMemory
             return value;  // Return the read value
         }
 
-        uint32_t readMem32(uint32_t mem, int pid, uint64_t memAddress, struct iovec memLocal, struct iovec memRemote)
+        uint32_t readMem32(int pid, uint64_t memAddress)
         {
             uint32_t value;  // Variable to store the read value
 

@@ -35,10 +35,6 @@ string ipAddress;
 string processName;
 
 int pid = 0;
-uint32_t memValue;
-
-struct iovec valueLocal;
-struct iovec valueRemote;
 
 struct StockPid
 {
@@ -91,22 +87,24 @@ int readAddress(lua_State* L)
 {
     uint64_t address = lua_tointeger(L, 1) + lua_tointeger(L, 2);
     int addressSize = lua_tointeger(L, 3);
+    uint64_t value;
 
-    if (addressSize = 8)
+    switch(addressSize)
     {
-        uint64_t value = readMemory.readMem8(memValue, pid, address, valueLocal, valueRemote);
-        lua_pushinteger(L, value);
+        case 8:
+            value = readMemory.readMem8(pid, address);
+            break;
+        case 32:
+            value = readMemory.readMem32(pid, address);
+            break;
+        case 64:
+            value = readMemory.readMem64(pid, address);
+            break;
+        default:
+            cout << "Invalid address size. Please use 8, 32, or 64.\n";
+            exit(-1);
     }
-    else if (addressSize = 32)
-    {
-        uint64_t value = readMemory.readMem32(memValue, pid, address, valueLocal, valueRemote);
-        lua_pushinteger(L, value);
-    }
-    else if (addressSize = 64)
-    {
-        uint64_t value = readMemory.readMem64(memValue, pid, address, valueLocal, valueRemote);
-        lua_pushinteger(L, value);
-    }
+    lua_pushinteger(L, value);
 
     this_thread::sleep_for(chrono::microseconds(1));
 
