@@ -154,6 +154,11 @@ void checkDirectories()
         filesystem::create_directory(autoSplittersDirectory);
     }
 
+
+}
+
+void chooseAutoSplitter()
+{
     int counter = 1;
     for (const auto & entry : filesystem::directory_iterator(autoSplittersDirectory))
     {
@@ -164,10 +169,7 @@ void checkDirectories()
         counter++;
         }
     }
-}
 
-void chooseAutoSplitter()
-{
     switch (fileNames.size())
     {
         case 0:
