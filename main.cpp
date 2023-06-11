@@ -150,6 +150,12 @@ void chooseAutoSplitter()
 
     autoSplittersDirectory = executableDirectory + "/autosplitters";
 
+    // Make the autosplitters directory if it doesn't exist
+    if (!filesystem::exists(autoSplittersDirectory))
+    {
+        filesystem::create_directory(autoSplittersDirectory);
+    }
+
     int counter = 1;
     for (const auto & entry : filesystem::directory_iterator(autoSplittersDirectory))
     {
