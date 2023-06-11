@@ -183,6 +183,7 @@ void chooseAutoSplitter()
         cout << "Which auto splitter would you like to use? (Enter the number) ";
         cin >> userChoice;
         chosenAutoSplitter = fileNames[userChoice - 1];
+        cin.ignore();
     }
     cout <<  chosenAutoSplitter << endl;
 }
@@ -191,15 +192,10 @@ int main(int argc, char *argv[])
 {
     chooseAutoSplitter();
 
-    cin.ignore();
     cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
-    if (cin.get() == '\n')
-    {
+    getline(std::cin, ipAddress);
+    if (ipAddress.empty()) {
         ipAddress = "127.0.0.1";
-    }
-    else
-    {
-        getline(cin, ipAddress);
     }
 
     luaL_openlibs(L);

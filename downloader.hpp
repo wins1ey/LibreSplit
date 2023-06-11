@@ -53,6 +53,7 @@ class Downloader
                     break;
                 }
             }
+            cin.ignore();
 
             for (int i = 0; i < choiceOfAutoSplitters.size(); i++)
             {
