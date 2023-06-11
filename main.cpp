@@ -47,7 +47,7 @@ struct StockPid
     FILE *pid_pipe;
 } stockthepid;
 
-int Func_StockPid(const char *processtarget)
+void Func_StockPid(const char *processtarget)
 {
     stockthepid.pid_pipe = popen(processtarget, "r");
     if (!fgets(stockthepid.buff, 512, stockthepid.pid_pipe))
@@ -67,8 +67,6 @@ int Func_StockPid(const char *processtarget)
     else {
         pclose(stockthepid.pid_pipe);
     }
-
-    return 0;
 }
 
 int processID(lua_State* L)
