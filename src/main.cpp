@@ -20,17 +20,14 @@
 #include <curl/curl.h>
 #include <lua.hpp>
 
-#include "readmem.hpp"
-#include "client.hpp"
-#include "downloader.hpp"
+#include "client.h"
+#include "readmem.h"
+#include "downloader.h"
+#include "lasprint.h"
 
 using namespace std;
 
 lua_State* L = luaL_newstate();
-
-ReadMemory readMemory;
-LiveSplitClient lsClient;
-Downloader downloader;
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
@@ -60,6 +57,8 @@ void Func_StockPid(const char *processtarget)
     if (stockthepid.pid != 0)
     {
         cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
+        lasPrint("Process: " + processName + "\n");
+        lasPrint("PID: " + to_string(stockthepid.pid) + "\n");
         pclose(stockthepid.pid_pipe);
         pid = stockthepid.pid;
     }
@@ -77,7 +76,8 @@ void runAutoSplitter()
 int processID(lua_State* L)
 {
     processName = lua_tostring(L, 1);
-    string command = "pidof " + processName;
+    string newProcessName = processName.substr(0, 15);
+    string command = "pidof " + newProcessName;
     const char *cCommand = command.c_str();
 
     Func_StockPid(cCommand);
@@ -85,17 +85,18 @@ int processID(lua_State* L)
     {
         cout << processName + " isn't running. Retrying in 5 seconds...\n";
         sleep(5);
-        system("clear");
+        lasPrint("");
         Func_StockPid(cCommand);
     }
+    lasPrint("\n");
 
     return 0;
 }
 
 int readAddress(lua_State* L)
 {
-    uint64_t address = lua_tointeger(L, 1) + lua_tointeger(L, 2);
-    int addressSize = lua_tointeger(L, 3);
+    int addressSize = lua_tointeger(L, 1);
+    uint64_t address = lua_tointeger(L, 2) + lua_tointeger(L, 3);
     uint64_t value;
 
     try
@@ -103,24 +104,21 @@ int readAddress(lua_State* L)
         switch(addressSize)
         {
             case 8:
-                value = readMemory.readMem8(pid, address);
+                value = readMem8(pid, address);
                 break;
             case 32:
-                value = readMemory.readMem32(pid, address);
-                break;
-            case 64:
-                value = readMemory.readMem64(pid, address);
+                value = readMem32(pid, address);
                 break;
             default:
-                cout << "Invalid address size. Please use 8, 32, or 64.\n";
-                exit(-1);
+                value = readMem64(pid, address, addressSize);
+                break;
         }
         lua_pushinteger(L, value);
     }
-    catch (const std::exception& e)
+    catch (const exception& e)
     {
-        cout << e.what() << endl;
-        exit(-1);
+        cerr << "\033[1;31m" << e.what() << endl << endl;
+        throw;
     }
 
 
@@ -131,7 +129,7 @@ int readAddress(lua_State* L)
 
 int sendCommand(lua_State* L)
 {
-    lsClient.sendLSCommand(lua_tostring(L, 1));
+    sendLSCommand(lua_tostring(L, 1));
     return 0;
 }
 
@@ -152,7 +150,7 @@ void checkDirectories()
     if (!filesystem::exists(autoSplittersDirectory))
     {
         filesystem::create_directory(autoSplittersDirectory);
-        downloader.startDownloader(autoSplittersDirectory);
+        startDownloader(autoSplittersDirectory);
     }
 
 
@@ -160,14 +158,17 @@ void checkDirectories()
 
 void chooseAutoSplitter()
 {
+    lasPrint("clear");
+    lasPrint("Auto Splitter: ");
+    cout << endl;
     int counter = 1;
     for (const auto & entry : filesystem::directory_iterator(autoSplittersDirectory))
     {
         if (entry.path().extension() == ".lua")
         {
-        cout << counter << ". " << entry.path().filename() << endl;
-        fileNames.push_back(entry.path().string());
-        counter++;
+            cout << counter << ". " << entry.path().filename() << endl;
+            fileNames.push_back(entry.path().string());
+            counter++;
         }
     }
 
@@ -176,7 +177,7 @@ void chooseAutoSplitter()
         case 0:
         {
             cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder or download some here.\n";
-            downloader.startDownloader(autoSplittersDirectory);
+            startDownloader(autoSplittersDirectory);
             chooseAutoSplitter();
             break;
         }
@@ -188,14 +189,14 @@ void chooseAutoSplitter()
         default:
         {
             int userChoice;
-            cout << "Which auto splitter would you like to use? (Enter the number) ";
+            cout << "Which auto splitter would you like to use? ";
             cin >> userChoice;
             cin.ignore();
             chosenAutoSplitter = fileNames[userChoice - 1];
             break;
         }
     }
-    cout <<  chosenAutoSplitter << endl;
+    lasPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
 }
 
 void setIpAddress()
@@ -205,7 +206,15 @@ void setIpAddress()
     if (ipAddress.empty()) {
         ipAddress = "127.0.0.1";
     }
-    lsClient.Client(ipAddress);
+    try
+    {
+        Client(ipAddress);
+    }
+    catch (const exception& e)
+    {
+        cerr << "\n\033[1;31m" << e.what() << endl << endl;
+        throw;
+    }
 }
 
 int main(int argc, char *argv[])
@@ -219,12 +228,16 @@ int main(int argc, char *argv[])
     lua_setglobal(L, "readAddress");
     lua_pushcfunction(L, sendCommand);
     lua_setglobal(L, "sendCommand");
+    lua_pushcfunction(L, luaPrint);
+    lua_setglobal(L, "lasPrint");
+
+    lasPrint("");
 
     for (int i = 0; i < argc; i++)
     {
         if (strcmp(argv[i], "-downloader") == 0)
         {
-            downloader.startDownloader(autoSplittersDirectory);
+            startDownloader(autoSplittersDirectory);
         }
     }
 
