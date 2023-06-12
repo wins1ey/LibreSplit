@@ -5,7 +5,8 @@ string directory;
 void startDownloader(string autoSplittersDirectory)
 {
     directory = autoSplittersDirectory;
-    cout << "Auto Splitter Downloader\n";
+    lasPrint("clear");
+    lasPrint("Auto Splitter Downloader\n");
     downloadFile("https://raw.githubusercontent.com/Wins1ey/AutoSplitters/main/downloadable.csv");
 
     ifstream file(directory + "downloadable.csv");

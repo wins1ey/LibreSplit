@@ -57,6 +57,8 @@ void Func_StockPid(const char *processtarget)
     if (stockthepid.pid != 0)
     {
         cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
+        lasPrint("Process: " + processName + "\n");
+        lasPrint("PID: " + to_string(stockthepid.pid) + "\n");
         pclose(stockthepid.pid_pipe);
         pid = stockthepid.pid;
     }
@@ -82,9 +84,10 @@ int processID(lua_State* L)
     {
         cout << processName + " isn't running. Retrying in 5 seconds...\n";
         sleep(5);
-        system("clear");
+        lasPrint("");
         Func_StockPid(cCommand);
     }
+    lasPrint("\n");
 
     return 0;
 }
@@ -157,14 +160,17 @@ void checkDirectories()
 
 void chooseAutoSplitter()
 {
+    lasPrint("clear");
+    lasPrint("Auto Splitter: ");
+    cout << endl;
     int counter = 1;
     for (const auto & entry : filesystem::directory_iterator(autoSplittersDirectory))
     {
         if (entry.path().extension() == ".lua")
         {
-        cout << counter << ". " << entry.path().filename() << endl;
-        fileNames.push_back(entry.path().string());
-        counter++;
+            cout << counter << ". " << entry.path().filename() << endl;
+            fileNames.push_back(entry.path().string());
+            counter++;
         }
     }
 
@@ -185,14 +191,14 @@ void chooseAutoSplitter()
         default:
         {
             int userChoice;
-            cout << "Which auto splitter would you like to use? (Enter the number) ";
+            cout << "Which auto splitter would you like to use? ";
             cin >> userChoice;
             cin.ignore();
             chosenAutoSplitter = fileNames[userChoice - 1];
             break;
         }
     }
-    cout <<  chosenAutoSplitter << endl;
+    lasPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
 }
 
 void setIpAddress()
@@ -216,6 +222,10 @@ int main(int argc, char *argv[])
     lua_setglobal(L, "readAddress");
     lua_pushcfunction(L, sendCommand);
     lua_setglobal(L, "sendCommand");
+    lua_pushcfunction(L, luaPrint);
+    lua_setglobal(L, "lasPrint");
+
+    lasPrint("");
 
     for (int i = 0; i < argc; i++)
     {
