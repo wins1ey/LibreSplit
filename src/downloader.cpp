@@ -7,9 +7,9 @@ void startDownloader(string autoSplittersDirectory)
     directory = autoSplittersDirectory;
     lasPrint("clear");
     lasPrint("Auto Splitter Downloader\n");
-    downloadFile("https://raw.githubusercontent.com/Wins1ey/AutoSplitters/main/downloadable.csv");
+    downloadFile("https://raw.githubusercontent.com/Wins1ey/AutoSplitters/main/autosplitters.csv");
 
-    ifstream file(directory + "downloadable.csv");
+    ifstream file(directory + "autosplitters.csv");
     string line;
     int i = 1;
     vector<string> gameNamesVector;
