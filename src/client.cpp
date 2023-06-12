@@ -27,14 +27,6 @@ void Client(string ipAddress)
     }
 
     lasPrint("Server: Connected\n");
-
-    const char* initgametime = "initgametime\r\n";
-
-    int sendRes = send(sock, initgametime, strlen(initgametime), 0);
-    if (sendRes == -1)
-    {
-        throw runtime_error("Couldn't send initgametime: " + to_string(errno));
-    }
 }
 
 void sendLSCommand(const char* command)
