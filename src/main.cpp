@@ -95,8 +95,8 @@ int processID(lua_State* L)
 
 int readAddress(lua_State* L)
 {
-    uint64_t address = lua_tointeger(L, 1) + lua_tointeger(L, 2);
-    int addressSize = lua_tointeger(L, 3);
+    int addressSize = lua_tointeger(L, 1);
+    uint64_t address = lua_tointeger(L, 2) + lua_tointeger(L, 3);
     uint64_t value;
 
     try
