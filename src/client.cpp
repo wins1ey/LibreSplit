@@ -39,5 +39,9 @@ void Client(string ipAddress)
 
 void sendLSCommand(const char* command)
 {
-    send(sock, command, strlen(command), 0);
+    int sendRes = send(sock, command, strlen(command), 0);
+    if (sendRes == -1)
+    {
+        throw runtime_error("Couldn't send " + string(command) + ": " + to_string(errno));
+    }
 }

@@ -129,7 +129,16 @@ int readAddress(lua_State* L)
 
 int sendCommand(lua_State* L)
 {
-    sendLSCommand(lua_tostring(L, 1));
+    try
+    {
+        sendLSCommand(lua_tostring(L, 1));
+    }
+    catch (const exception& e)
+    {
+        cerr << "\033[1;31m" << e.what() << endl << endl;
+        throw;
+    }
+
     return 0;
 }
 
