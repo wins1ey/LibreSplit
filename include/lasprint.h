@@ -3,11 +3,13 @@
 
 #include <iostream>
 #include <string>
+#include <lua.hpp>
 
 using std::string;
 using std::cout;
 using std::endl;
 
 void lasPrint(string message);
+int luaPrint(lua_State* L);
 
 #endif
