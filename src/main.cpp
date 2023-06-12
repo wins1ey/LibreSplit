@@ -76,7 +76,8 @@ void runAutoSplitter()
 int processID(lua_State* L)
 {
     processName = lua_tostring(L, 1);
-    string command = "pidof " + processName;
+    string newProcessName = processName.substr(0, 15);
+    string command = "pidof " + newProcessName;
     const char *cCommand = command.c_str();
 
     Func_StockPid(cCommand);
