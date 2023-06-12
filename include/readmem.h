@@ -24,6 +24,6 @@ using std::to_string;
 
 uint8_t readMem8(int pid, uint64_t memAddress);
 uint32_t readMem32(int pid, uint64_t memAddress);
-uint64_t readMem64(int pid, uint64_t memAddress);
+uint64_t readMem64(int pid, uint64_t memAddress, int addressSize);
 
 #endif

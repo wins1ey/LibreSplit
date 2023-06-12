@@ -108,19 +108,16 @@ int readAddress(lua_State* L)
             case 32:
                 value = readMem32(pid, address);
                 break;
-            case 64:
-                value = readMem64(pid, address);
-                break;
             default:
-                cout << "Invalid address size. Please use 8, 32, or 64.\n";
-                exit(-1);
+                value = readMem64(pid, address, addressSize);
+                break;
         }
         lua_pushinteger(L, value);
     }
-    catch (const std::exception& e)
+    catch (const exception& e)
     {
-        cout << e.what() << endl;
-        exit(-1);
+        cerr << "\033[1;31m" << e.what() << endl << endl;
+        throw;
     }
 
 
