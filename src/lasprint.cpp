@@ -10,8 +10,15 @@ void lasPrint(string message)
     }
     else
     {
-        output += message + "\n";
+        output += message;
     }
     system("clear");
     cout << output << endl;
+}
+
+int luaPrint(lua_State* L)
+{
+    string message = lua_tostring(L, 1);
+    lasPrint(message);
+    return 0;
 }
