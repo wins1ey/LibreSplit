@@ -205,7 +205,15 @@ void setIpAddress()
     if (ipAddress.empty()) {
         ipAddress = "127.0.0.1";
     }
-    Client(ipAddress);
+    try
+    {
+        Client(ipAddress);
+    }
+    catch (const exception& e)
+    {
+        cerr << "\n\033[1;31m" << e.what() << endl << endl;
+        throw;
+    }
 }
 
 int main(int argc, char *argv[])
