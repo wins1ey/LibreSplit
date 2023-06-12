@@ -1,4 +1,4 @@
-#include <lasprint.h>
+#include "lasprint.h"
 
 string output = "LAS (Linux Auto Splitter)\n";
 

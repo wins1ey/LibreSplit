@@ -20,10 +20,10 @@
 #include <curl/curl.h>
 #include <lua.hpp>
 
-#include <client.h>
-#include <readmem.h>
-#include <downloader.h>
-#include <lasprint.h>
+#include "client.h"
+#include "readmem.h"
+#include "downloader.h"
+#include "lasprint.h"
 
 using namespace std;
 
