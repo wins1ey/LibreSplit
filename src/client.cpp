@@ -29,6 +29,8 @@ void Client(string ipAddress)
         exit(EXIT_FAILURE);
     }
 
+    lasPrint("Server: Connected\n");
+
     const char* initgametime = "initgametime\r\n";
 
     int sendRes = send(sock, initgametime, strlen(initgametime), 0);
