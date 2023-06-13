@@ -1,24 +1,9 @@
 #include <iostream>
 #include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <sys/uio.h>
-#include <stdint.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/ptrace.h>
-#include <stdlib.h>
-#include <netdb.h>
-#include <arpa/inet.h>
-#include <thread>
-#include <filesystem>
+#include <string>
+#include <cstring>
 #include <vector>
-#include <fstream>
-#include <sstream>
-#include <variant>
-#include <curl/curl.h>
+#include <filesystem>
 #include <lua.hpp>
 
 #include "client.h"
@@ -26,162 +11,26 @@
 #include "downloader.h"
 #include "lasprint.h"
 
-using namespace std;
+using std::string;
+using std::cout;
+using std::endl;
+using std::vector;
+using std::exception;
+using std::cerr;
+using std::runtime_error;
+using std::getline;
+using std::cin;
+using std::filesystem::path;
+using std::filesystem::directory_iterator;
+using std::filesystem::create_directory;
+using std::filesystem::exists;
 
 lua_State* L = luaL_newstate();
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
 string ipAddress;
-string processName;
 vector<string> fileNames;
-
-int pid = 0;
-
-struct StockPid
-{
-    pid_t pid;
-    char buff[512];
-    FILE *pid_pipe;
-} stockthepid;
-
-void Func_StockPid(const char *processtarget)
-{
-    stockthepid.pid_pipe = popen(processtarget, "r");
-    if (!fgets(stockthepid.buff, 512, stockthepid.pid_pipe))
-    {
-        cout << "Error reading process ID: " << strerror(errno) << endl;
-    }
-
-    stockthepid.pid = strtoul(stockthepid.buff, nullptr, 10);
-
-    if (stockthepid.pid != 0)
-    {
-        cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
-        lasPrint("Process: " + processName + "\n");
-        lasPrint("PID: " + to_string(stockthepid.pid) + "\n");
-        pclose(stockthepid.pid_pipe);
-        pid = stockthepid.pid;
-    }
-    else {
-        pclose(stockthepid.pid_pipe);
-    }
-}
-
-void runAutoSplitter()
-{
-    luaL_dofile(L, chosenAutoSplitter.c_str());
-    lua_close(L);
-}
-
-int processID(lua_State* L)
-{
-    processName = lua_tostring(L, 1);
-    string newProcessName = processName.substr(0, 15);
-    string command = "pidof " + newProcessName;
-    const char *cCommand = command.c_str();
-
-    Func_StockPid(cCommand);
-    while (pid == 0)
-    {
-        cout << processName + " isn't running. Retrying in 5 seconds...\n";
-        sleep(5);
-        lasPrint("");
-        Func_StockPid(cCommand);
-    }
-    lasPrint("\n");
-
-    return 0;
-}
-
-int readAddress(lua_State* L)
-{
-    string valueType = lua_tostring(L, 1);
-    uint64_t address = 0;
-    for (int i = 2; i <= lua_gettop(L); i++)
-    {
-        address += lua_tointeger(L, i);
-    }
-    variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double, bool, string> value;
-
-    try
-    {
-        if (valueType == "sbyte")
-        {
-            value = readMem<int8_t>(pid, address);
-            lua_pushinteger(L, get<int8_t>(value));
-        }
-        else if (valueType == "byte")
-        {
-            value = readMem<uint8_t>(pid, address);
-            lua_pushinteger(L, get<uint8_t>(value));
-        }
-        else if (valueType == "short")
-        {
-            value = readMem<int16_t>(pid, address);
-            lua_pushinteger(L, get<int16_t>(value));
-        }
-        else if (valueType == "ushort")
-        {
-            value = readMem<uint16_t>(pid, address);
-            lua_pushinteger(L, get<uint16_t>(value));
-        }
-        else if (valueType == "int")
-        {
-            value = readMem<int32_t>(pid, address);
-            lua_pushinteger(L, get<int32_t>(value));
-        }
-        else if (valueType == "uint")
-        {
-            value = readMem<uint32_t>(pid, address);
-            lua_pushinteger(L, get<uint32_t>(value));
-        }
-        else if (valueType == "long")
-        {
-            value = readMem<int64_t>(pid, address);
-            lua_pushinteger(L, get<int64_t>(value));
-        }
-        else if (valueType == "ulong")
-        {
-            value = readMem<uint64_t>(pid, address);
-            lua_pushinteger(L, get<uint64_t>(value));
-        }
-        else if (valueType == "float")
-        {
-            value = readMem<float>(pid, address);
-            lua_pushnumber(L, get<float>(value));
-        }
-        else if (valueType == "double")
-        {
-            value = readMem<double>(pid, address);
-            lua_pushnumber(L, get<double>(value));
-        }
-        else if (valueType == "bool")
-        {
-            value = readMem<bool>(pid, address);
-            lua_pushboolean(L, get<bool>(value) ? 1 : 0);
-        }
-        else if (valueType == "string")
-        {
-            value = readMem<string>(pid, address);
-            lua_pushstring(L, get<string>(value).c_str());
-        }
-        else
-        {
-            throw runtime_error("Invalid value type: " + valueType);
-        }
-    }
-    catch (const exception& e)
-    {
-        cerr << "\033[1;31m" << e.what() << endl << endl;
-        throw;
-    }
-
-
-    this_thread::sleep_for(chrono::microseconds(1));
-
-    return 1;
-}
 
 int sendCommand(lua_State* L)
 {
@@ -198,6 +47,22 @@ int sendCommand(lua_State* L)
     return 0;
 }
 
+void runAutoSplitter()
+{
+    luaL_openlibs(L);
+    lua_pushcfunction(L, processID);
+    lua_setglobal(L, "processID");
+    lua_pushcfunction(L, readAddress);
+    lua_setglobal(L, "readAddress");
+    lua_pushcfunction(L, sendCommand);
+    lua_setglobal(L, "sendCommand");
+    lua_pushcfunction(L, luaPrint);
+    lua_setglobal(L, "lasPrint");
+
+    luaL_dofile(L, chosenAutoSplitter.c_str());
+    lua_close(L);
+}
+
 void checkDirectories()
 {
     string executablePath;
@@ -205,16 +70,16 @@ void checkDirectories()
 
     // Get the path to the executable
     char result[ PATH_MAX ];
-    ssize_t count = readlink( "/proc/self/exe", result, PATH_MAX );
-    executablePath = string( result, (count > 0) ? count : 0 );
+    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
+    executablePath = string(result, (count > 0) ? count : 0);
     executableDirectory = executablePath.substr(0, executablePath.find_last_of("/"));
 
     autoSplittersDirectory = executableDirectory + "/autosplitters/";
 
     // Make the autosplitters directory if it doesn't exist
-    if (!filesystem::exists(autoSplittersDirectory))
+    if (!exists(autoSplittersDirectory))
     {
-        filesystem::create_directory(autoSplittersDirectory);
+        create_directory(autoSplittersDirectory);
         startDownloader(autoSplittersDirectory);
     }
 
@@ -227,7 +92,7 @@ void chooseAutoSplitter()
     lasPrint("Auto Splitter: ");
     cout << endl;
     int counter = 1;
-    for (const auto & entry : filesystem::directory_iterator(autoSplittersDirectory))
+    for (const auto & entry : directory_iterator(autoSplittersDirectory))
     {
         if (entry.path().extension() == ".lua")
         {
@@ -285,18 +150,6 @@ void setIpAddress()
 int main(int argc, char *argv[])
 {
     checkDirectories();
-    
-    luaL_openlibs(L);
-    lua_pushcfunction(L, processID);
-    lua_setglobal(L, "processID");
-    lua_pushcfunction(L, readAddress);
-    lua_setglobal(L, "readAddress");
-    lua_pushcfunction(L, sendCommand);
-    lua_setglobal(L, "sendCommand");
-    lua_pushcfunction(L, luaPrint);
-    lua_setglobal(L, "lasPrint");
-
-    lasPrint("");
 
     for (int i = 0; i < argc; i++)
     {
