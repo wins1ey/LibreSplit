@@ -19,11 +19,11 @@ T readMem(int pid, uint64_t memAddress)
     ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
     if (memNread == -1)
     {
-        throw std::runtime_error("Error reading process memory");
+        throw runtime_error("Error reading process memory");
     }
     else if (memNread != memRemote.iov_len)
     {
-        throw std::runtime_error("Error reading process memory: short read of " + std::to_string(memNread) + " bytes\n");
+        throw runtime_error("Error reading process memory: short read of " + to_string(memNread) + " bytes\n");
     }
 
     return value;  // Return the read value

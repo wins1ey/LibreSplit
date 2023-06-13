@@ -267,7 +267,7 @@ void chooseAutoSplitter()
 void setIpAddress()
 {
     cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
-    getline(std::cin, ipAddress);
+    getline(cin, ipAddress);
     if (ipAddress.empty()) {
         ipAddress = "127.0.0.1";
     }
