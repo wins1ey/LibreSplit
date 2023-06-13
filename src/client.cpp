@@ -4,6 +4,7 @@ int sock;
 
 void Client(string ipAddress)
 {
+    // Creating a socket for communication.
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == -1)
     {
@@ -12,14 +13,16 @@ void Client(string ipAddress)
 
     int port = 16834;
 
+    // Setting up the server address sructure.
     struct sockaddr_in hint;
-    hint.sin_family = AF_INET;
-    hint.sin_port = htons(port);
+    hint.sin_family = AF_INET; // IPv4 protocol family.
+    hint.sin_port = htons(port); // Converting port to network byte order.
     if (inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr) != 1)
     {
         throw runtime_error("Invalid IP address");
     }
 
+    // Connecting to LiveSplit Server.
     int connectRes = connect(sock, (struct sockaddr*) &hint, sizeof(hint));
     if (connectRes == -1)
     {

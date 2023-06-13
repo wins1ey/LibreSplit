@@ -83,7 +83,7 @@ T readMem(int pid, uint64_t memAddress)
     return value;  // Return the read value
 }
 
-// Explicit instantiation for supported types
+// Template instantiations for different value types, specifying the type as a template parameter.
 template int8_t readMem<int8_t>(int pid, uint64_t memAddress);
 template uint8_t readMem<uint8_t>(int pid, uint64_t memAddress);
 template int16_t readMem<int16_t>(int pid, uint64_t memAddress);
@@ -103,12 +103,13 @@ int readAddress(lua_State* L)
     uint64_t address = 0;
     for (int i = 2; i <= lua_gettop(L); i++)
     {
-        address += lua_tointeger(L, i);
+        address += lua_tointeger(L, i); // Calculate the final memory address by summing the Lua arguments.
     }
     variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double, bool, string> value;
 
     try
     {
+        // Use template specialization to call the appropriate readMem() function based on the value type.
         if (valueType == "sbyte")
         {
             value = readMem<int8_t>(pid, address);
