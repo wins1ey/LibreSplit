@@ -6,7 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <curl/curl.h>
-#include <lasprint.h>
+#include "lasprint.h"
 
 using std::cout;
 using std::endl;

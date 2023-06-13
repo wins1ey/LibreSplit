@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <arpa/inet.h>
-#include <lasprint.h>
+#include "lasprint.h"
 
 using std::string;
 using std::cout;
