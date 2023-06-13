@@ -47,22 +47,6 @@ int sendCommand(lua_State* L)
     return 0;
 }
 
-void runAutoSplitter()
-{
-    luaL_openlibs(L);
-    lua_pushcfunction(L, processID);
-    lua_setglobal(L, "processID");
-    lua_pushcfunction(L, readAddress);
-    lua_setglobal(L, "readAddress");
-    lua_pushcfunction(L, sendCommand);
-    lua_setglobal(L, "sendCommand");
-    lua_pushcfunction(L, luaPrint);
-    lua_setglobal(L, "lasPrint");
-
-    luaL_dofile(L, chosenAutoSplitter.c_str());
-    lua_close(L);
-}
-
 void checkDirectories()
 {
     string executablePath;
@@ -145,6 +129,22 @@ void setIpAddress()
         cerr << "\n\033[1;31m" << e.what() << endl << endl;
         throw;
     }
+}
+
+void runAutoSplitter()
+{
+    luaL_openlibs(L);
+    lua_pushcfunction(L, processID);
+    lua_setglobal(L, "processID");
+    lua_pushcfunction(L, readAddress);
+    lua_setglobal(L, "readAddress");
+    lua_pushcfunction(L, sendCommand);
+    lua_setglobal(L, "sendCommand");
+    lua_pushcfunction(L, luaPrint);
+    lua_setglobal(L, "lasPrint");
+
+    luaL_dofile(L, chosenAutoSplitter.c_str());
+    lua_close(L);
 }
 
 int main(int argc, char *argv[])
