@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+#include <cstring>
 
 using std::string;
 using std::cout;
