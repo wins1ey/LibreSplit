@@ -96,29 +96,80 @@ int processID(lua_State* L)
 
 int readAddress(lua_State* L)
 {
-    int valueSize = lua_tointeger(L, 1);
+    string valueType = lua_tostring(L, 1);
     uint64_t address = 0;
     for (int i = 2; i <= lua_gettop(L); i++)
     {
         address += lua_tointeger(L, i);
     }
-    variant<uint8_t, uint32_t, uint64_t> value;
+    variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double, bool, string> value;
 
     try
     {
-        switch(valueSize)
+        if (valueType == "sbyte")
         {
-            case 8:
-                value = readMem<uint8_t>(pid, address);
-                break;
-            case 32:
-                value = readMem<uint32_t>(pid, address);
-                break;
-            default:
-                value = readMem<uint64_t>(pid, address);
-                break;
+            value = readMem<int8_t>(pid, address);
+            lua_pushinteger(L, get<int8_t>(value));
         }
-        lua_pushinteger(L, visit([](auto&& arg) -> uint64_t { return arg; }, value));
+        else if (valueType == "byte")
+        {
+            value = readMem<uint8_t>(pid, address);
+            lua_pushinteger(L, get<uint8_t>(value));
+        }
+        else if (valueType == "short")
+        {
+            value = readMem<int16_t>(pid, address);
+            lua_pushinteger(L, get<int16_t>(value));
+        }
+        else if (valueType == "ushort")
+        {
+            value = readMem<uint16_t>(pid, address);
+            lua_pushinteger(L, get<uint16_t>(value));
+        }
+        else if (valueType == "int")
+        {
+            value = readMem<int32_t>(pid, address);
+            lua_pushinteger(L, get<int32_t>(value));
+        }
+        else if (valueType == "uint")
+        {
+            value = readMem<uint32_t>(pid, address);
+            lua_pushinteger(L, get<uint32_t>(value));
+        }
+        else if (valueType == "long")
+        {
+            value = readMem<int64_t>(pid, address);
+            lua_pushinteger(L, get<int64_t>(value));
+        }
+        else if (valueType == "ulong")
+        {
+            value = readMem<uint64_t>(pid, address);
+            lua_pushinteger(L, get<uint64_t>(value));
+        }
+        else if (valueType == "float")
+        {
+            value = readMem<float>(pid, address);
+            lua_pushnumber(L, get<float>(value));
+        }
+        else if (valueType == "double")
+        {
+            value = readMem<double>(pid, address);
+            lua_pushnumber(L, get<double>(value));
+        }
+        else if (valueType == "bool")
+        {
+            value = readMem<bool>(pid, address);
+            lua_pushboolean(L, get<bool>(value) ? 1 : 0);
+        }
+        else if (valueType == "string")
+        {
+            value = readMem<string>(pid, address);
+            lua_pushstring(L, get<string>(value).c_str());
+        }
+        else
+        {
+            throw runtime_error("Invalid value type: " + valueType);
+        }
     }
     catch (const exception& e)
     {
