@@ -48,7 +48,7 @@ uint64_t readMem64(int pid, uint64_t memAddress, int addressSize)
     {
         throw runtime_error("Error reading process memory: short read of " + to_string(memNread) + " bytes\n");
     }
-
+    
     return value;  // Return the read value
 }
 

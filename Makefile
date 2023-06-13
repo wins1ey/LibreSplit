@@ -4,6 +4,7 @@ LDFLAGS = -llua -lcurl
 
 SRCDIR = ./src
 BINDIR = ./bin
+
 # Obtain list of source files and create list of object files
 SOURCES = $(wildcard $(SRCDIR)/*.cpp)
 OBJECTS = $(patsubst $(SRCDIR)/%.cpp, $(BINDIR)/%.o, $(SOURCES))
