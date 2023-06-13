@@ -17,6 +17,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <variant>
 #include <curl/curl.h>
 #include <lua.hpp>
 
@@ -95,25 +96,25 @@ int processID(lua_State* L)
 
 int readAddress(lua_State* L)
 {
-    int addressSize = lua_tointeger(L, 1);
+    int valueSize = lua_tointeger(L, 1);
     uint64_t address = lua_tointeger(L, 2) + lua_tointeger(L, 3);
-    uint64_t value;
+    variant<uint8_t, uint32_t, uint64_t> value;
 
     try
     {
-        switch(addressSize)
+        switch(valueSize)
         {
             case 8:
-                value = readMem8(pid, address);
+                value = readMem<uint8_t>(pid, address);
                 break;
             case 32:
-                value = readMem32(pid, address);
+                value = readMem<uint32_t>(pid, address);
                 break;
             default:
-                value = readMem64(pid, address, addressSize);
+                value = readMem<uint64_t>(pid, address);
                 break;
         }
-        lua_pushinteger(L, value);
+        lua_pushinteger(L, visit([](auto&& arg) -> uint64_t { return arg; }, value));
     }
     catch (const exception& e)
     {
