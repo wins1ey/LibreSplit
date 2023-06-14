@@ -32,21 +32,6 @@ string autoSplittersDirectory;
 string chosenAutoSplitter;
 vector<string> fileNames;
 
-int sendCommand(lua_State* L)
-{
-    try
-    {
-        sendLiveSplitCommand(lua_tostring(L, 1));
-    }
-    catch (const exception& e)
-    {
-        cerr << "\033[1;31m" << e.what() << endl << endl;
-        throw;
-    }
-
-    return 0;
-}
-
 void checkDirectories()
 {
     string executablePath;
@@ -66,8 +51,6 @@ void checkDirectories()
         create_directory(autoSplittersDirectory);
         startDownloader(autoSplittersDirectory);
     }
-
-
 }
 
 void chooseAutoSplitter()

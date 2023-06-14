@@ -2,6 +2,8 @@
 #include <cstring>
 #include <arpa/inet.h>
 
+#include <lua.hpp>
+
 #include "client.h"
 #include "lasprint.h"
 
@@ -12,6 +14,8 @@ using std::string;
 using std::cin;
 using std::runtime_error;
 using std::to_string;
+using std::exception;
+using std::cerr;
 
 int sock;
 
@@ -60,4 +64,19 @@ void sendLiveSplitCommand(const char* command)
     {
         throw runtime_error("Couldn't send " + string(command) + ": " + to_string(errno));
     }
+}
+
+int sendCommand(lua_State* L)
+{
+    try
+    {
+        sendLiveSplitCommand(lua_tostring(L, 1));
+    }
+    catch (const exception& e)
+    {
+        cerr << "\033[1;31m" << e.what() << endl << endl;
+        throw;
+    }
+
+    return 0;
 }
