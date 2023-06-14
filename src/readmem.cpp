@@ -137,6 +137,7 @@ T readMemory(int pid, uintptr_t memAddress)
     if (memNread == -1)
     {
         throw runtime_error("Error reading process memory");
+        
     }
     else if (memNread != memRemote.iov_len)
     {
@@ -149,10 +150,10 @@ T readMemory(int pid, uintptr_t memAddress)
 // Template instantiations for different value types, specifying the type as a template parameter.
 template int8_t readMemory<int8_t>(int pid, uint64_t memAddress);
 template uint8_t readMemory<uint8_t>(int pid, uint64_t memAddress);
-template int16_t readMemory<int16_t>(int pid, uint64_t memAddress);
-template uint16_t readMemory<uint16_t>(int pid, uint64_t memAddress);
-template int32_t readMemory<int32_t>(int pid, uint64_t memAddress);
-template uint32_t readMemory<uint32_t>(int pid, uint64_t memAddress);
+template short readMemory<short>(int pid, uint64_t memAddress);
+template ushort readMemory<ushort>(int pid, uint64_t memAddress);
+template int readMemory<int>(int pid, uint64_t memAddress);
+template uint readMemory<uint>(int pid, uint64_t memAddress);
 template int64_t readMemory<int64_t>(int pid, uint64_t memAddress);
 template uint64_t readMemory<uint64_t>(int pid, uint64_t memAddress);
 template float readMemory<float>(int pid, uint64_t memAddress);
@@ -168,7 +169,7 @@ int readAddress(lua_State* L)
     {
         address += lua_tointeger(L, i); // Calculate the final memory address by summing the Lua arguments.
     }
-    variant<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double, bool, string> value;
+    variant<int8_t, uint8_t, short, ushort, int, uint, int64_t, uint64_t, float, double, bool, string> value;
 
     try
     {
@@ -185,33 +186,33 @@ int readAddress(lua_State* L)
         }
         else if (valueType == "short")
         {
-            value = readMemory<int16_t>(pid, address);
-            lua_pushinteger(L, get<int16_t>(value));
+            value = readMemory<short>(pid, address);
+            lua_pushinteger(L, get<short>(value));
         }
         else if (valueType == "ushort")
         {
-            value = readMemory<uint16_t>(pid, address);
-            lua_pushinteger(L, get<uint16_t>(value));
+            value = readMemory<ushort>(pid, address);
+            lua_pushinteger(L, get<ushort>(value));
         }
         else if (valueType == "int")
         {
-            value = readMemory<int32_t>(pid, address);
-            lua_pushinteger(L, get<int32_t>(value));
+            value = readMemory<int>(pid, address);
+            lua_pushinteger(L, get<int>(value));
         }
         else if (valueType == "uint")
         {
-            value = readMemory<uint32_t>(pid, address);
-            lua_pushinteger(L, get<uint32_t>(value));
+            value = readMemory<uint>(pid, address);
+            lua_pushinteger(L, get<uint>(value));
         }
         else if (valueType == "long")
         {
-            value = readMemory<int64_t>(pid, address);
-            lua_pushinteger(L, get<int64_t>(value));
+            value = readMemory<long>(pid, address);
+            lua_pushinteger(L, get<long>(value));
         }
         else if (valueType == "ulong")
         {
-            value = readMemory<uint64_t>(pid, address);
-            lua_pushinteger(L, get<uint64_t>(value));
+            value = readMemory<ulong>(pid, address);
+            lua_pushinteger(L, get<ulong>(value));
         }
         else if (valueType == "float")
         {
