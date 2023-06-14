@@ -7,6 +7,8 @@
 #include <cstring>
 #include <variant>
 #include <thread>
+#include <array>
+#include <sstream>
 
 #include "lasprint.h"
 
@@ -21,6 +23,8 @@ using std::cerr;
 using std::exception;
 using std::this_thread::sleep_for;
 using std::chrono::microseconds;
+using std::array;
+using std::stringstream;
 
 extern int pid;
 
@@ -28,6 +32,6 @@ int processID(lua_State* L);
 int readAddress(lua_State* L);
 
 template <typename T>
-T readMem(int pid, uint64_t memAddress);
+T readMem(int pid, uintptr_t memAddress);
 
 #endif

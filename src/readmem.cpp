@@ -1,11 +1,44 @@
 #include "readmem.h"
 
 string processName;
+string newProcessName;
+uintptr_t memoryOffset = 0;
 
 struct iovec memLocal;
 struct iovec memRemote;
 
 int pid = 0;
+
+void setMemoryOffset()
+{
+    string command = "cat /proc/" + to_string(pid) + "/maps | grep " + newProcessName;
+    array<char, 128> buffer;
+    string result;
+
+    // Open the command for reading
+    FILE* pipe = popen(command.c_str(), "r");
+    if (!pipe)
+    {
+        std::cout << "Error executing command: " << command << std::endl;
+    }
+
+    // Read the command output line by line
+    while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
+    {
+        result += buffer.data();
+    }
+
+    // Close the pipe
+    pclose(pipe);
+
+    size_t dashPos = result.find_first_of("-");
+
+    if (dashPos != string::npos)
+    {
+        string firstNumber = result.substr(0, dashPos);
+        memoryOffset = stoull(firstNumber, nullptr, 16);
+    }
+}
 
 struct StockPid
 {
@@ -40,7 +73,7 @@ void Func_StockPid(const char *processtarget)
 int processID(lua_State* L)
 {
     processName = lua_tostring(L, 1);
-    string newProcessName = processName.substr(0, 15);
+    newProcessName = processName.substr(0, 15);
     string command = "pidof " + newProcessName;
     const char *cCommand = command.c_str();
 
@@ -54,11 +87,13 @@ int processID(lua_State* L)
     }
     lasPrint("\n");
 
+    setMemoryOffset();
+
     return 0;
 }
 
 template <typename T>
-T readMem(int pid, uint64_t memAddress)
+T readMem(int pid, uintptr_t memAddress)
 {
     T value;  // Variable to store the read value
 
@@ -99,8 +134,8 @@ template string readMem<string>(int pid, uint64_t memAddress);
 
 int readAddress(lua_State* L)
 {
+    uintptr_t address = memoryOffset;
     string valueType = lua_tostring(L, 1);
-    uint64_t address = 0;
     for (int i = 2; i <= lua_gettop(L); i++)
     {
         address += lua_tointeger(L, i); // Calculate the final memory address by summing the Lua arguments.
