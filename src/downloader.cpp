@@ -7,6 +7,7 @@
 
 #include "downloader.h"
 #include "lasprint.h"
+#include "autosplitter.h"
 
 using std::cout;
 using std::endl;
