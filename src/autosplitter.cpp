@@ -23,6 +23,7 @@ using std::filesystem::exists;
 
 lua_State* L = luaL_newstate();
 
+string autoSplittersDirectory;
 string chosenAutoSplitter;
 vector<string> fileNames;
 
