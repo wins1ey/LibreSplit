@@ -47,7 +47,15 @@ void connectToServer(string ipAddress)
 
 void sendLiveSplitCommand(const char* command)
 {
-    int sendRes = send(sock, command, strlen(command), 0);
+    // Create a buffer to hold the modified command with "\r\n"
+    const size_t bufferSize = strlen(command) + 4; // Add space for "\r\n"
+    char* modifiedCommand = new char[bufferSize];
+    snprintf(modifiedCommand, bufferSize, "%s\r\n", command);
+
+    int sendRes = send(sock, modifiedCommand, strlen(modifiedCommand), 0);
+
+    delete[] modifiedCommand; // Free the memory allocated for the modified command
+
     if (sendRes == -1)
     {
         throw runtime_error("Couldn't send " + string(command) + ": " + to_string(errno));
