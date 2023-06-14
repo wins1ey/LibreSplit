@@ -1,4 +1,19 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <vector>
+
+#include <curl/curl.h>
+
 #include "downloader.h"
+#include "lasprint.h"
+
+using std::cout;
+using std::endl;
+using std::cin;
+using std::vector;
+using std::ifstream;
+using std::istringstream;
 
 string directory;
 

@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 #include <filesystem>
+
 #include <lua.hpp>
 
 #include "client.h"
@@ -29,7 +30,6 @@ lua_State* L = luaL_newstate();
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
-string ipAddress;
 vector<string> fileNames;
 
 int sendCommand(lua_State* L)
@@ -115,6 +115,7 @@ void chooseAutoSplitter()
 
 void setIpAddress()
 {
+    string ipAddress;
     cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
     getline(cin, ipAddress);
     if (ipAddress.empty()) {

@@ -1,11 +1,35 @@
+#include <array>
+#include <chrono>
+#include <cstdint>
+#include <cstring>
+#include <iostream>
+#include <stdexcept>
+#include <sys/uio.h>
+#include <string>
+#include <thread>
+#include <variant>
+
 #include "readmem.h"
+#include "lasprint.h"
+
+using std::string;
+using std::cout;
+using std::endl;
+using std::runtime_error;
+using std::to_string;
+using std::get;
+using std::variant;
+using std::cerr;
+using std::exception;
+using std::this_thread::sleep_for;
+using std::chrono::microseconds;
+using std::chrono::milliseconds;
+using std::array;
+using std::stringstream;
 
 string processName;
 string newProcessName;
 uintptr_t memoryOffset = 0;
-
-struct iovec memLocal;
-struct iovec memRemote;
 
 int pid = 0;
 
@@ -80,8 +104,8 @@ int processID(lua_State* L)
     Func_StockPid(cCommand);
     while (pid == 0)
     {
-        cout << processName + " isn't running. Retrying in 5 seconds...\n";
-        sleep(5);
+        cout << processName + " isn't running. Retrying...\n";
+        sleep_for(milliseconds(2000));
         lasPrint("");
         Func_StockPid(cCommand);
     }

@@ -1,4 +1,13 @@
+#include <iostream>
+#include <string>
+
+#include <lua.hpp>
+
 #include "lasprint.h"
+
+using std::string;
+using std::cout;
+using std::endl;
 
 string output = "LAS (Linux Auto Splitter)\n";
 

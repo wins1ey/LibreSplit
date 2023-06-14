@@ -1,4 +1,17 @@
+#include <iostream>
+#include <cstring>
+#include <arpa/inet.h>
+
 #include "client.h"
+#include "lasprint.h"
+
+using std::string;
+using std::cout;
+using std::endl;
+using std::string;
+using std::cin;
+using std::runtime_error;
+using std::to_string;
 
 int sock;
 
