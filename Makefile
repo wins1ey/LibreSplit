@@ -9,10 +9,12 @@ OBJDIR = $(BINDIR)/objects
 # Obtain list of source files and create list of object files
 SOURCES = $(wildcard $(SRCDIR)/*.cpp)
 OBJECTS = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SOURCES))
-all: $(BINDIR)/LAS
+EXECUTABLE = $(BINDIR)/LAS
+
+all: $(EXECUTABLE)
 
 # Rule to link object files to create executable
-$(BINDIR)/LAS: $(OBJECTS) | $(BINDIR)
+$(EXECUTABLE): $(OBJECTS) | $(BINDIR)
 	g++ $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 # Rule to compile source files to object files
@@ -27,8 +29,13 @@ $(BINDIR):
 $(OBJDIR):
 	mkdir -p $(OBJDIR)
 
-# Clean target to remove generated files
+# Clean target to remove object files and LAS executable
 clean:
+	rm -rf $(OBJDIR)
+	rm -f $(EXECUTABLE)
+
+# Clean target to remove the entire bin directory
+clean-all: clean
 	rm -rf $(BINDIR)
 
-.PHONY: all clean
+.PHONY: all clean clean-all
