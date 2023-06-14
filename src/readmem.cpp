@@ -31,35 +31,43 @@ string processName;
 string newProcessName;
 uintptr_t memoryOffset = 0;
 
-int pid = 0;
+pid_t pid;
 
-uintptr_t findMemoryOffset()
+void executeCommand(const string& command, array<char, 128>& buffer, string& output)
 {
-    string command = "cat /proc/" + to_string(pid) + "/maps | grep " + newProcessName;
-    array<char, 128> buffer;
-    string result;
-
-    // Open the command for reading
     FILE* pipe = popen(command.c_str(), "r");
     if (!pipe)
     {
-        std::cout << "Error executing command: " << command << std::endl;
+        throw runtime_error("Error executing command: " + command);
     }
 
-    // Read the command output line by line
     while (fgets(buffer.data(), buffer.size(), pipe) != nullptr)
     {
-        result += buffer.data();
+        output += buffer.data();
     }
 
-    // Close the pipe
     pclose(pipe);
+}
 
-    size_t dashPos = result.find_first_of("-");
+/**
+ * @brief Find the memory offset of the process.
+ * 
+ * @return uintptr_t 
+ */
+uintptr_t findMemoryOffset()
+{
+    string mapsCommand = "cat /proc/" + to_string(pid) + "/maps | grep " + newProcessName;
+    array<char, 128> buffer;
+    string mapsOutput;
+
+    // Execute the command and read the output
+    executeCommand(mapsCommand, buffer, mapsOutput);
+
+    size_t dashPos = mapsOutput.find_first_of("-");
 
     if (dashPos != string::npos)
     {
-        string firstNumber = result.substr(0, dashPos);
+        string firstNumber = mapsOutput.substr(0, dashPos);
         return stoull(firstNumber, nullptr, 16);
     }
     else
@@ -68,33 +76,31 @@ uintptr_t findMemoryOffset()
     }
 }
 
-struct StockPid
+/**
+ * Retrieves the process ID of the specified process target.
+ * @param processTarget The target process to retrieve the ID for.
+ * @return The process ID if found, 0 otherwise.
+ */
+void stockProcessID(const char* processtarget)
 {
-    pid_t pid;
-    char buff[512];
-    FILE *pid_pipe;
-} stockthepid;
+    string pidCommand = string(processtarget) + " | awk '{print $1}'"; // Command to extract the process ID
+    array<char, 128> buffer;
+    string pidOutput;
 
-void Func_StockPid(const char *processtarget)
-{
-    stockthepid.pid_pipe = popen(processtarget, "r");
-    if (!fgets(stockthepid.buff, 512, stockthepid.pid_pipe))
+    // Execute the command and read the output
+    executeCommand(pidCommand, buffer, pidOutput);
+
+    pid = strtoul(pidOutput.c_str(), nullptr, 10);
+
+    if (pid != 0)
+    {
+        cout << processName + " is running - PID NUMBER -> " << pid << endl;
+        lasPrint("Process: " + processName + "\n");
+        lasPrint("PID: " + to_string(pid) + "\n");
+    }
+    else
     {
         cout << "Error reading process ID: " << strerror(errno) << endl;
-    }
-
-    stockthepid.pid = strtoul(stockthepid.buff, nullptr, 10);
-
-    if (stockthepid.pid != 0)
-    {
-        cout << processName + " is running - PID NUMBER -> " << stockthepid.pid << endl;
-        lasPrint("Process: " + processName + "\n");
-        lasPrint("PID: " + to_string(stockthepid.pid) + "\n");
-        pclose(stockthepid.pid_pipe);
-        pid = stockthepid.pid;
-    }
-    else {
-        pclose(stockthepid.pid_pipe);
     }
 }
 
@@ -105,13 +111,13 @@ int findProcessID(lua_State* L)
     string command = "pidof " + newProcessName;
     const char *cCommand = command.c_str();
 
-    Func_StockPid(cCommand);
+    stockProcessID(cCommand);
     while (pid == 0)
     {
         cout << processName + " isn't running. Retrying...\n";
         sleep_for(milliseconds(2000));
         lasPrint("");
-        Func_StockPid(cCommand);
+        stockProcessID(cCommand);
     }
     lasPrint("\n");
 
