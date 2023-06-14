@@ -1,3 +1,4 @@
-build/
-autosplitters/*.lua
-.vscode
+# Compiled files
+bin/
+
+.vscode/
