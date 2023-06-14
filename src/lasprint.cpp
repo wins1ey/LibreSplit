@@ -9,7 +9,7 @@ using std::string;
 using std::cout;
 using std::endl;
 
-string output = "LAS (Linux Auto Splitter)\n";
+static string output = "LAS (Linux Auto Splitter)\n";
 
 void lasPrint(string message)
 {
@@ -21,7 +21,7 @@ void lasPrint(string message)
     {
         output += message;
     }
-    system("clear");
+    cout << "\033[2J\033[H"; // Clear the console
     cout << output << endl;
 }
 
