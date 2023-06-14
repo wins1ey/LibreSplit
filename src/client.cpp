@@ -15,7 +15,7 @@ using std::to_string;
 
 int sock;
 
-void Client(string ipAddress)
+void connectToServer(string ipAddress)
 {
     // Creating a socket for communication.
     sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -45,7 +45,7 @@ void Client(string ipAddress)
     lasPrint("Server: Connected\n");
 }
 
-void sendLSCommand(const char* command)
+void sendLiveSplitCommand(const char* command)
 {
     int sendRes = send(sock, command, strlen(command), 0);
     if (sendRes == -1)

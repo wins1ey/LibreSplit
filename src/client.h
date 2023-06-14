@@ -5,7 +5,7 @@
 
 using std::string;
 
-void Client(string ipAddress);
-void sendLSCommand(const char* command);
+void connectToServer(string ipAddress);
+void sendLiveSplitCommand(const char* command);
 
 #endif

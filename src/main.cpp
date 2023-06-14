@@ -36,7 +36,7 @@ int sendCommand(lua_State* L)
 {
     try
     {
-        sendLSCommand(lua_tostring(L, 1));
+        sendLiveSplitCommand(lua_tostring(L, 1));
     }
     catch (const exception& e)
     {
@@ -123,7 +123,7 @@ void setIpAddress()
     }
     try
     {
-        Client(ipAddress);
+        connectToServer(ipAddress);
     }
     catch (const exception& e)
     {
@@ -135,8 +135,8 @@ void setIpAddress()
 void runAutoSplitter()
 {
     luaL_openlibs(L);
-    lua_pushcfunction(L, processID);
-    lua_setglobal(L, "processID");
+    lua_pushcfunction(L, findProcessID);
+    lua_setglobal(L, "process");
     lua_pushcfunction(L, readAddress);
     lua_setglobal(L, "readAddress");
     lua_pushcfunction(L, sendCommand);

@@ -5,10 +5,10 @@
 
 #include <lua.hpp>
 
-int processID(lua_State* L);
+int findProcessID(lua_State* L);
 int readAddress(lua_State* L);
 
 template <typename T>
-T readMem(int pid, uintptr_t memAddress);
+T readMemory(int pid, uintptr_t memAddress);
 
 #endif
