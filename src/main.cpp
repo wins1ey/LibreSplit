@@ -96,25 +96,6 @@ void chooseAutoSplitter()
     lasPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
 }
 
-void setIpAddress()
-{
-    string ipAddress;
-    cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
-    getline(cin, ipAddress);
-    if (ipAddress.empty()) {
-        ipAddress = "127.0.0.1";
-    }
-    try
-    {
-        connectToServer(ipAddress);
-    }
-    catch (const exception& e)
-    {
-        cerr << "\n\033[1;31m" << e.what() << endl << endl;
-        throw;
-    }
-}
-
 void runAutoSplitter()
 {
     luaL_openlibs(L);

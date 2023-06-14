@@ -8,6 +8,7 @@
 using std::string;
 
 void connectToServer(string ipAddress);
+void setIpAddress();
 void sendLiveSplitCommand(const char* command);
 int sendCommand(lua_State* L);
 

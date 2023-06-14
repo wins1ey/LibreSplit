@@ -49,6 +49,25 @@ void connectToServer(string ipAddress)
     lasPrint("Server: Connected\n");
 }
 
+void setIpAddress()
+{
+    string ipAddress;
+    cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
+    getline(cin, ipAddress);
+    if (ipAddress.empty()) {
+        ipAddress = "127.0.0.1";
+    }
+    try
+    {
+        connectToServer(ipAddress);
+    }
+    catch (const exception& e)
+    {
+        cerr << "\n\033[1;31m" << e.what() << endl << endl;
+        throw;
+    }
+}
+
 void sendLiveSplitCommand(const char* command)
 {
     // Create a buffer to hold the modified command with "\r\n"
