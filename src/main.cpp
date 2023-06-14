@@ -4,10 +4,8 @@
 #include "downloader.h"
 #include "autosplitter.h"
 
-int main(int argc, char *argv[])
+void launchArgs(int argc, char *argv[])
 {
-    checkDirectories();
-
     for (int i = 0; i < argc; i++)
     {
         if (strcmp(argv[i], "-downloader") == 0)
@@ -15,7 +13,12 @@ int main(int argc, char *argv[])
             startDownloader(autoSplittersDirectory);
         }
     }
+}
 
+int main(int argc, char *argv[])
+{
+    checkDirectories();
+    launchArgs(argc, argv);
     chooseAutoSplitter();
     setIpAddress();
     runAutoSplitter();
