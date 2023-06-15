@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstring>
 #include <arpa/inet.h>
+#include <chrono>
+#include <thread>
 
 #include <lua.hpp>
 
@@ -16,8 +18,11 @@ using std::runtime_error;
 using std::to_string;
 using std::exception;
 using std::cerr;
+using std::chrono::milliseconds;
+using std::this_thread::sleep_for;
 
 int sock;
+string ipAddress;
 
 void connectToServer(string ipAddress)
 {
@@ -36,14 +41,19 @@ void connectToServer(string ipAddress)
     hint.sin_port = htons(port); // Converting port to network byte order.
     if (inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr) != 1)
     {
-        throw runtime_error("Invalid IP address");
+        cout << "Invalid IP address. Try again.\n";
+        setIpAddress();
+        connectToServer(ipAddress);
     }
 
     // Connecting to LiveSplit Server.
     int connectRes = connect(sock, (struct sockaddr*) &hint, sizeof(hint));
-    if (connectRes == -1)
+    while (connectRes == -1)
     {
-        throw runtime_error("Couldn't connect: " + to_string(errno));
+        cout << "Couldn't connect to LiveSplit Server. Retrying..." << endl;
+        sleep_for(milliseconds(2000));
+        lasPrint("");
+        connectRes = connect(sock, (struct sockaddr*) &hint, sizeof(hint));
     }
 
     lasPrint("Server: Connected\n");
@@ -51,7 +61,6 @@ void connectToServer(string ipAddress)
 
 void setIpAddress()
 {
-    string ipAddress;
     cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
     getline(cin, ipAddress);
     if (ipAddress.empty()) {
@@ -59,6 +68,7 @@ void setIpAddress()
     }
     try
     {
+        lasPrint("");
         connectToServer(ipAddress);
     }
     catch (const exception& e)
