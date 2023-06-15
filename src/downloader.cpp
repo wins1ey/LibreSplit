@@ -2,11 +2,13 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <filesystem>
 
 #include <curl/curl.h>
 
 #include "downloader.h"
 #include "lasprint.h"
+#include "autosplitter.h"
 
 using std::cout;
 using std::endl;
@@ -14,6 +16,7 @@ using std::cin;
 using std::vector;
 using std::ifstream;
 using std::istringstream;
+using std::filesystem::create_directory;
 
 string directory;
 
@@ -24,7 +27,7 @@ void startDownloader(string autoSplittersDirectory)
     lasPrint("Auto Splitter Downloader\n");
     downloadFile("https://raw.githubusercontent.com/Wins1ey/LuaAutoSplitters/main/autosplitters.csv");
 
-    ifstream file(directory + "autosplitters.csv");
+    ifstream file(directory + "/autosplitters.csv");
     string line;
     int i = 1;
     vector<string> gameNamesVector;
@@ -71,7 +74,7 @@ void downloadFile(string url)
 {
     CURL *curl;
     CURLcode res;
-    string filename = url.substr(url.find_last_of("/") + 1);
+    string filename = url.substr(url.find_last_of("/"));
     string filepath = directory + filename;
 
     curl = curl_easy_init();

@@ -1,6 +1,10 @@
 #include <iostream>
 #include <cstring>
 #include <arpa/inet.h>
+#include <chrono>
+#include <thread>
+
+#include <lua.hpp>
 
 #include "client.h"
 #include "lasprint.h"
@@ -12,8 +16,13 @@ using std::string;
 using std::cin;
 using std::runtime_error;
 using std::to_string;
+using std::exception;
+using std::cerr;
+using std::chrono::milliseconds;
+using std::this_thread::sleep_for;
 
 int sock;
+string ipAddress;
 
 void connectToServer(string ipAddress)
 {
@@ -32,17 +41,41 @@ void connectToServer(string ipAddress)
     hint.sin_port = htons(port); // Converting port to network byte order.
     if (inet_pton(AF_INET, ipAddress.c_str(), &hint.sin_addr) != 1)
     {
-        throw runtime_error("Invalid IP address");
+        cout << "Invalid IP address. Try again.\n";
+        setIpAddress();
+        connectToServer(ipAddress);
     }
 
     // Connecting to LiveSplit Server.
     int connectRes = connect(sock, (struct sockaddr*) &hint, sizeof(hint));
-    if (connectRes == -1)
+    while (connectRes == -1)
     {
-        throw runtime_error("Couldn't connect: " + to_string(errno));
+        cout << "Couldn't connect to LiveSplit Server. Retrying..." << endl;
+        sleep_for(milliseconds(2000));
+        lasPrint("");
+        connectRes = connect(sock, (struct sockaddr*) &hint, sizeof(hint));
     }
 
     lasPrint("Server: Connected\n");
+}
+
+void setIpAddress()
+{
+    cout << "What is your local IP address? (Leave blank for 127.0.0.1)\n";
+    getline(cin, ipAddress);
+    if (ipAddress.empty()) {
+        ipAddress = "127.0.0.1";
+    }
+    try
+    {
+        lasPrint("");
+        connectToServer(ipAddress);
+    }
+    catch (const exception& e)
+    {
+        cerr << "\n\033[1;31m" << e.what() << endl << endl;
+        throw;
+    }
 }
 
 void sendLiveSplitCommand(const char* command)
@@ -60,4 +93,19 @@ void sendLiveSplitCommand(const char* command)
     {
         throw runtime_error("Couldn't send " + string(command) + ": " + to_string(errno));
     }
+}
+
+int sendCommand(lua_State* L)
+{
+    try
+    {
+        sendLiveSplitCommand(lua_tostring(L, 1));
+    }
+    catch (const exception& e)
+    {
+        cerr << "\033[1;31m" << e.what() << endl << endl;
+        throw;
+    }
+
+    return 0;
 }
