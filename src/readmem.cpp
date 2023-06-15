@@ -23,7 +23,6 @@ using std::variant;
 using std::cerr;
 using std::exception;
 using std::this_thread::sleep_for;
-using std::chrono::microseconds;
 using std::chrono::milliseconds;
 using std::array;
 using std::stringstream;
@@ -170,6 +169,7 @@ template string readMemory<string>(uint64_t memAddress);
 
 int readAddress(lua_State* L)
 {
+    sleep_for(milliseconds(1));
     uintptr_t address = memoryOffset;
     string valueType = lua_tostring(L, 1);
     for (int i = 2; i <= lua_gettop(L); i++)
@@ -251,8 +251,6 @@ int readAddress(lua_State* L)
         cerr << "\033[1;31m" << e.what() << endl << endl;
         throw;
     }
-
-    sleep_for(microseconds(1));
 
     return 1;
 }
