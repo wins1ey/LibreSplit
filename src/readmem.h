@@ -9,6 +9,6 @@ int findProcessID(lua_State* L);
 int readAddress(lua_State* L);
 
 template <typename T>
-T readMemory(int pid, uintptr_t memAddress);
+T readMemory(uintptr_t memAddress);
 
 #endif

@@ -11,6 +11,7 @@
 
 #include "readmem.h"
 #include "lasprint.h"
+#include "autosplitter.h"
 
 using std::string;
 using std::cout;
@@ -30,6 +31,7 @@ using std::stringstream;
 string processName;
 string newProcessName;
 uintptr_t memoryOffset = 0;
+const char *cCommand;
 
 pid_t pid;
 
@@ -109,14 +111,14 @@ int findProcessID(lua_State* L)
     processName = lua_tostring(L, 1);
     newProcessName = processName.substr(0, 15);
     string command = "pidof " + newProcessName;
-    const char *cCommand = command.c_str();
+    cCommand = command.c_str();
 
     stockProcessID(cCommand);
     while (pid == 0)
     {
-        cout << processName + " isn't running. Retrying...\n";
-        sleep_for(milliseconds(2000));
         lasPrint("");
+        cout << processName + " isn't running. Retrying...\n";
+        sleep_for(milliseconds(1));
         stockProcessID(cCommand);
     }
     lasPrint("\n");
@@ -127,7 +129,7 @@ int findProcessID(lua_State* L)
 }
 
 template <typename T>
-T readMemory(int pid, uintptr_t memAddress)
+T readMemory(uintptr_t memAddress)
 {
     T value;  // Variable to store the read value
 
@@ -142,8 +144,7 @@ T readMemory(int pid, uintptr_t memAddress)
     ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
     if (memNread == -1)
     {
-        throw runtime_error("Error reading process memory");
-        
+        throw runtime_error("Error reading process memory: " + to_string(errno));
     }
     else if (memNread != memRemote.iov_len)
     {
@@ -154,18 +155,18 @@ T readMemory(int pid, uintptr_t memAddress)
 }
 
 // Template instantiations for different value types, specifying the type as a template parameter.
-template int8_t readMemory<int8_t>(int pid, uint64_t memAddress);
-template uint8_t readMemory<uint8_t>(int pid, uint64_t memAddress);
-template short readMemory<short>(int pid, uint64_t memAddress);
-template ushort readMemory<ushort>(int pid, uint64_t memAddress);
-template int readMemory<int>(int pid, uint64_t memAddress);
-template uint readMemory<uint>(int pid, uint64_t memAddress);
-template int64_t readMemory<int64_t>(int pid, uint64_t memAddress);
-template uint64_t readMemory<uint64_t>(int pid, uint64_t memAddress);
-template float readMemory<float>(int pid, uint64_t memAddress);
-template double readMemory<double>(int pid, uint64_t memAddress);
-template bool readMemory<bool>(int pid, uint64_t memAddress);
-template string readMemory<string>(int pid, uint64_t memAddress);
+template int8_t readMemory<int8_t>(uint64_t memAddress);
+template uint8_t readMemory<uint8_t>(uint64_t memAddress);
+template short readMemory<short>(uint64_t memAddress);
+template ushort readMemory<ushort>(uint64_t memAddress);
+template int readMemory<int>(uint64_t memAddress);
+template uint readMemory<uint>(uint64_t memAddress);
+template int64_t readMemory<int64_t>(uint64_t memAddress);
+template uint64_t readMemory<uint64_t>(uint64_t memAddress);
+template float readMemory<float>(uint64_t memAddress);
+template double readMemory<double>(uint64_t memAddress);
+template bool readMemory<bool>(uint64_t memAddress);
+template string readMemory<string>(uint64_t memAddress);
 
 int readAddress(lua_State* L)
 {
@@ -182,62 +183,62 @@ int readAddress(lua_State* L)
         // Use template specialization to call the appropriate readMemory() function based on the value type.
         if (valueType == "sbyte")
         {
-            value = readMemory<int8_t>(pid, address);
+            value = readMemory<int8_t>(address);
             lua_pushinteger(L, get<int8_t>(value));
         }
         else if (valueType == "byte")
         {
-            value = readMemory<uint8_t>(pid, address);
+            value = readMemory<uint8_t>(address);
             lua_pushinteger(L, get<uint8_t>(value));
         }
         else if (valueType == "short")
         {
-            value = readMemory<short>(pid, address);
+            value = readMemory<short>(address);
             lua_pushinteger(L, get<short>(value));
         }
         else if (valueType == "ushort")
         {
-            value = readMemory<ushort>(pid, address);
+            value = readMemory<ushort>(address);
             lua_pushinteger(L, get<ushort>(value));
         }
         else if (valueType == "int")
         {
-            value = readMemory<int>(pid, address);
+            value = readMemory<int>(address);
             lua_pushinteger(L, get<int>(value));
         }
         else if (valueType == "uint")
         {
-            value = readMemory<uint>(pid, address);
+            value = readMemory<uint>(address);
             lua_pushinteger(L, get<uint>(value));
         }
         else if (valueType == "long")
         {
-            value = readMemory<long>(pid, address);
+            value = readMemory<long>(address);
             lua_pushinteger(L, get<long>(value));
         }
         else if (valueType == "ulong")
         {
-            value = readMemory<ulong>(pid, address);
+            value = readMemory<ulong>(address);
             lua_pushinteger(L, get<ulong>(value));
         }
         else if (valueType == "float")
         {
-            value = readMemory<float>(pid, address);
+            value = readMemory<float>(address);
             lua_pushnumber(L, get<float>(value));
         }
         else if (valueType == "double")
         {
-            value = readMemory<double>(pid, address);
+            value = readMemory<double>(address);
             lua_pushnumber(L, get<double>(value));
         }
         else if (valueType == "bool")
         {
-            value = readMemory<bool>(pid, address);
+            value = readMemory<bool>(address);
             lua_pushboolean(L, get<bool>(value) ? 1 : 0);
         }
         else if (valueType == "string")
         {
-            value = readMemory<string>(pid, address);
+            value = readMemory<string>(address);
             lua_pushstring(L, get<string>(value).c_str());
         }
         else
