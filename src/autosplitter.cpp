@@ -20,6 +20,7 @@ using std::vector;
 using std::filesystem::directory_iterator;
 using std::filesystem::create_directory;
 using std::filesystem::exists;
+using std::filesystem::is_empty;
 
 lua_State* L = luaL_newstate();
 
@@ -38,12 +39,11 @@ void checkDirectories()
     executablePath = string(result, (count > 0) ? count : 0);
     executableDirectory = executablePath.substr(0, executablePath.find_last_of("/"));
 
-    autoSplittersDirectory = executableDirectory + "/autosplitters/";
+    autoSplittersDirectory = executableDirectory + "/autosplitters";
 
     // Make the autosplitters directory if it doesn't exist
     if (!exists(autoSplittersDirectory))
     {
-        create_directory(autoSplittersDirectory);
         startDownloader(autoSplittersDirectory);
     }
 }
