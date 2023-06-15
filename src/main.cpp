@@ -17,8 +17,8 @@ void launchArgs(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    launchArgs(argc, argv);
     checkDirectories();
+    launchArgs(argc, argv);
     chooseAutoSplitter();
     setIpAddress();
     runAutoSplitter();

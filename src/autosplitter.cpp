@@ -44,12 +44,16 @@ void checkDirectories()
     // Make the autosplitters directory if it doesn't exist
     if (!exists(autoSplittersDirectory))
     {
-        startDownloader(autoSplittersDirectory);
+        create_directory(autoSplittersDirectory);
     }
 }
 
 void chooseAutoSplitter()
 {
+    if (is_empty(autoSplittersDirectory))
+    {
+        startDownloader(autoSplittersDirectory);
+    }
     lasPrint("clear");
     lasPrint("Auto Splitter: ");
     cout << endl;

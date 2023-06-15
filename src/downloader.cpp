@@ -22,7 +22,6 @@ string directory;
 
 void startDownloader(string autoSplittersDirectory)
 {
-    create_directory(autoSplittersDirectory);
     directory = autoSplittersDirectory;
     lasPrint("clear");
     lasPrint("Auto Splitter Downloader\n");
