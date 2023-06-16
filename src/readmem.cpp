@@ -128,7 +128,7 @@ int findProcessID(lua_State* L)
 }
 
 template <typename T>
-T readMemory(uintptr_t memAddress)
+T readMemory(uint32_t memAddress)
 {
     T value;  // Variable to store the read value
 
@@ -154,27 +154,28 @@ T readMemory(uintptr_t memAddress)
 }
 
 // Template instantiations for different value types, specifying the type as a template parameter.
-template int8_t readMemory<int8_t>(uint64_t memAddress);
-template uint8_t readMemory<uint8_t>(uint64_t memAddress);
-template short readMemory<short>(uint64_t memAddress);
-template ushort readMemory<ushort>(uint64_t memAddress);
-template int readMemory<int>(uint64_t memAddress);
-template uint readMemory<uint>(uint64_t memAddress);
-template int64_t readMemory<int64_t>(uint64_t memAddress);
-template uint64_t readMemory<uint64_t>(uint64_t memAddress);
-template float readMemory<float>(uint64_t memAddress);
-template double readMemory<double>(uint64_t memAddress);
-template bool readMemory<bool>(uint64_t memAddress);
-template string readMemory<string>(uint64_t memAddress);
+template int8_t readMemory<int8_t>(uint32_t memAddress);
+template uint8_t readMemory<uint8_t>(uint32_t memAddress);
+template short readMemory<short>(uint32_t memAddress);
+template ushort readMemory<ushort>(uint32_t memAddress);
+template int readMemory<int>(uint32_t memAddress);
+template uint readMemory<uint>(uint32_t memAddress);
+template long readMemory<long>(uint32_t memAddress);
+template ulong readMemory<ulong>(uint32_t memAddress);
+template float readMemory<float>(uint32_t memAddress);
+template double readMemory<double>(uint32_t memAddress);
+template bool readMemory<bool>(uint32_t memAddress);
+template string readMemory<string>(uint32_t memAddress);
 
 int readAddress(lua_State* L)
 {
     sleep_for(milliseconds(1));
-    uintptr_t address = memoryOffset;
+    uint32_t address = memoryOffset + lua_tointeger(L, 2);
     string valueType = lua_tostring(L, 1);
-    for (int i = 2; i <= lua_gettop(L); i++)
+    for (int i = 3; i <= lua_gettop(L); i++)
     {
-        address += lua_tointeger(L, i); // Calculate the final memory address by summing the Lua arguments.
+        address = readMemory<uint32_t>(address); // Read the memory address at the current offset.
+        address = address + lua_tointeger(L, i); // Calculate the final memory address by summing the Lua arguments.
     }
     variant<int8_t, uint8_t, short, ushort, int, uint, int64_t, uint64_t, float, double, bool, string> value;
 
