@@ -109,7 +109,7 @@ int findProcessID(lua_State* L)
 {
     processName = lua_tostring(L, 1);
     newProcessName = processName.substr(0, 15);
-    string command = "pidof " + newProcessName;
+    string command = "pgrep " + newProcessName;
     cCommand = command.c_str();
 
     stockProcessID(cCommand);
@@ -127,10 +127,10 @@ int findProcessID(lua_State* L)
     return 0;
 }
 
-template <typename T>
-T readMemory(uintptr_t memAddress)
+template <typename ValueType, typename AddressType>
+ValueType readMemory(AddressType memAddress)
 {
-    T value;  // Variable to store the read value
+    ValueType value;  // Variable to store the read value
 
     struct iovec memLocal;
     struct iovec memRemote;
@@ -154,29 +154,52 @@ T readMemory(uintptr_t memAddress)
 }
 
 // Template instantiations for different value types, specifying the type as a template parameter.
-template int8_t readMemory<int8_t>(uint64_t memAddress);
-template uint8_t readMemory<uint8_t>(uint64_t memAddress);
-template short readMemory<short>(uint64_t memAddress);
-template ushort readMemory<ushort>(uint64_t memAddress);
-template int readMemory<int>(uint64_t memAddress);
-template uint readMemory<uint>(uint64_t memAddress);
-template int64_t readMemory<int64_t>(uint64_t memAddress);
-template uint64_t readMemory<uint64_t>(uint64_t memAddress);
-template float readMemory<float>(uint64_t memAddress);
-template double readMemory<double>(uint64_t memAddress);
-template bool readMemory<bool>(uint64_t memAddress);
-template string readMemory<string>(uint64_t memAddress);
+template int8_t readMemory<int8_t, uint32_t>(uint32_t memAddress);
+template uint8_t readMemory<uint8_t, uint32_t>(uint32_t memAddress);
+template short readMemory<short, uint32_t>(uint32_t memAddress);
+template ushort readMemory<ushort, uint32_t>(uint32_t memAddress);
+template int readMemory<int, uint32_t>(uint32_t memAddress);
+template uint readMemory<uint, uint32_t>(uint32_t memAddress);
+template long readMemory<long, uint32_t>(uint32_t memAddress);
+template ulong readMemory<ulong, uint32_t>(uint32_t memAddress);
+template float readMemory<float, uint32_t>(uint32_t memAddress);
+template double readMemory<double, uint32_t>(uint32_t memAddress);
+template bool readMemory<bool, uint32_t>(uint32_t memAddress);
+template string readMemory<string, uint32_t>(uint32_t memAddress);
+
+template int8_t readMemory<int8_t, uint64_t>(uint64_t memAddress);
+template uint8_t readMemory<uint8_t, uint64_t>(uint64_t memAddress);
+template short readMemory<short, uint64_t>(uint64_t memAddress);
+template ushort readMemory<ushort, uint64_t>(uint64_t memAddress);
+template int readMemory<int, uint64_t>(uint64_t memAddress);
+template uint readMemory<uint, uint64_t>(uint64_t memAddress);
+template long readMemory<long, uint64_t>(uint64_t memAddress);
+template ulong readMemory<ulong, uint64_t>(uint64_t memAddress);
+template float readMemory<float, uint64_t>(uint64_t memAddress);
+template double readMemory<double, uint64_t>(uint64_t memAddress);
+template bool readMemory<bool, uint64_t>(uint64_t memAddress);
+template string readMemory<string, uint64_t>(uint64_t memAddress);
 
 int readAddress(lua_State* L)
 {
     sleep_for(milliseconds(1));
-    uintptr_t address = memoryOffset;
-    string valueType = lua_tostring(L, 1);
-    for (int i = 2; i <= lua_gettop(L); i++)
-    {
-        address += lua_tointeger(L, i); // Calculate the final memory address by summing the Lua arguments.
-    }
     variant<int8_t, uint8_t, short, ushort, int, uint, int64_t, uint64_t, float, double, bool, string> value;
+
+    uint64_t address = memoryOffset + lua_tointeger(L, 2);  // Updated: Use uint64_t by default
+    string valueType = lua_tostring(L, 1);
+
+    for (int i = 3; i <= lua_gettop(L); i++)
+    {
+        if (address <= UINT32_MAX)
+        {
+            address = readMemory<uint32_t>(static_cast<uint32_t>(address));
+        }
+        else
+        {
+            address = readMemory<uint64_t>(address);
+        }
+        address = address + lua_tointeger(L, i);
+    }
 
     try
     {
