@@ -109,7 +109,7 @@ int findProcessID(lua_State* L)
 {
     processName = lua_tostring(L, 1);
     newProcessName = processName.substr(0, 15);
-    string command = "pidof " + newProcessName;
+    string command = "pgrep " + newProcessName;
     cCommand = command.c_str();
 
     stockProcessID(cCommand);
@@ -199,7 +199,6 @@ int readAddress(lua_State* L)
     }
     else
     {
-        address = memoryOffset + lua_tointeger(L, 2);
         for (int i = 3; i <= lua_gettop(L); i++)
         {
             address = readMemory<uint64_t>(address);  // Read as uint64_t
