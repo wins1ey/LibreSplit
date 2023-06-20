@@ -8,6 +8,7 @@
 #include <string>
 #include <thread>
 #include <variant>
+#include <signal.h>
 
 #include "readmem.h"
 #include "lasprint.h"
@@ -84,7 +85,7 @@ uintptr_t findMemoryOffset()
  */
 void stockProcessID(const char* processtarget)
 {
-    string pidCommand = string(processtarget) + " | awk '{print $1}'"; // Command to extract the process ID
+    string pidCommand = string(processtarget); // Command to extract the process ID
     array<char, 128> buffer;
     string pidOutput;
 
@@ -141,9 +142,13 @@ ValueType readMemory(AddressType memAddress)
     memRemote.iov_base = reinterpret_cast<void*>(memAddress);
 
     ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
-    if (memNread == -1)
+    if (memNread == -1 && !kill(pid, 0))
     {
-        throw runtime_error("Error reading process memory: " + to_string(errno));
+        cout << "Error reading process memory: " + to_string(errno) + " - Process is running" << endl;
+    }
+    else if (memNread == -1 && kill(pid, 0))
+    {
+        throw runtime_error("Error reading process memory: " + to_string(errno) + " - Process is not running");
     }
     else if (memNread != memRemote.iov_len)
     {
