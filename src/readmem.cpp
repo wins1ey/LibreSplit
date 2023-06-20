@@ -148,7 +148,7 @@ ValueType readMemory(AddressType memAddress)
     }
     else if (memNread == -1 && kill(pid, 0))
     {
-        throw runtime_error("Error reading process memory: " + to_string(errno) + " - Process is not running");
+        runAutoSplitter();
     }
     else if (memNread != memRemote.iov_len)
     {
