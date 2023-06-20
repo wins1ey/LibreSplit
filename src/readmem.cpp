@@ -32,8 +32,8 @@ string processName;
 string newProcessName;
 uintptr_t memoryOffset = 0;
 const char *cCommand;
-
 pid_t pid;
+bool memoryError;
 
 void executeCommand(const string& command, array<char, 128>& buffer, string& output)
 {
@@ -144,7 +144,7 @@ ValueType readMemory(AddressType memAddress)
     ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
     if (memNread == -1 && !kill(pid, 0))
     {
-        cout << "Error reading process memory: " + to_string(errno) + " - Process is running" << endl;
+        memoryError = true;
     }
     else if (memNread == -1 && kill(pid, 0))
     {
@@ -188,6 +188,7 @@ template string readMemory<string, uint64_t>(uint64_t memAddress);
 int readAddress(lua_State* L)
 {
     sleep_for(milliseconds(1));
+    memoryError = false;
     variant<int8_t, uint8_t, short, ushort, int, uint, int64_t, uint64_t, float, double, bool, string> value;
 
     uint64_t address = memoryOffset + lua_tointeger(L, 2);  // Updated: Use uint64_t by default
@@ -278,6 +279,12 @@ int readAddress(lua_State* L)
     {
         cerr << "\033[1;31m" << e.what() << endl << endl;
         throw;
+    }
+
+    if (memoryError)
+    {
+        lua_pushinteger(L, -1);
+        return 1;
     }
 
     return 1;
