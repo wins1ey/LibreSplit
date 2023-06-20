@@ -188,22 +188,17 @@ int readAddress(lua_State* L)
     uint64_t address = memoryOffset + lua_tointeger(L, 2);  // Updated: Use uint64_t by default
     string valueType = lua_tostring(L, 1);
 
-    if (address < UINT32_MAX)
+    for (int i = 3; i <= lua_gettop(L); i++)
     {
-        address = static_cast<uint32_t>(address);
-        for (int i = 3; i <= lua_gettop(L); i++)
+        if (address <= UINT32_MAX)
         {
-            address = readMemory<uint32_t>(static_cast<uint32_t>(address));  // Read as uint32_t
-            address = address + lua_tointeger(L, i);
+            address = readMemory<uint32_t>(static_cast<uint32_t>(address));
         }
-    }
-    else
-    {
-        for (int i = 3; i <= lua_gettop(L); i++)
+        else
         {
-            address = readMemory<uint64_t>(address);  // Read as uint64_t
-            address = address + lua_tointeger(L, i);
+            address = readMemory<uint64_t>(address);
         }
+        address = address + lua_tointeger(L, i);
     }
 
     try
