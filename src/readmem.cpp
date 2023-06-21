@@ -284,7 +284,6 @@ int readAddress(lua_State* L)
     if (memoryError)
     {
         lua_pushinteger(L, -1);
-        return 1;
     }
 
     return 1;
