@@ -1,8 +1,8 @@
 #include <cstring>
 
-#include "include/client.h"
-#include "include/downloader.h"
-#include "include/autosplitter.h"
+#include "include/client.hpp"
+#include "include/downloader.hpp"
+#include "include/autosplitter.hpp"
 
 void launchArgs(int argc, char *argv[])
 {
