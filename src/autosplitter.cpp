@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <algorithm>
 
 #include <lua.hpp>
 
@@ -17,6 +18,7 @@ using std::cout;
 using std::cin;
 using std::endl;
 using std::vector;
+using std::sort;
 using std::filesystem::directory_iterator;
 using std::filesystem::create_directory;
 using std::filesystem::exists;
@@ -26,7 +28,6 @@ lua_State* L = luaL_newstate();
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
-vector<string> fileNames;
 
 void checkDirectories()
 {
@@ -50,22 +51,29 @@ void checkDirectories()
 
 void chooseAutoSplitter()
 {
+    vector<string> fileNames;
+
     if (is_empty(autoSplittersDirectory))
     {
         startDownloader(autoSplittersDirectory);
     }
+
     lasPrint("clear");
     lasPrint("Auto Splitter: ");
     cout << endl;
-    int counter = 1;
+
     for (const auto & entry : directory_iterator(autoSplittersDirectory))
     {
         if (entry.path().extension() == ".lua")
         {
-            cout << counter << ". " << entry.path().filename() << endl;
             fileNames.push_back(entry.path().string());
-            counter++;
         }
+    }
+    sort(fileNames.begin(), fileNames.end());
+    
+    for (int i = 0; i < fileNames.size(); i++)
+    {
+        cout << i + 1 << ". " << fileNames[i].substr(fileNames[i].find_last_of("/") + 1) << endl;
     }
 
     switch (fileNames.size())
