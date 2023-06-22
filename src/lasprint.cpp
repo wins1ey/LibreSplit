@@ -3,7 +3,7 @@
 
 #include <lua.hpp>
 
-#include "include/lasprint.hpp"
+#include <lasprint.hpp>
 
 using std::string;
 using std::cout;
