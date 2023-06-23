@@ -1,4 +1,4 @@
-INC = -I/usr/include/curl -I/usr/include/lua5.* -Iheaders
+INC = -I/usr/include/curl -I/usr/include/lua5.*
 CFLAGS = -std=c++17 -O2 -pthread
 LDFLAGS = -llua -lcurl
 
