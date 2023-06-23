@@ -94,7 +94,13 @@ void chooseAutoSplitter()
         {
             int userChoice;
             cout << "Which auto splitter would you like to use? ";
-            cin >> userChoice;
+            if (!(cin >> userChoice) || userChoice > fileNames.size() || userChoice < 1)
+            {
+                cin.clear(); // Clear error flags
+                cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+                chooseAutoSplitter(); // Ask for input again
+                return;
+            }
             cin.ignore();
             chosenAutoSplitter = fileNames[userChoice - 1];
             break;
