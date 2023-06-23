@@ -80,7 +80,6 @@ void chooseAutoSplitter()
     {
         case 0:
         {
-            cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder or download some here.\n";
             startDownloader(autoSplittersDirectory);
             chooseAutoSplitter();
             return;
