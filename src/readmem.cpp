@@ -174,7 +174,7 @@ string readMemory(AddressType memAddress, int bufferSize)
     ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
     if (memNread == -1 && !kill(pid, 0))
     {
-        memoryError = true;
+        buffer[0] = '\0';
     }
     else if (memNread == -1 && kill(pid, 0))
     {
@@ -183,15 +183,6 @@ string readMemory(AddressType memAddress, int bufferSize)
     else if (memNread != memRemote.iov_len)
     {
         throw runtime_error("Error reading process memory: short read of " + to_string(memNread) + " bytes\n");
-    }
-
-    if (memNread > 0)
-    {
-        buffer[memNread] = '\0'; // Add null terminator to the end of the string
-    }
-    else
-    {
-        buffer[0] = '\0'; // Set null terminator for an empty string
     }
 
     return string(buffer);  // Return the read string
