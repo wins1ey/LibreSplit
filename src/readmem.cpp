@@ -167,8 +167,8 @@ string readMemory(AddressType memAddress, int bufferSize)
     struct iovec memRemote;
 
     memLocal.iov_base = &buffer;  // Use the buffer to store the string
-    memLocal.iov_len = bufferSize -1;
-    memRemote.iov_len = bufferSize -1;
+    memLocal.iov_len = bufferSize;
+    memRemote.iov_len = bufferSize;
     memRemote.iov_base = reinterpret_cast<void*>(memAddress);
 
     ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
