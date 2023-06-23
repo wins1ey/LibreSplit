@@ -6,8 +6,8 @@
 
 #include <lua.hpp>
 
-#include "client.h"
-#include "lasprint.h"
+#include "headers/client.hpp"
+#include "headers/lasprint.hpp"
 
 using std::string;
 using std::cout;

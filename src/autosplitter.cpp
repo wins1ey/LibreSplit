@@ -6,11 +6,11 @@
 
 #include <lua.hpp>
 
-#include "autosplitter.h"
-#include "lasprint.h"
-#include "downloader.h"
-#include "client.h"
-#include "readmem.h"
+#include "headers/autosplitter.hpp"
+#include "headers/lasprint.hpp"
+#include "headers/downloader.hpp"
+#include "headers/client.hpp"
+#include "headers/readmem.hpp"
 
 using std::string;
 using std::cout;

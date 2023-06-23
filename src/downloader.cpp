@@ -6,9 +6,9 @@
 
 #include <curl/curl.h>
 
-#include "downloader.h"
-#include "lasprint.h"
-#include "autosplitter.h"
+#include "headers/downloader.hpp"
+#include "headers/lasprint.hpp"
+#include "headers/autosplitter.hpp"
 
 using std::cout;
 using std::endl;

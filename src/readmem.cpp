@@ -10,9 +10,9 @@
 #include <variant>
 #include <signal.h>
 
-#include "readmem.h"
-#include "lasprint.h"
-#include "autosplitter.h"
+#include "headers/readmem.hpp"
+#include "headers/lasprint.hpp"
+#include "headers/autosplitter.hpp"
 
 using std::string;
 using std::cout;
