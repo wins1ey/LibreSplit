@@ -48,10 +48,16 @@ void startDownloader(string autoSplittersDirectory)
 
     cout << "Which auto splitters would you like to download? (Numbers separated by spaces): ";
     vector<int> choiceOfAutoSplitters;
-    int singleChoice;
-    while (cin >> singleChoice)
+    string input;
+    while (cin >> input)
     {
-        choiceOfAutoSplitters.push_back(singleChoice);
+        istringstream iss(input);
+        int singleChoice;
+        if (iss >> singleChoice && singleChoice > 0 && singleChoice <= gameNamesVector.size())
+        {
+            choiceOfAutoSplitters.push_back(singleChoice);
+        }
+        
         if (cin.peek() == '\n')
         {
             break;

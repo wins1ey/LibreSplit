@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <algorithm>
 
 #include <lua.hpp>
 
@@ -17,6 +18,7 @@ using std::cout;
 using std::cin;
 using std::endl;
 using std::vector;
+using std::sort;
 using std::filesystem::directory_iterator;
 using std::filesystem::create_directory;
 using std::filesystem::exists;
@@ -26,7 +28,6 @@ lua_State* L = luaL_newstate();
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
-vector<string> fileNames;
 
 void checkDirectories()
 {
@@ -50,32 +51,38 @@ void checkDirectories()
 
 void chooseAutoSplitter()
 {
+    vector<string> fileNames;
+
     if (is_empty(autoSplittersDirectory))
     {
         startDownloader(autoSplittersDirectory);
     }
+
     lasPrint("clear");
     lasPrint("Auto Splitter: ");
     cout << endl;
-    int counter = 1;
+
     for (const auto & entry : directory_iterator(autoSplittersDirectory))
     {
         if (entry.path().extension() == ".lua")
         {
-            cout << counter << ". " << entry.path().filename() << endl;
             fileNames.push_back(entry.path().string());
-            counter++;
         }
+    }
+    sort(fileNames.begin(), fileNames.end());
+    
+    for (int i = 0; i < fileNames.size(); i++)
+    {
+        cout << i + 1 << ". " << fileNames[i].substr(fileNames[i].find_last_of("/") + 1) << endl;
     }
 
     switch (fileNames.size())
     {
         case 0:
         {
-            cout << "No auto splitters found. Please put your auto splitters in the autosplitters folder or download some here.\n";
             startDownloader(autoSplittersDirectory);
             chooseAutoSplitter();
-            break;
+            return;
         }
         case 1:
         {
@@ -86,7 +93,13 @@ void chooseAutoSplitter()
         {
             int userChoice;
             cout << "Which auto splitter would you like to use? ";
-            cin >> userChoice;
+            if (!(cin >> userChoice) || userChoice > fileNames.size() || userChoice < 1)
+            {
+                cin.clear(); // Clear error flags
+                cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
+                chooseAutoSplitter(); // Ask for input again
+                return;
+            }
             cin.ignore();
             chosenAutoSplitter = fileNames[userChoice - 1];
             break;
