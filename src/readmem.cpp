@@ -109,7 +109,7 @@ void stockProcessID(const char* processtarget)
 int findProcessID(lua_State* L)
 {
     processName = lua_tostring(L, 1);
-    newProcessName = processName.substr(0, 15);
+    newProcessName = "\"" + processName.substr(0, 15) + "\"";
     string command = "pgrep " + newProcessName;
     cCommand = command.c_str();
 
