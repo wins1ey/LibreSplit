@@ -128,8 +128,8 @@ int findProcessID(lua_State* L)
     return 0;
 }
 
-template <typename ValueType, typename AddressType>
-ValueType readMemory(AddressType memAddress)
+template <typename ValueType>
+ValueType readMemory(uint64_t memAddress)
 {
     ValueType value;  // Variable to store the read value
 
@@ -158,8 +158,7 @@ ValueType readMemory(AddressType memAddress)
     return value;  // Return the read value
 }
 
-template <typename AddressType>
-string readMemory(AddressType memAddress, int bufferSize)
+string readMemory(uint64_t memAddress, int bufferSize)
 {
     char buffer[bufferSize]; // Buffer to store the read string
 
@@ -189,31 +188,17 @@ string readMemory(AddressType memAddress, int bufferSize)
 }
 
 // Template instantiations for different value types, specifying the type as a template parameter.
-template int8_t readMemory<int8_t, uint32_t>(uint32_t memAddress);
-template uint8_t readMemory<uint8_t, uint32_t>(uint32_t memAddress);
-template short readMemory<short, uint32_t>(uint32_t memAddress);
-template ushort readMemory<ushort, uint32_t>(uint32_t memAddress);
-template int readMemory<int, uint32_t>(uint32_t memAddress);
-template uint readMemory<uint, uint32_t>(uint32_t memAddress);
-template long readMemory<long, uint32_t>(uint32_t memAddress);
-template ulong readMemory<ulong, uint32_t>(uint32_t memAddress);
-template float readMemory<float, uint32_t>(uint32_t memAddress);
-template double readMemory<double, uint32_t>(uint32_t memAddress);
-template bool readMemory<bool, uint32_t>(uint32_t memAddress);
-template string readMemory<uint32_t>(uint32_t memAddress, int bufferSize);
-
-template int8_t readMemory<int8_t, uint64_t>(uint64_t memAddress);
-template uint8_t readMemory<uint8_t, uint64_t>(uint64_t memAddress);
-template short readMemory<short, uint64_t>(uint64_t memAddress);
-template ushort readMemory<ushort, uint64_t>(uint64_t memAddress);
-template int readMemory<int, uint64_t>(uint64_t memAddress);
-template uint readMemory<uint, uint64_t>(uint64_t memAddress);
-template long readMemory<long, uint64_t>(uint64_t memAddress);
-template ulong readMemory<ulong, uint64_t>(uint64_t memAddress);
-template float readMemory<float, uint64_t>(uint64_t memAddress);
-template double readMemory<double, uint64_t>(uint64_t memAddress);
-template bool readMemory<bool, uint64_t>(uint64_t memAddress);
-template string readMemory<uint64_t>(uint64_t memAddress, int bufferSize);
+template int8_t readMemory<int8_t>(uint64_t memAddress);
+template uint8_t readMemory<uint8_t>(uint64_t memAddress);
+template short readMemory<short>(uint64_t memAddress);
+template ushort readMemory<ushort>(uint64_t memAddress);
+template int readMemory<int>(uint64_t memAddress);
+template uint readMemory<uint>(uint64_t memAddress);
+template long readMemory<long>(uint64_t memAddress);
+template ulong readMemory<ulong>(uint64_t memAddress);
+template float readMemory<float>(uint64_t memAddress);
+template double readMemory<double>(uint64_t memAddress);
+template bool readMemory<bool>(uint64_t memAddress);
 
 int readAddress(lua_State* L)
 {
@@ -228,7 +213,7 @@ int readAddress(lua_State* L)
     {
         if (address <= UINT32_MAX)
         {
-            address = readMemory<uint32_t>(static_cast<uint32_t>(address));
+            address = readMemory<uint32_t>(static_cast<uint64_t>(address));
         }
         else
         {
