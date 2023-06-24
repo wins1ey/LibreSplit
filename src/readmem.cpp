@@ -158,6 +158,36 @@ ValueType readMemory(AddressType memAddress)
     return value;  // Return the read value
 }
 
+template <typename AddressType>
+string readMemory(AddressType memAddress, int bufferSize)
+{
+    char buffer[bufferSize]; // Buffer to store the read string
+
+    struct iovec memLocal;
+    struct iovec memRemote;
+
+    memLocal.iov_base = &buffer;  // Use the buffer to store the string
+    memLocal.iov_len = bufferSize;
+    memRemote.iov_len = bufferSize;
+    memRemote.iov_base = reinterpret_cast<void*>(memAddress);
+
+    ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
+    if (memNread == -1 && !kill(pid, 0))
+    {
+        buffer[0] = '\0';
+    }
+    else if (memNread == -1 && kill(pid, 0))
+    {
+        runAutoSplitter();
+    }
+    else if (memNread != memRemote.iov_len)
+    {
+        throw runtime_error("Error reading process memory: short read of " + to_string(memNread) + " bytes\n");
+    }
+
+    return string(buffer);  // Return the read string
+}
+
 // Template instantiations for different value types, specifying the type as a template parameter.
 template int8_t readMemory<int8_t, uint32_t>(uint32_t memAddress);
 template uint8_t readMemory<uint8_t, uint32_t>(uint32_t memAddress);
@@ -170,7 +200,7 @@ template ulong readMemory<ulong, uint32_t>(uint32_t memAddress);
 template float readMemory<float, uint32_t>(uint32_t memAddress);
 template double readMemory<double, uint32_t>(uint32_t memAddress);
 template bool readMemory<bool, uint32_t>(uint32_t memAddress);
-template string readMemory<string, uint32_t>(uint32_t memAddress);
+template string readMemory<uint32_t>(uint32_t memAddress, int bufferSize);
 
 template int8_t readMemory<int8_t, uint64_t>(uint64_t memAddress);
 template uint8_t readMemory<uint8_t, uint64_t>(uint64_t memAddress);
@@ -183,7 +213,7 @@ template ulong readMemory<ulong, uint64_t>(uint64_t memAddress);
 template float readMemory<float, uint64_t>(uint64_t memAddress);
 template double readMemory<double, uint64_t>(uint64_t memAddress);
 template bool readMemory<bool, uint64_t>(uint64_t memAddress);
-template string readMemory<string, uint64_t>(uint64_t memAddress);
+template string readMemory<uint64_t>(uint64_t memAddress, int bufferSize);
 
 int readAddress(lua_State* L)
 {
@@ -265,10 +295,12 @@ int readAddress(lua_State* L)
             value = readMemory<bool>(address);
             lua_pushboolean(L, get<bool>(value) ? 1 : 0);
         }
-        else if (valueType == "string")
+        else if (valueType.find("string") != string::npos)
         {
-            value = readMemory<string>(address);
+            int bufferSize = stoi(valueType.substr(6));
+            value = readMemory(address, bufferSize);
             lua_pushstring(L, get<string>(value).c_str());
+            return 1;
         }
         else
         {
