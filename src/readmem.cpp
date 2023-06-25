@@ -215,12 +215,11 @@ int readAddress(lua_State* L)
     variant<int8_t, uint8_t, short, ushort, int, uint, int64_t, uint64_t, float, double, bool, string> value;
 
     uint64_t address;
-    string valueType;
+    string valueType = lua_tostring(L, 1);;
     int i;
 
     if (lua_isnumber(L, 2))
     {
-        valueType = lua_tostring(L, 1);
         address = memoryOffset + lua_tointeger(L, 2);
         i = 3;
     }
@@ -228,10 +227,9 @@ int readAddress(lua_State* L)
     {
         if (newProcessName != lua_tostring(L, 1))
         {
-            newProcessName = lua_tostring(L, 1);
+            newProcessName = lua_tostring(L, 2);
             dllMemoryOffset = findMemoryOffset();
         }
-        valueType = lua_tostring(L, 2);
         address = dllMemoryOffset + lua_tointeger(L, 3);
         i = 4;
     }
