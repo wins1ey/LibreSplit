@@ -93,6 +93,13 @@ void stockProcessID(const char* processtarget)
     // Execute the command and read the output
     executeCommand(pidCommand, buffer, pidOutput);
 
+    size_t spacePos = pidOutput.find_first_of(" ");
+
+    if (spacePos != string::npos)
+    {
+        pidOutput = pidOutput.substr(0, spacePos);
+    }
+
     pid = strtoul(pidOutput.c_str(), nullptr, 10);
 
     if (pid != 0)
