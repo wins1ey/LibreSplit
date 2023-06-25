@@ -29,7 +29,6 @@ using std::array;
 using std::stringstream;
 
 string processName;
-string newProcessName;
 uintptr_t memoryOffset;
 uintptr_t dllMemoryOffset;
 const char *cCommand;
@@ -59,7 +58,7 @@ void executeCommand(const string& command, array<char, 128>& buffer, string& out
  */
 uintptr_t findMemoryOffset()
 {
-    string mapsCommand = "cat /proc/" + to_string(pid) + "/maps | grep \"" + newProcessName + "\"";
+    string mapsCommand = "cat /proc/" + to_string(pid) + "/maps | grep \"" + processName.substr(0, 15) + "\"";
     array<char, 128> buffer;
     string mapsOutput;
 
@@ -117,8 +116,7 @@ void stockProcessID(const char* processtarget)
 int findProcessID(lua_State* L)
 {
     processName = lua_tostring(L, 1);
-    newProcessName = processName.substr(0, 15);
-    string command = "pgrep \"" + newProcessName + "\"";
+    string command = "pgrep \"" + processName.substr(0, 15) + "\"";
     cCommand = command.c_str();
 
     stockProcessID(cCommand);
@@ -225,9 +223,9 @@ int readAddress(lua_State* L)
     }
     else
     {
-        if (newProcessName != lua_tostring(L, 1))
+        if (processName != lua_tostring(L, 2))
         {
-            newProcessName = lua_tostring(L, 2);
+            processName = lua_tostring(L, 2);
             dllMemoryOffset = findMemoryOffset();
         }
         address = dllMemoryOffset + lua_tointeger(L, 3);
