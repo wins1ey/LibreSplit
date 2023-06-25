@@ -59,7 +59,7 @@ void executeCommand(const string& command, array<char, 128>& buffer, string& out
  */
 uintptr_t findMemoryOffset()
 {
-    string mapsCommand = "cat /proc/" + to_string(pid) + "/maps | grep " + newProcessName;
+    string mapsCommand = "cat /proc/" + to_string(pid) + "/maps | grep \"" + newProcessName + "\"";
     array<char, 128> buffer;
     string mapsOutput;
 
@@ -117,8 +117,8 @@ void stockProcessID(const char* processtarget)
 int findProcessID(lua_State* L)
 {
     processName = lua_tostring(L, 1);
-    newProcessName = "\"" + processName.substr(0, 15) + "\"";
-    string command = "pgrep " + newProcessName;
+    newProcessName = processName.substr(0, 15);
+    string command = "pgrep \"" + newProcessName + "\"";
     cCommand = command.c_str();
 
     stockProcessID(cCommand);
