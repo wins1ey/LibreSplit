@@ -97,7 +97,7 @@ void stockProcessID(const char* processtarget)
 
     if (spacePos != string::npos)
     {
-        pidOutput = pidOutput.substr(0, spacePos);
+        throw runtime_error("Multiple PID's found for process: " + processName + "\n");
     }
 
     pid = strtoul(pidOutput.c_str(), nullptr, 10);
