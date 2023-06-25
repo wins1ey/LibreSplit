@@ -30,7 +30,7 @@ using std::stringstream;
 
 string processName;
 string newProcessName;
-uintptr_t memoryOffset = 0;
+uintptr_t memoryOffset;
 uintptr_t dllMemoryOffset;
 const char *cCommand;
 pid_t pid;
@@ -244,7 +244,7 @@ int readAddress(lua_State* L)
         {
             address = readMemory<uint64_t>(address);
         }
-        address = address + lua_tointeger(L, i);
+        address += lua_tointeger(L, i);
     }
 
     try
