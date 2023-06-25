@@ -31,6 +31,7 @@ using std::stringstream;
 string processName;
 string newProcessName;
 uintptr_t memoryOffset = 0;
+uintptr_t dllMemoryOffset;
 const char *cCommand;
 pid_t pid;
 bool memoryError;
@@ -208,7 +209,6 @@ int readAddress(lua_State* L)
 
     uint64_t address;
     string valueType;
-    int dllMemoryOffset;
     int i;
 
     if (lua_isnumber(L, 2))
