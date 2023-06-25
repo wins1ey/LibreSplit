@@ -129,7 +129,7 @@ int findProcessID(lua_State* L)
     }
     lasPrint("\n");
 
-    memoryOffset = findMemoryOffset();
+    memoryOffset = dllMemoryOffset = findMemoryOffset();
 
     return 0;
 }
