@@ -43,7 +43,7 @@ void connectToServer(string ipAddress)
     {
         cout << "Invalid IP address. Try again.\n";
         setIpAddress();
-        connectToServer(ipAddress);
+        return;
     }
 
     // Connecting to LiveSplit Server.
