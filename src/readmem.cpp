@@ -29,8 +29,8 @@ using std::array;
 using std::stringstream;
 
 string processName;
-string newProcessName;
-uintptr_t memoryOffset = 0;
+uintptr_t memoryOffset;
+uintptr_t dllMemoryOffset;
 const char *cCommand;
 pid_t pid;
 bool memoryError;
@@ -58,7 +58,7 @@ void executeCommand(const string& command, array<char, 128>& buffer, string& out
  */
 uintptr_t findMemoryOffset()
 {
-    string mapsCommand = "cat /proc/" + to_string(pid) + "/maps | grep " + newProcessName;
+    string mapsCommand = "cat /proc/" + to_string(pid) + "/maps | grep \"" + processName.substr(0, 15) + "\"";
     array<char, 128> buffer;
     string mapsOutput;
 
@@ -92,6 +92,13 @@ void stockProcessID(const char* processtarget)
     // Execute the command and read the output
     executeCommand(pidCommand, buffer, pidOutput);
 
+    size_t spacePos = pidOutput.find_first_of(" ");
+
+    if (spacePos != string::npos)
+    {
+        throw runtime_error("Multiple PID's found for process: " + processName + "\n");
+    }
+
     pid = strtoul(pidOutput.c_str(), nullptr, 10);
 
     if (pid != 0)
@@ -109,8 +116,7 @@ void stockProcessID(const char* processtarget)
 int findProcessID(lua_State* L)
 {
     processName = lua_tostring(L, 1);
-    newProcessName = processName.substr(0, 15);
-    string command = "pgrep " + newProcessName;
+    string command = "pgrep \"" + processName.substr(0, 15) + "\"";
     cCommand = command.c_str();
 
     stockProcessID(cCommand);
@@ -123,13 +129,13 @@ int findProcessID(lua_State* L)
     }
     lasPrint("\n");
 
-    memoryOffset = findMemoryOffset();
+    memoryOffset = dllMemoryOffset = findMemoryOffset();
 
     return 0;
 }
 
-template <typename ValueType, typename AddressType>
-ValueType readMemory(AddressType memAddress)
+template <typename ValueType>
+ValueType readMemory(uint64_t memAddress)
 {
     ValueType value;  // Variable to store the read value
 
@@ -158,8 +164,7 @@ ValueType readMemory(AddressType memAddress)
     return value;  // Return the read value
 }
 
-template <typename AddressType>
-string readMemory(AddressType memAddress, int bufferSize)
+string readMemory(uint64_t memAddress, int bufferSize)
 {
     char buffer[bufferSize]; // Buffer to store the read string
 
@@ -189,31 +194,17 @@ string readMemory(AddressType memAddress, int bufferSize)
 }
 
 // Template instantiations for different value types, specifying the type as a template parameter.
-template int8_t readMemory<int8_t, uint32_t>(uint32_t memAddress);
-template uint8_t readMemory<uint8_t, uint32_t>(uint32_t memAddress);
-template short readMemory<short, uint32_t>(uint32_t memAddress);
-template ushort readMemory<ushort, uint32_t>(uint32_t memAddress);
-template int readMemory<int, uint32_t>(uint32_t memAddress);
-template uint readMemory<uint, uint32_t>(uint32_t memAddress);
-template long readMemory<long, uint32_t>(uint32_t memAddress);
-template ulong readMemory<ulong, uint32_t>(uint32_t memAddress);
-template float readMemory<float, uint32_t>(uint32_t memAddress);
-template double readMemory<double, uint32_t>(uint32_t memAddress);
-template bool readMemory<bool, uint32_t>(uint32_t memAddress);
-template string readMemory<uint32_t>(uint32_t memAddress, int bufferSize);
-
-template int8_t readMemory<int8_t, uint64_t>(uint64_t memAddress);
-template uint8_t readMemory<uint8_t, uint64_t>(uint64_t memAddress);
-template short readMemory<short, uint64_t>(uint64_t memAddress);
-template ushort readMemory<ushort, uint64_t>(uint64_t memAddress);
-template int readMemory<int, uint64_t>(uint64_t memAddress);
-template uint readMemory<uint, uint64_t>(uint64_t memAddress);
-template long readMemory<long, uint64_t>(uint64_t memAddress);
-template ulong readMemory<ulong, uint64_t>(uint64_t memAddress);
-template float readMemory<float, uint64_t>(uint64_t memAddress);
-template double readMemory<double, uint64_t>(uint64_t memAddress);
-template bool readMemory<bool, uint64_t>(uint64_t memAddress);
-template string readMemory<uint64_t>(uint64_t memAddress, int bufferSize);
+template int8_t readMemory<int8_t>(uint64_t memAddress);
+template uint8_t readMemory<uint8_t>(uint64_t memAddress);
+template short readMemory<short>(uint64_t memAddress);
+template ushort readMemory<ushort>(uint64_t memAddress);
+template int readMemory<int>(uint64_t memAddress);
+template uint readMemory<uint>(uint64_t memAddress);
+template long readMemory<long>(uint64_t memAddress);
+template ulong readMemory<ulong>(uint64_t memAddress);
+template float readMemory<float>(uint64_t memAddress);
+template double readMemory<double>(uint64_t memAddress);
+template bool readMemory<bool>(uint64_t memAddress);
 
 int readAddress(lua_State* L)
 {
@@ -221,20 +212,37 @@ int readAddress(lua_State* L)
     memoryError = false;
     variant<int8_t, uint8_t, short, ushort, int, uint, int64_t, uint64_t, float, double, bool, string> value;
 
-    uint64_t address = memoryOffset + lua_tointeger(L, 2);  // Updated: Use uint64_t by default
-    string valueType = lua_tostring(L, 1);
+    uint64_t address;
+    string valueType = lua_tostring(L, 1);;
+    int i;
 
-    for (int i = 3; i <= lua_gettop(L); i++)
+    if (lua_isnumber(L, 2))
+    {
+        address = memoryOffset + lua_tointeger(L, 2);
+        i = 3;
+    }
+    else
+    {
+        if (processName != lua_tostring(L, 2))
+        {
+            processName = lua_tostring(L, 2);
+            dllMemoryOffset = findMemoryOffset();
+        }
+        address = dllMemoryOffset + lua_tointeger(L, 3);
+        i = 4;
+    }
+
+    for (i; i <= lua_gettop(L); i++)
     {
         if (address <= UINT32_MAX)
         {
-            address = readMemory<uint32_t>(static_cast<uint32_t>(address));
+            address = readMemory<uint32_t>(static_cast<uint64_t>(address));
         }
         else
         {
             address = readMemory<uint64_t>(address);
         }
-        address = address + lua_tointeger(L, i);
+        address += lua_tointeger(L, i);
     }
 
     try
