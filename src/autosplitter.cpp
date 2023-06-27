@@ -121,7 +121,7 @@ void start()
     lua_pcall(L, 0, 1, 0);
     if (lua_toboolean(L, -1))
     {
-        sendLiveSplitCommand("start");
+        sendLiveSplitCommand("starttimer");
     }
 }
 
