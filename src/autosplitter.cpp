@@ -28,6 +28,7 @@ lua_State* L = luaL_newstate();
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
+bool isTimerRunning = false;
 
 void checkDirectories()
 {
@@ -138,13 +139,15 @@ void isLoading()
 {
     lua_getglobal(L, "isLoading");
     lua_pcall(L, 0, 1, 0);
-    if (lua_toboolean(L, -1))
+    if (lua_toboolean(L, -1) && isTimerRunning)
     {
         sendLiveSplitCommand("pausegametime");
+        isTimerRunning = false;
     }
-    else
+    else if (!lua_toboolean(L, -1) && !isTimerRunning)
     {
         sendLiveSplitCommand("unpausegametime");
+        isTimerRunning = true;
     }
 }
 
