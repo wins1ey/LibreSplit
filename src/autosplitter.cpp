@@ -219,7 +219,7 @@ void runAutoSplitter()
     if (startupExists)
         startup();
 
-    cout << "Refresh rate: " << refreshRate << endl;
+    lasPrint("Refresh rate: " + to_string(refreshRate));
     int rate = static_cast<int>(1000000 / refreshRate);
 
     while (processExists())
