@@ -229,10 +229,14 @@ void runAutoSplitter()
     lua_pop(L, 1); // Remove 'reset' from the stack
 
     if (isLoadingExists)
+    {
         sendLiveSplitCommand("initgametime");
+    }
 
     if (startupExists)
+    {
         startup();
+    }
 
     lasPrint("Refresh rate: " + to_string(refreshRate));
     int rate = static_cast<int>(1000000 / refreshRate);
@@ -242,19 +246,29 @@ void runAutoSplitter()
         auto clockStart = high_resolution_clock::now();
 
         if (stateExists)
+        {
             state();
+        }
             
         if (startExists)
+        {
             start();
+        }
 
         if (splitExists)
+        {
             split();
+        }
 
         if (isLoadingExists)
+        {
             isLoading();
+        }
 
         if (resetExists)
+        {
             reset();
+        }
 
         auto clockEnd = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(clockEnd - clockStart).count();
