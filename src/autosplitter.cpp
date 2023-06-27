@@ -258,7 +258,10 @@ void runAutoSplitter()
 
         auto clockEnd = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(clockEnd - clockStart).count();
-        sleep_for(microseconds(rate - duration));
+        if (duration < rate)
+        {
+            sleep_for(microseconds(rate - duration));
+        }
     }
 
     lua_close(L);
