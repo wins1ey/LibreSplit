@@ -108,6 +108,40 @@ void chooseAutoSplitter()
     lasPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
 }
 
+void start()
+{
+    lua_getglobal(L, "start");
+    lua_pcall(L, 0, 1, 0);
+    if (lua_toboolean(L, -1))
+    {
+        sendLiveSplitCommand("start");
+    }
+}
+
+void split()
+{
+    lua_getglobal(L, "split");
+    lua_pcall(L, 0, 1, 0);
+    if (lua_toboolean(L, -1))
+    {
+        sendLiveSplitCommand("split");
+    }
+}
+
+void isLoading()
+{
+    lua_getglobal(L, "isLoading");
+    lua_pcall(L, 0, 1, 0);
+    if (lua_toboolean(L, -1))
+    {
+        sendLiveSplitCommand("pausegametime");
+    }
+    else
+    {
+        sendLiveSplitCommand("unpausegametime");
+    }
+}
+
 void runAutoSplitter()
 {
     luaL_openlibs(L);
@@ -121,5 +155,25 @@ void runAutoSplitter()
     lua_setglobal(L, "lasPrint");
 
     luaL_dofile(L, chosenAutoSplitter.c_str());
+    
+    lua_getglobal(L, "start");
+    bool startExists = lua_isfunction(L, -1);
+    lua_getglobal(L, "split");
+    bool splitExists = lua_isfunction(L, -1);
+    lua_getglobal(L, "isLoading");
+    bool isLoadingExists = lua_isfunction(L, -1);
+
+    while (true)
+    {
+        if (startExists)
+            start();
+
+        if (splitExists)
+            split();
+
+        if (isLoadingExists)
+            isLoading();
+    }
+
     lua_close(L);
 }
