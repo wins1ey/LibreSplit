@@ -179,6 +179,17 @@ void isLoading()
     lua_pop(L, 1); // Remove the return value from the stack
 }
 
+void reset()
+{
+    lua_getglobal(L, "reset");
+    lua_pcall(L, 0, 1, 0);
+    if (lua_toboolean(L, -1))
+    {
+        sendLiveSplitCommand("reset");
+    }
+    lua_pop(L, 1); // Remove the return value from the stack
+}
+
 void runAutoSplitter()
 {
     luaL_openlibs(L);
@@ -213,6 +224,10 @@ void runAutoSplitter()
     bool startupExists = lua_isfunction(L, -1);
     lua_pop(L, 1); // Remove 'startup' from the stack
 
+    lua_getglobal(L, "reset");
+    bool resetExists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'reset' from the stack
+
     if (isLoadingExists)
         sendLiveSplitCommand("initgametime");
 
@@ -237,6 +252,9 @@ void runAutoSplitter()
 
         if (isLoadingExists)
             isLoading();
+
+        if (resetExists)
+            reset();
 
         auto clockEnd = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(clockEnd - clockStart).count();
