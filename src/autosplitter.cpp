@@ -108,6 +108,12 @@ void chooseAutoSplitter()
     lasPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
 }
 
+void state()
+{
+    lua_getglobal(L, "state");
+    lua_pcall(L, 0, 0, 0);
+}
+
 void start()
 {
     lua_getglobal(L, "start");
@@ -156,6 +162,8 @@ void runAutoSplitter()
 
     luaL_dofile(L, chosenAutoSplitter.c_str());
     
+    lua_getglobal(L, "state");
+    bool stateExists = lua_isfunction(L, -1);
     lua_getglobal(L, "start");
     bool startExists = lua_isfunction(L, -1);
     lua_getglobal(L, "split");
@@ -165,6 +173,9 @@ void runAutoSplitter()
 
     while (true)
     {
+        if (stateExists)
+            state();
+            
         if (startExists)
             start();
 
