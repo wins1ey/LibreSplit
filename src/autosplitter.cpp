@@ -21,6 +21,7 @@ using std::cin;
 using std::endl;
 using std::vector;
 using std::sort;
+using std::to_string;
 using std::filesystem::directory_iterator;
 using std::filesystem::create_directory;
 using std::filesystem::exists;
@@ -211,6 +212,9 @@ void runAutoSplitter()
     lua_getglobal(L, "startup");
     bool startupExists = lua_isfunction(L, -1);
     lua_pop(L, 1); // Remove 'startup' from the stack
+
+    if (isLoadingExists)
+        sendLiveSplitCommand("initgametime");
 
     if (startupExists)
         startup();
