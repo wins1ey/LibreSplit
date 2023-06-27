@@ -213,7 +213,6 @@ template bool readMemory<bool>(uint64_t memAddress);
 
 int readAddress(lua_State* L)
 {
-    sleep_for(milliseconds(1));
     memoryError = false;
     variant<int8_t, uint8_t, short, ushort, int, uint, int64_t, uint64_t, float, double, bool, string> value;
 
