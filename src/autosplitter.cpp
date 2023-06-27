@@ -171,7 +171,7 @@ void runAutoSplitter()
     lua_getglobal(L, "isLoading");
     bool isLoadingExists = lua_isfunction(L, -1);
 
-    while (true)
+    while (processExists())
     {
         if (stateExists)
             state();

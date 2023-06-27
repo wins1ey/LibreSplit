@@ -134,6 +134,11 @@ int findProcessID(lua_State* L)
     return 0;
 }
 
+bool processExists()
+{
+    return !kill(pid, 0);
+}
+
 template <typename ValueType>
 ValueType readMemory(uint64_t memAddress)
 {
@@ -148,11 +153,11 @@ ValueType readMemory(uint64_t memAddress)
     memRemote.iov_base = reinterpret_cast<void*>(memAddress);
 
     ssize_t memNread = process_vm_readv(pid, &memLocal, 1, &memRemote, 1, 0);
-    if (memNread == -1 && !kill(pid, 0))
+    if (memNread == -1 && processExists())
     {
         memoryError = true;
     }
-    else if (memNread == -1 && kill(pid, 0))
+    else if (memNread == -1 && !processExists())
     {
         runAutoSplitter();
     }
