@@ -517,10 +517,10 @@ int urn_timer_create(urn_timer **timer_ptr, urn_game *game) {
 void urn_timer_step(urn_timer *timer, long long now) {
     timer->now = now;
     if (timer->running) {
-        timer->time = timer->now - timer->start_time;
-        long long time = timer->now - timer->start_time;
+        long long delta = timer->now - timer->start_time;
+        timer->time += delta;  // Accumulate the elapsed time
         if (timer->curr_split < timer->game->split_count) {
-            timer->split_times[timer->curr_split] = time;
+            timer->split_times[timer->curr_split] = timer->time;
             // calc delta
             if (timer->game->split_times[timer->curr_split]) {
                 timer->split_deltas[timer->curr_split] =
@@ -566,6 +566,7 @@ void urn_timer_step(urn_timer *timer, long long now) {
             }
         }
     }
+    timer->start_time = now;  // Update the start time for the next iteration
 }
 
 int urn_timer_start(urn_timer *timer) {
