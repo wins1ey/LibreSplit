@@ -1,7 +1,6 @@
 #include <cstring>
 #include <thread>
 
-#include "headers/client.hpp"
 #include "headers/downloader.hpp"
 #include "headers/autosplitter.hpp"
 extern "C" {
@@ -26,7 +25,6 @@ int autoSplitterThread(int argc, char *argv[])
     checkDirectories();
     launchArgs(argc, argv);
     chooseAutoSplitter();
-    setIpAddress();
     runAutoSplitter();
 
     return 0;

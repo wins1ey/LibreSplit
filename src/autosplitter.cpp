@@ -14,7 +14,6 @@
 #include "headers/autosplitter.h"
 #include "headers/lasprint.hpp"
 #include "headers/downloader.hpp"
-#include "headers/client.hpp"
 #include "headers/readmem.hpp"
 
 using std::string;
@@ -152,7 +151,6 @@ void start()
     lua_pcall(L, 0, 1, 0);
     if (lua_toboolean(L, -1))
     {
-        sendLiveSplitCommand("starttimer");
         callStart.store(true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
@@ -164,7 +162,6 @@ void split()
     lua_pcall(L, 0, 1, 0);
     if (lua_toboolean(L, -1))
     {
-        sendLiveSplitCommand("split");
         callSplit.store(true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
@@ -176,12 +173,10 @@ void isLoading()
     lua_pcall(L, 0, 1, 0);
     if (lua_toboolean(L, -1) && !callIsLoading.load())
     {
-        sendLiveSplitCommand("pausegametime");
         callIsLoading.store(true);
     }
     else if (!lua_toboolean(L, -1) && callIsLoading.load())
     {
-        sendLiveSplitCommand("unpausegametime");
         callIsLoading.store(false);
     }
     lua_pop(L, 1); // Remove the return value from the stack
@@ -193,7 +188,6 @@ void reset()
     lua_pcall(L, 0, 1, 0);
     if (lua_toboolean(L, -1))
     {
-        sendLiveSplitCommand("reset");
         callReset.store(true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
@@ -206,8 +200,6 @@ void runAutoSplitter()
     lua_setglobal(L, "process");
     lua_pushcfunction(L, readAddress);
     lua_setglobal(L, "readAddress");
-    lua_pushcfunction(L, sendCommand);
-    lua_setglobal(L, "sendCommand");
     lua_pushcfunction(L, luaPrint);
     lua_setglobal(L, "lasPrint");
 
@@ -236,11 +228,6 @@ void runAutoSplitter()
     lua_getglobal(L, "reset");
     bool resetExists = lua_isfunction(L, -1);
     lua_pop(L, 1); // Remove 'reset' from the stack
-
-    if (isLoadingExists)
-    {
-        sendLiveSplitCommand("initgametime");
-    }
 
     if (startupExists)
     {
