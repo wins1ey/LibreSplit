@@ -1,5 +1,5 @@
-#ifndef READMEM_H
-#define READMEM_H
+#ifndef READMEM_HPP
+#define READMEM_HPP
 
 #include <lua.hpp>
 

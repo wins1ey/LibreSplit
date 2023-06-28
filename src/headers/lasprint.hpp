@@ -1,5 +1,5 @@
-#ifndef LASPRINT_H
-#define LASPRINT_H
+#ifndef LASPRINT_HPP
+#define LASPRINT_HPP
 
 #include <string>
 
