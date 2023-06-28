@@ -206,6 +206,11 @@ static gboolean urn_app_window_step(gpointer data) {
             timer_split(win);
             atomic_store(&callSplit, 0);
         }
+        if (win->timer->running && atomic_load(&callIsLoading)) {
+            timer_stop(win);
+        } else if (!win->timer->running && win->timer->time > 0 && !atomic_load(&callIsLoading)) {
+            timer_start(win);
+        }
         if (atomic_load(&callReset)) {
             timer_reset(win);
             atomic_store(&callReset, 0);
