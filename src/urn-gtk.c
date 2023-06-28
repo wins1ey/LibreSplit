@@ -10,6 +10,7 @@
 #include "headers/urn-gtk.h"
 #include "headers/keybinder.h"
 #include "components/urn-component.h"
+#include "headers/autosplitter.h"
 
 unsigned char urn_gtk_css[] = {
   0x2e, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x20, 0x7b, 0x0a, 0x20, 0x20,
@@ -176,6 +177,11 @@ static void urn_app_window_clear_game(UrnAppWindow *win) {
     }
 }
 
+// Forward declarations
+static void timer_start(UrnAppWindow *win);
+static void timer_split(UrnAppWindow *win);
+static void timer_stop_reset(UrnAppWindow *win);
+
 static gboolean urn_app_window_step(gpointer data) {
     UrnAppWindow *win = data;
     long long now = urn_time_now();
@@ -190,6 +196,18 @@ static gboolean urn_app_window_step(gpointer data) {
     }
     if (win->timer) {
         urn_timer_step(win->timer, now);
+    }
+    if (atomic_load(&callStart)) {
+        timer_start(win);
+        atomic_store(&callStart, 0);
+    }
+    if (atomic_load(&callSplit)) {
+        timer_split(win);
+        atomic_store(&callSplit, 0);
+    }
+    if (atomic_load(&callReset)) {
+        timer_stop_reset(win);
+        atomic_store(&callReset, 0);
     }
     return TRUE;
 }
@@ -301,6 +319,36 @@ static void timer_start_split(UrnAppWindow *win) {
             UrnComponent *component = l->data;
             if (component->ops->start_split)
                 component->ops->start_split(component, win->timer);
+        }
+    }
+}
+
+static void timer_start(UrnAppWindow *win) {
+    if (win->timer) {
+        GList *l;
+        if (!win->timer->running) {
+            if (urn_timer_start(win->timer)) {
+                save_game(win->game);
+            }
+            for (l = win->components; l != NULL; l = l->next) {
+                UrnComponent *component = l->data;
+                if (component->ops->start_split)
+                    component->ops->start_split(component, win->timer);
+            }
+        }
+    }
+}
+
+static void timer_split(UrnAppWindow *win) {
+    if (win->timer) {
+        GList *l;
+        if (win->timer->running) {
+            urn_timer_split(win->timer);
+            for (l = win->components; l != NULL; l = l->next) {
+                UrnComponent *component = l->data;
+                if (component->ops->start_split)
+                    component->ops->start_split(component, win->timer);
+            }
         }
     }
 }

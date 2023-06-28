@@ -6,10 +6,12 @@
 #include <algorithm>
 #include <chrono>
 #include <thread>
+#include <atomic>
 
 #include <lua.hpp>
 
 #include "headers/autosplitter.hpp"
+#include "headers/autosplitter.h"
 #include "headers/lasprint.hpp"
 #include "headers/downloader.hpp"
 #include "headers/client.hpp"
@@ -30,6 +32,7 @@ using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::microseconds;
 using std::this_thread::sleep_for;
+using std::atomic;
 
 lua_State* L = luaL_newstate();
 
@@ -37,6 +40,10 @@ string autoSplittersDirectory;
 string chosenAutoSplitter;
 bool isTimerRunning = false;
 int refreshRate = 60;
+atomic<bool> callStart(false);
+atomic<bool> callSplit(false);
+atomic<bool> callIsLoading(false);
+atomic<bool> callReset(false);
 
 void checkDirectories()
 {
@@ -147,6 +154,7 @@ void start()
     if (lua_toboolean(L, -1))
     {
         sendLiveSplitCommand("starttimer");
+        callStart.store(true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -158,6 +166,7 @@ void split()
     if (lua_toboolean(L, -1))
     {
         sendLiveSplitCommand("split");
+        callSplit.store(true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -186,6 +195,7 @@ void reset()
     if (lua_toboolean(L, -1))
     {
         sendLiveSplitCommand("reset");
+        callReset.store(true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
