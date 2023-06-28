@@ -38,7 +38,6 @@ lua_State* L = luaL_newstate();
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
-bool isTimerRunning = false;
 int refreshRate = 60;
 atomic<bool> callStart(false);
 atomic<bool> callSplit(false);
@@ -175,15 +174,15 @@ void isLoading()
 {
     lua_getglobal(L, "isLoading");
     lua_pcall(L, 0, 1, 0);
-    if (lua_toboolean(L, -1) && isTimerRunning)
+    if (lua_toboolean(L, -1) && !callIsLoading.load())
     {
         sendLiveSplitCommand("pausegametime");
-        isTimerRunning = false;
+        callIsLoading.store(true);
     }
-    else if (!lua_toboolean(L, -1) && !isTimerRunning)
+    else if (!lua_toboolean(L, -1) && callIsLoading.load())
     {
         sendLiveSplitCommand("unpausegametime");
-        isTimerRunning = true;
+        callIsLoading.store(false);
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
