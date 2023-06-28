@@ -180,7 +180,7 @@ static void urn_app_window_clear_game(UrnAppWindow *win) {
 // Forward declarations
 static void timer_start(UrnAppWindow *win);
 static void timer_split(UrnAppWindow *win);
-static void timer_stop_reset(UrnAppWindow *win);
+static void timer_reset(UrnAppWindow *win);
 
 static gboolean urn_app_window_step(gpointer data) {
     UrnAppWindow *win = data;
@@ -206,7 +206,7 @@ static gboolean urn_app_window_step(gpointer data) {
         atomic_store(&callSplit, 0);
     }
     if (atomic_load(&callReset)) {
-        timer_stop_reset(win);
+        timer_reset(win);
         atomic_store(&callReset, 0);
     }
     return TRUE;
@@ -364,6 +364,30 @@ static void timer_stop_reset(UrnAppWindow *win) {
                 urn_app_window_show_game(win);
                 save_game(win->game);
             }
+        }
+        for (l = win->components; l != NULL; l = l->next) {
+            UrnComponent *component = l->data;
+            if (component->ops->stop_reset)
+                component->ops->stop_reset(component, win->timer);
+        }
+    }
+}
+
+static void timer_reset(UrnAppWindow *win) {
+    if (win->timer) {
+        GList *l;
+        if (win->timer->running) {
+            urn_timer_stop(win->timer);
+            for (l = win->components; l != NULL; l = l->next) {
+                UrnComponent *component = l->data;
+                if (component->ops->stop_reset)
+                    component->ops->stop_reset(component, win->timer);
+            }
+        }
+        if (urn_timer_reset(win->timer)) {
+            urn_app_window_clear_game(win);
+            urn_app_window_show_game(win);
+            save_game(win->game);
         }
         for (l = win->components; l != NULL; l = l->next) {
             UrnComponent *component = l->data;
