@@ -236,6 +236,11 @@ void runAutoSplitter()
         startup();
     }
 
+    if (stateExists)
+    {
+        state();
+    }
+
     lasPrint("Refresh rate: " + to_string(refreshRate));
     int rate = static_cast<int>(1000000 / refreshRate);
 
