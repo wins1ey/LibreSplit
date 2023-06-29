@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unistd.h>
+#include <pwd.h>
 #include <string>
 #include <vector>
 #include <filesystem>
@@ -46,17 +47,16 @@ atomic<bool> callReset(false);
 
 void checkDirectories()
 {
-    string executablePath;
-    string executableDirectory;
+    // Get the path to the users directory
+    string userDirectory = getpwuid(getuid())->pw_dir;
+    string lastDirectory = userDirectory + "/.last";
+    autoSplittersDirectory = lastDirectory + "/auto-splitters";
 
-    // Get the path to the executable
-    char result[ PATH_MAX ];
-    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-    executablePath = string(result, (count > 0) ? count : 0);
-    executableDirectory = executablePath.substr(0, executablePath.find_last_of("/"));
-
-    autoSplittersDirectory = executableDirectory + "/autosplitters";
-
+    // Make the LAST directory if it doesn't exist
+    if (!exists(lastDirectory))
+    {
+        create_directory(lastDirectory);
+    }
     // Make the autosplitters directory if it doesn't exist
     if (!exists(autoSplittersDirectory))
     {
