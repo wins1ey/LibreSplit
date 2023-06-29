@@ -38,6 +38,7 @@ lua_State* L = luaL_newstate();
 string autoSplittersDirectory;
 string chosenAutoSplitter;
 int refreshRate = 60;
+atomic<bool> usingAutoSplitter(false);
 atomic<bool> callStart(false);
 atomic<bool> callSplit(false);
 atomic<bool> callIsLoading(false);
@@ -203,6 +204,7 @@ void runAutoSplitter()
     lua_pushcfunction(L, luaPrint);
     lua_setglobal(L, "lasPrint");
 
+    atomic_store(&usingAutoSplitter, true);
     luaL_dofile(L, chosenAutoSplitter.c_str());
 
     lua_getglobal(L, "state");
@@ -273,6 +275,7 @@ void runAutoSplitter()
             sleep_for(microseconds(rate - duration));
         }
     }
-
+    
+    atomic_store(&usingAutoSplitter, false);
     lua_close(L);
 }

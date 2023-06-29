@@ -3,6 +3,7 @@
 
 #include <stdatomic.h>
 
+extern atomic_bool usingAutoSplitter;
 extern atomic_bool callStart;
 extern atomic_bool callSplit;
 extern atomic_bool callIsLoading;

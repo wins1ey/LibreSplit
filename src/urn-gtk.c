@@ -198,22 +198,24 @@ static gboolean urn_app_window_step(gpointer data) {
     if (win->timer) {
         urn_timer_step(win->timer, now);
         
-        if (atomic_load(&callStart)) {
-            timer_start(win);
-            atomic_store(&callStart, 0);
-        }
-        if (atomic_load(&callSplit)) {
-            timer_split(win);
-            atomic_store(&callSplit, 0);
-        }
-        if (win->timer->running && atomic_load(&callIsLoading)) {
-            timer_stop(win);
-        } else if (!win->timer->running && win->timer->time > 0 && !atomic_load(&callIsLoading)) {
-            timer_start(win);
-        }
-        if (atomic_load(&callReset)) {
-            timer_reset(win);
-            atomic_store(&callReset, 0);
+        if(atomic_load(&usingAutoSplitter)) {
+            if (atomic_load(&callStart)) {
+                timer_start(win);
+                atomic_store(&callStart, 0);
+            }
+            if (atomic_load(&callSplit)) {
+                timer_split(win);
+                atomic_store(&callSplit, 0);
+            }
+            if (win->timer->running && atomic_load(&callIsLoading)) {
+                timer_stop(win);
+            } else if (!win->timer->running && win->timer->time > 0 && !atomic_load(&callIsLoading)) {
+                timer_start(win);
+            }
+            if (atomic_load(&callReset)) {
+                timer_reset(win);
+                atomic_store(&callReset, 0);
+            }
         }
     }
 
