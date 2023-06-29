@@ -146,6 +146,12 @@ void state()
     lua_pcall(L, 0, 0, 0);
 }
 
+void update()
+{
+    lua_getglobal(L, "update");
+    lua_pcall(L, 0, 0, 0);
+}
+
 void start()
 {
     lua_getglobal(L, "start");
@@ -247,6 +253,10 @@ void runAutoSplitter()
     bool resetExists = lua_isfunction(L, -1);
     lua_pop(L, 1); // Remove 'reset' from the stack
 
+    lua_getglobal(L, "update");
+    bool updateExists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'update' from the stack
+
     if (startupExists)
     {
         startup();
@@ -267,6 +277,11 @@ void runAutoSplitter()
         if (stateExists)
         {
             state();
+        }
+
+        if (updateExists)
+        {
+            update();
         }
             
         if (startExists)
