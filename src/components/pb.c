@@ -1,21 +1,21 @@
 #include "last-component.h"
 
-typedef struct _UrnPb {
-    UrnComponent base;
+typedef struct _LASTPb {
+    LASTComponent base;
     GtkWidget *container;
     GtkWidget *personal_best;
-} UrnPb;
-extern UrnComponentOps urn_pb_operations;
+} LASTPb;
+extern LASTComponentOps last_pb_operations;
 
 #define PERSONAL_BEST "Personal best"
 
-UrnComponent *urn_component_pb_new() {
-    UrnPb *self;
+LASTComponent *last_component_pb_new() {
+    LASTPb *self;
     GtkWidget *label;
 
-    self = malloc(sizeof(UrnPb));
+    self = malloc(sizeof(LASTPb));
     if (!self) return NULL;
-    self->base.ops = &urn_pb_operations;
+    self->base.ops = &last_pb_operations;
 
     self->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     add_class(self->container, "footer"); /* hack */
@@ -34,24 +34,24 @@ UrnComponent *urn_component_pb_new() {
     gtk_container_add(GTK_CONTAINER(self->container), self->personal_best);
     gtk_widget_show(self->personal_best);
 
-    return (UrnComponent *)self;
+    return (LASTComponent *)self;
 }
 
-static void pb_delete(UrnComponent *self) {
+static void pb_delete(LASTComponent *self) {
     free(self);
 }
 
-static GtkWidget *pb_widget(UrnComponent *self) {
-    return ((UrnPb *)self)->container;
+static GtkWidget *pb_widget(LASTComponent *self) {
+    return ((LASTPb *)self)->container;
 }
 
-static void pb_show_game(UrnComponent *self_,
-        urn_game *game, urn_timer *timer) {
-    UrnPb *self = (UrnPb *)self_;
+static void pb_show_game(LASTComponent *self_,
+        last_game *game, last_timer *timer) {
+    LASTPb *self = (LASTPb *)self_;
     char str[256];
     if (game->split_count && game->split_times[game->split_count - 1]) {
         if (game->split_times[game->split_count - 1]) {
-            urn_time_string(
+            last_time_string(
                 str, game->split_times[game->split_count - 1]);
             gtk_label_set_text(GTK_LABEL(self->personal_best), str);
         }
@@ -59,14 +59,14 @@ static void pb_show_game(UrnComponent *self_,
 
 }
 
-static void pb_clear_game(UrnComponent *self_) {
-    UrnPb *self = (UrnPb *)self_;
+static void pb_clear_game(LASTComponent *self_) {
+    LASTPb *self = (LASTPb *)self_;
     gtk_label_set_text(GTK_LABEL(self->personal_best), "");
 }
 
-static void pb_draw(UrnComponent *self_, urn_game *game,
-        urn_timer *timer) {
-    UrnPb *self = (UrnPb *)self_;
+static void pb_draw(LASTComponent *self_, last_game *game,
+        last_timer *timer) {
+    LASTPb *self = (LASTPb *)self_;
     char str[256];
     remove_class(self->personal_best, "time");
     gtk_label_set_text(GTK_LABEL(self->personal_best), "-");
@@ -76,18 +76,18 @@ static void pb_draw(UrnComponent *self_, urn_game *game,
             || (timer->split_times[game->split_count - 1]
                 < game->split_times[game->split_count - 1]))) {
         add_class(self->personal_best, "time");
-        urn_time_string(
+        last_time_string(
             str, timer->split_times[game->split_count - 1]);
         gtk_label_set_text(GTK_LABEL(self->personal_best), str);
     } else if (game->split_times[game->split_count - 1]) {
         add_class(self->personal_best, "time");
-        urn_time_string(
+        last_time_string(
             str, game->split_times[game->split_count - 1]);
         gtk_label_set_text(GTK_LABEL(self->personal_best), str);
     }
 }
 
-UrnComponentOps urn_pb_operations = {
+LASTComponentOps last_pb_operations = {
     .delete = pb_delete,
     .widget = pb_widget,
     .show_game = pb_show_game,

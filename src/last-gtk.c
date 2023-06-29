@@ -12,7 +12,7 @@
 #include "components/last-component.h"
 #include "headers/autosplitter.h"
 
-unsigned char urn_gtk_css[] = {
+unsigned char last_gtk_css[] = {
   0x2e, 0x77, 0x69, 0x6e, 0x64, 0x6f, 0x77, 0x20, 0x7b, 0x0a, 0x20, 0x20,
   0x62, 0x61, 0x63, 0x6b, 0x67, 0x72, 0x6f, 0x75, 0x6e, 0x64, 0x2d, 0x63,
   0x6f, 0x6c, 0x6f, 0x72, 0x3a, 0x20, 0x23, 0x30, 0x30, 0x30, 0x3b, 0x0a,
@@ -72,23 +72,23 @@ unsigned char urn_gtk_css[] = {
   0x70, 0x78, 0x20, 0x23, 0x46, 0x46, 0x46, 0x20, 0x73, 0x6f, 0x6c, 0x69,
   0x64, 0x3b, 0x0a, 0x7d, 0x0a
 };
-unsigned int urn_gtk_css_len = 689;
+unsigned int last_gtk_css_len = 689;
 
-#define URN_APP_TYPE (urn_app_get_type ())
-#define URN_APP(obj)                            \
+#define LAST_APP_TYPE (last_app_get_type ())
+#define LAST_APP(obj)                            \
     (G_TYPE_CHECK_INSTANCE_CAST                 \
-     ((obj), URN_APP_TYPE, UrnApp))
+     ((obj), LAST_APP_TYPE, LASTApp))
 
-typedef struct _UrnApp       UrnApp;
-typedef struct _UrnAppClass  UrnAppClass;
+typedef struct _LASTApp       LASTApp;
+typedef struct _LASTAppClass  LASTAppClass;
 
-#define URN_APP_WINDOW_TYPE (urn_app_window_get_type ())
-#define URN_APP_WINDOW(obj)                             \
+#define LAST_APP_WINDOW_TYPE (last_app_window_get_type ())
+#define LAST_APP_WINDOW(obj)                             \
     (G_TYPE_CHECK_INSTANCE_CAST                         \
-     ((obj), URN_APP_WINDOW_TYPE, UrnAppWindow))
+     ((obj), LAST_APP_WINDOW_TYPE, LASTAppWindow))
 
-typedef struct _UrnAppWindow         UrnAppWindow;
-typedef struct _UrnAppWindowClass    UrnAppWindowClass;
+typedef struct _LASTAppWindow         LASTAppWindow;
+typedef struct _LASTAppWindowClass    LASTAppWindowClass;
 
 #define WINDOW_PAD (8)
 
@@ -97,12 +97,12 @@ typedef struct {
     GdkModifierType mods;
 } Keybind;
 
-struct _UrnAppWindow {
+struct _LASTAppWindow {
     GtkApplicationWindow parent;
     char data_path[256];
     int decorated;
-    urn_game *game;
-    urn_timer *timer;
+    last_game *game;
+    last_timer *timer;
     GdkDisplay *display;
     GtkWidget *box;
     GList *components;
@@ -118,11 +118,11 @@ struct _UrnAppWindow {
     Keybind keybind_toggle_decorations;
 };
 
-struct _UrnAppWindowClass {
+struct _LASTAppWindowClass {
     GtkApplicationWindowClass parent_class;
 };
 
-G_DEFINE_TYPE(UrnAppWindow, urn_app_window, GTK_TYPE_APPLICATION_WINDOW);
+G_DEFINE_TYPE(LASTAppWindow, last_app_window, GTK_TYPE_APPLICATION_WINDOW);
 
 static Keybind parse_keybind(const gchar *accelerator) {
     Keybind kb;
@@ -135,34 +135,34 @@ static int keybind_match(Keybind kb, GdkEventKey key) {
         kb.mods == (key.state & gtk_accelerator_get_default_mod_mask());
 }
 
-static void urn_app_window_destroy(GtkWidget *widget, gpointer data) {
-    UrnAppWindow *win = (UrnAppWindow*)widget;
+static void last_app_window_destroy(GtkWidget *widget, gpointer data) {
+    LASTAppWindow *win = (LASTAppWindow*)widget;
     if (win->timer) {
-        urn_timer_release(win->timer);
+        last_timer_release(win->timer);
     }
     if (win->game) {
-        urn_game_release(win->game);
+        last_game_release(win->game);
     }
 }
 
 static gpointer save_game_thread(gpointer data) {
-    urn_game *game = data;
-    urn_game_save(game);
+    last_game *game = data;
+    last_game_save(game);
     return NULL;
 }
 
-static void save_game(urn_game *game) {
+static void save_game(last_game *game) {
     g_thread_new("save_game", save_game_thread, game);
 }
 
-static void urn_app_window_clear_game(UrnAppWindow *win) {
+static void last_app_window_clear_game(LASTAppWindow *win) {
     GdkScreen *screen;
     GList *l;
 
     gtk_widget_hide(win->box);
 
     for (l = win->components; l != NULL; l = l->next) {
-        UrnComponent *component = l->data;
+        LASTComponent *component = l->data;
         if (component->ops->clear_game)
             component->ops->clear_game(component);
     }
@@ -178,14 +178,14 @@ static void urn_app_window_clear_game(UrnAppWindow *win) {
 }
 
 // Forward declarations
-static void timer_start(UrnAppWindow *win);
-static void timer_stop(UrnAppWindow *win);
-static void timer_split(UrnAppWindow *win);
-static void timer_reset(UrnAppWindow *win);
+static void timer_start(LASTAppWindow *win);
+static void timer_stop(LASTAppWindow *win);
+static void timer_split(LASTAppWindow *win);
+static void timer_reset(LASTAppWindow *win);
 
-static gboolean urn_app_window_step(gpointer data) {
-    UrnAppWindow *win = data;
-    long long now = urn_time_now();
+static gboolean last_app_window_step(gpointer data) {
+    LASTAppWindow *win = data;
+    long long now = last_time_now();
     static int set_cursor;
     if (win->hide_cursor && !set_cursor) {
         GdkWindow *gdk_window = gtk_widget_get_window(GTK_WIDGET(win));
@@ -196,7 +196,7 @@ static gboolean urn_app_window_step(gpointer data) {
         }
     }
     if (win->timer) {
-        urn_timer_step(win->timer, now);
+        last_timer_step(win->timer, now);
         
         if(atomic_load(&usingAutoSplitter)) {
             if (atomic_load(&callStart)) {
@@ -222,7 +222,7 @@ static gboolean urn_app_window_step(gpointer data) {
     return TRUE;
 }
 
-static int urn_app_window_find_theme(UrnAppWindow *win,
+static int last_app_window_find_theme(LASTAppWindow *win,
                                      const char *theme_name,
                                      const char *theme_variant,
                                      char *str) {
@@ -246,7 +246,7 @@ static int urn_app_window_find_theme(UrnAppWindow *win,
     strcat(str, "/themes");
     strcat(str, theme_path);
     if (stat(str, &st) == -1) {
-        strcpy(str, "/usr/share/urn/themes");
+        strcpy(str, "/usr/share/last/themes");
         strcat(str, theme_path);
         if (stat(str, &st) == -1) {
             str[0] = '\0';
@@ -256,7 +256,7 @@ static int urn_app_window_find_theme(UrnAppWindow *win,
     return 1;
 }
 
-static void urn_app_window_show_game(UrnAppWindow *win) {
+static void last_app_window_show_game(LASTAppWindow *win) {
     GdkScreen *screen;
     char str[256];
     GList *l;
@@ -269,7 +269,7 @@ static void urn_app_window_show_game(UrnAppWindow *win) {
     }
 
     // set game theme
-    if (urn_app_window_find_theme(win,
+    if (last_app_window_find_theme(win,
                                   win->game->theme,
                                   win->game->theme_variant,
                                   str)) {
@@ -285,7 +285,7 @@ static void urn_app_window_show_game(UrnAppWindow *win) {
     }
 
     for (l = win->components; l != NULL; l = l->next) {
-        UrnComponent *component = l->data;
+        LASTComponent *component = l->data;
         if (component->ops->show_game)
             component->ops->show_game(component, win->game, win->timer);
     }
@@ -293,12 +293,12 @@ static void urn_app_window_show_game(UrnAppWindow *win) {
     gtk_widget_show(win->box);
 }
 
-static void resize_window(UrnAppWindow *win,
+static void resize_window(LASTAppWindow *win,
                           int window_width,
                           int window_height) {
     GList *l;
     for (l = win->components; l != NULL; l = l->next) {
-        UrnComponent *component = l->data;
+        LASTComponent *component = l->data;
         if (component->ops->resize) {
             component->ops->resize(component,
                     window_width - 2 * WINDOW_PAD,
@@ -307,41 +307,41 @@ static void resize_window(UrnAppWindow *win,
     }
 }
 
-static gboolean urn_app_window_resize(GtkWidget *widget,
+static gboolean last_app_window_resize(GtkWidget *widget,
                                       GdkEvent *event,
                                       gpointer data) {
-    UrnAppWindow *win = (UrnAppWindow*)widget;
+    LASTAppWindow *win = (LASTAppWindow*)widget;
     resize_window(win, event->configure.width, event->configure.height);
     return FALSE;
 }
 
-static void timer_start_split(UrnAppWindow *win) {
+static void timer_start_split(LASTAppWindow *win) {
     if (win->timer) {
         GList *l;
         if (!win->timer->running) {
-            if (urn_timer_start(win->timer)) {
+            if (last_timer_start(win->timer)) {
                 save_game(win->game);
             }
         } else {
-            urn_timer_split(win->timer);
+            last_timer_split(win->timer);
         }
         for (l = win->components; l != NULL; l = l->next) {
-            UrnComponent *component = l->data;
+            LASTComponent *component = l->data;
             if (component->ops->start_split)
                 component->ops->start_split(component, win->timer);
         }
     }
 }
 
-static void timer_start(UrnAppWindow *win) {
+static void timer_start(LASTAppWindow *win) {
     if (win->timer) {
         GList *l;
         if (!win->timer->running) {
-            if (urn_timer_start(win->timer)) {
+            if (last_timer_start(win->timer)) {
                 save_game(win->game);
             }
             for (l = win->components; l != NULL; l = l->next) {
-                UrnComponent *component = l->data;
+                LASTComponent *component = l->data;
                 if (component->ops->start_split)
                     component->ops->start_split(component, win->timer);
             }
@@ -349,13 +349,13 @@ static void timer_start(UrnAppWindow *win) {
     }
 }
 
-static void timer_split(UrnAppWindow *win) {
+static void timer_split(LASTAppWindow *win) {
     if (win->timer) {
         GList *l;
         if (win->timer->running) {
-            urn_timer_split(win->timer);
+            last_timer_split(win->timer);
             for (l = win->components; l != NULL; l = l->next) {
-                UrnComponent *component = l->data;
+                LASTComponent *component = l->data;
                 if (component->ops->start_split)
                     component->ops->start_split(component, win->timer);
             }
@@ -363,74 +363,74 @@ static void timer_split(UrnAppWindow *win) {
     }
 }
 
-static void timer_stop(UrnAppWindow *win) {
+static void timer_stop(LASTAppWindow *win) {
     if (win->timer) {
         GList *l;
         if (win->timer->running) {
-            urn_timer_stop(win->timer);
+            last_timer_stop(win->timer);
         }
         for (l = win->components; l != NULL; l = l->next) {
-            UrnComponent *component = l->data;
+            LASTComponent *component = l->data;
             if (component->ops->stop_reset)
                 component->ops->stop_reset(component, win->timer);
         }
     }
 }
 
-static void timer_stop_reset(UrnAppWindow *win) {
+static void timer_stop_reset(LASTAppWindow *win) {
     if (win->timer) {
         GList *l;
         if (win->timer->running) {
-            urn_timer_stop(win->timer);
+            last_timer_stop(win->timer);
         } else {
-            if (urn_timer_reset(win->timer)) {
-                urn_app_window_clear_game(win);
-                urn_app_window_show_game(win);
+            if (last_timer_reset(win->timer)) {
+                last_app_window_clear_game(win);
+                last_app_window_show_game(win);
                 save_game(win->game);
             }
         }
         for (l = win->components; l != NULL; l = l->next) {
-            UrnComponent *component = l->data;
+            LASTComponent *component = l->data;
             if (component->ops->stop_reset)
                 component->ops->stop_reset(component, win->timer);
         }
     }
 }
 
-static void timer_reset(UrnAppWindow *win) {
+static void timer_reset(LASTAppWindow *win) {
     if (win->timer) {
         GList *l;
         if (win->timer->running) {
-            urn_timer_stop(win->timer);
+            last_timer_stop(win->timer);
             for (l = win->components; l != NULL; l = l->next) {
-                UrnComponent *component = l->data;
+                LASTComponent *component = l->data;
                 if (component->ops->stop_reset)
                     component->ops->stop_reset(component, win->timer);
             }
         }
-        if (urn_timer_reset(win->timer)) {
-            urn_app_window_clear_game(win);
-            urn_app_window_show_game(win);
+        if (last_timer_reset(win->timer)) {
+            last_app_window_clear_game(win);
+            last_app_window_show_game(win);
             save_game(win->game);
         }
         for (l = win->components; l != NULL; l = l->next) {
-            UrnComponent *component = l->data;
+            LASTComponent *component = l->data;
             if (component->ops->stop_reset)
                 component->ops->stop_reset(component, win->timer);
         }
     }
 }
 
-static void timer_cancel_run(UrnAppWindow *win) {
+static void timer_cancel_run(LASTAppWindow *win) {
     if (win->timer) {
         GList *l;
-        if (urn_timer_cancel(win->timer)) {
-            urn_app_window_clear_game(win);
-            urn_app_window_show_game(win);
+        if (last_timer_cancel(win->timer)) {
+            last_app_window_clear_game(win);
+            last_app_window_show_game(win);
             save_game(win->game);
         }
         for (l = win->components; l != NULL; l = l->next) {
-            UrnComponent *component = l->data;
+            LASTComponent *component = l->data;
             if (component->ops->cancel_run)
                 component->ops->cancel_run(component, win->timer);
         }
@@ -438,63 +438,63 @@ static void timer_cancel_run(UrnAppWindow *win) {
 }
 
 
-static void timer_skip(UrnAppWindow *win) {
+static void timer_skip(LASTAppWindow *win) {
     if (win->timer) {
         GList *l;
-        urn_timer_skip(win->timer);
+        last_timer_skip(win->timer);
         for (l = win->components; l != NULL; l = l->next) {
-            UrnComponent *component = l->data;
+            LASTComponent *component = l->data;
             if (component->ops->skip)
                 component->ops->skip(component, win->timer);
         }
     }
 } 
 
-static void timer_unsplit(UrnAppWindow *win) {
+static void timer_unsplit(LASTAppWindow *win) {
     if (win->timer) {
         GList *l;
-        urn_timer_unsplit(win->timer);
+        last_timer_unsplit(win->timer);
         for (l = win->components; l != NULL; l = l->next) {
-            UrnComponent *component = l->data;
+            LASTComponent *component = l->data;
             if (component->ops->unsplit)
                 component->ops->unsplit(component, win->timer);
         }
     }
 }
 
-static void toggle_decorations(UrnAppWindow *win) {
+static void toggle_decorations(LASTAppWindow *win) {
     gtk_window_set_decorated(GTK_WINDOW(win), !win->decorated);
     win->decorated = !win->decorated;
 }
 
-static void keybind_start_split(GtkWidget *widget, UrnAppWindow *win) {
+static void keybind_start_split(GtkWidget *widget, LASTAppWindow *win) {
     timer_start_split(win);
 }
 
-static void keybind_stop_reset(const char *str, UrnAppWindow *win) {
+static void keybind_stop_reset(const char *str, LASTAppWindow *win) {
     timer_stop_reset(win);
 }
 
-static void keybind_cancel(const char *str, UrnAppWindow *win) {
+static void keybind_cancel(const char *str, LASTAppWindow *win) {
     timer_cancel_run(win);
 }
 
-static void keybind_skip(const char *str, UrnAppWindow *win) {
+static void keybind_skip(const char *str, LASTAppWindow *win) {
     timer_skip(win);
 }
 
-static void keybind_unsplit(const char *str, UrnAppWindow *win) {
+static void keybind_unsplit(const char *str, LASTAppWindow *win) {
     timer_unsplit(win);
 }
 
-static void keybind_toggle_decorations(const char *str, UrnAppWindow *win) {
+static void keybind_toggle_decorations(const char *str, LASTAppWindow *win) {
     toggle_decorations(win);
 }
 
-static gboolean urn_app_window_keypress(GtkWidget *widget,
+static gboolean last_app_window_keypress(GtkWidget *widget,
                                         GdkEvent *event,
                                         gpointer data) {
-    UrnAppWindow *win = (UrnAppWindow*)data;
+    LASTAppWindow *win = (LASTAppWindow*)data;
     if (keybind_match(win->keybind_start_split, event->key))
         timer_start_split(win);
     else if (keybind_match(win->keybind_stop_reset, event->key))
@@ -510,12 +510,12 @@ static gboolean urn_app_window_keypress(GtkWidget *widget,
     return TRUE;
 }
 
-static gboolean urn_app_window_draw(gpointer data) {
-    UrnAppWindow *win = data;
+static gboolean last_app_window_draw(gpointer data) {
+    LASTAppWindow *win = data;
     if (win->timer) {
         GList *l;
         for (l = win->components; l != NULL; l = l->next) {
-            UrnComponent *component = l->data;
+            LASTComponent *component = l->data;
             if (component->ops->draw)
                 component->ops->draw(component, win->game, win->timer);
         }
@@ -528,7 +528,7 @@ static gboolean urn_app_window_draw(gpointer data) {
     return TRUE;
 }
 
-static void urn_app_window_init(UrnAppWindow *win) {
+static void last_app_window_init(LASTAppWindow *win) {
     GtkCssProvider *provider;
     GdkScreen *screen;
     struct passwd *pw;
@@ -543,10 +543,10 @@ static void urn_app_window_init(UrnAppWindow *win) {
     // make data path
     pw = getpwuid(getuid());
     strcpy(win->data_path, pw->pw_dir);
-    strcat(win->data_path, "/.urn");
+    strcat(win->data_path, "/.last");
 
     // load settings
-    GSettings *settings = g_settings_new("wildmouse.urn");
+    GSettings *settings = g_settings_new("wildmouse.last");
     win->hide_cursor = g_settings_get_boolean(settings, "hide-cursor");
     win->global_hotkeys = g_settings_get_boolean(settings, "global-hotkeys");
     win->keybind_start_split = parse_keybind(
@@ -573,13 +573,13 @@ static void urn_app_window_init(UrnAppWindow *win) {
         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_css_provider_load_from_data(
         GTK_CSS_PROVIDER(provider),
-        (char *)urn_gtk_css, urn_gtk_css_len, NULL);
+        (char *)last_gtk_css, last_gtk_css_len, NULL);
     g_object_unref(provider);
 
     // Load theme
     theme = g_settings_get_string(settings, "theme");
     theme_variant = g_settings_get_string(settings, "theme-variant");
-    if (urn_app_window_find_theme(win, theme, theme_variant, str)) {
+    if (last_app_window_find_theme(win, theme, theme_variant, str)) {
         provider = gtk_css_provider_new();
         screen = gdk_display_get_default_screen(win->display);
         gtk_style_context_add_provider_for_screen(
@@ -598,9 +598,9 @@ static void urn_app_window_init(UrnAppWindow *win) {
     win->timer = 0;
 
     g_signal_connect(win, "destroy",
-                     G_CALLBACK(urn_app_window_destroy), NULL);
+                     G_CALLBACK(last_app_window_destroy), NULL);
     g_signal_connect(win, "configure-event",
-                     G_CALLBACK(urn_app_window_resize), win);
+                     G_CALLBACK(last_app_window_resize), win);
 
     if (win->global_hotkeys) {
         keybinder_init();
@@ -630,7 +630,7 @@ static void urn_app_window_init(UrnAppWindow *win) {
             win);
     } else {
         g_signal_connect(win, "key_press_event",
-                         G_CALLBACK(urn_app_window_keypress), win);
+                         G_CALLBACK(last_app_window_keypress), win);
     }
 
     win->box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -641,8 +641,8 @@ static void urn_app_window_init(UrnAppWindow *win) {
 
     // Create all available components (TODO: change this in the future)
     win->components = NULL;
-    for (i = 0; urn_components[i].name != NULL; i++) {
-        UrnComponent *component = urn_components[i].new();
+    for (i = 0; last_components[i].name != NULL; i++) {
+        LASTComponent *component = last_components[i].new();
         if (component) {
             GtkWidget *widget = component->ops->widget(component);
             if (widget) {
@@ -662,64 +662,64 @@ static void urn_app_window_init(UrnAppWindow *win) {
     gtk_container_add(GTK_CONTAINER(win->box), win->footer);
     gtk_widget_show(win->footer);
 
-    g_timeout_add(1, urn_app_window_step, win);
-    g_timeout_add((int)(1000 / 30.), urn_app_window_draw, win); 
+    g_timeout_add(1, last_app_window_step, win);
+    g_timeout_add((int)(1000 / 30.), last_app_window_draw, win); 
 }
 
-static void urn_app_window_class_init(UrnAppWindowClass *class) {
+static void last_app_window_class_init(LASTAppWindowClass *class) {
 }
 
-static UrnAppWindow *urn_app_window_new(UrnApp *app) {
-    UrnAppWindow *win;
-    win = g_object_new(URN_APP_WINDOW_TYPE, "application", app, NULL);
+static LASTAppWindow *last_app_window_new(LASTApp *app) {
+    LASTAppWindow *win;
+    win = g_object_new(LAST_APP_WINDOW_TYPE, "application", app, NULL);
     gtk_window_set_type_hint(GTK_WINDOW(win), GDK_WINDOW_TYPE_HINT_DIALOG);
     return win;
 }
 
-static void urn_app_window_open(UrnAppWindow *win, const char *file) {
+static void last_app_window_open(LASTAppWindow *win, const char *file) {
     if (win->timer) {
-        urn_app_window_clear_game(win);
-        urn_timer_release(win->timer);
+        last_app_window_clear_game(win);
+        last_timer_release(win->timer);
         win->timer = 0;
     }
     if (win->game) {
-        urn_game_release(win->game);
+        last_game_release(win->game);
         win->game = 0;
     }
-    if (urn_game_create(&win->game, file)) {
+    if (last_game_create(&win->game, file)) {
         win->game = 0;
-    } else if (urn_timer_create(&win->timer, win->game)) {
+    } else if (last_timer_create(&win->timer, win->game)) {
         win->timer = 0;
     } else {
-        urn_app_window_show_game(win);
+        last_app_window_show_game(win);
     }
 }
 
-struct _UrnApp {
+struct _LASTApp {
     GtkApplication parent;
 };
 
-struct _UrnAppClass {
+struct _LASTAppClass {
     GtkApplicationClass parent_class;
 };
 
-G_DEFINE_TYPE(UrnApp, urn_app, GTK_TYPE_APPLICATION);
+G_DEFINE_TYPE(LASTApp, last_app, GTK_TYPE_APPLICATION);
 
 static void open_activated(GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       app) {
     char splits_path[256];
     GList *windows;
-    UrnAppWindow *win;
+    LASTAppWindow *win;
     GtkWidget *dialog;
     struct stat st = {0};
     gint res;
 
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows) {
-        win = URN_APP_WINDOW(windows->data);
+        win = LAST_APP_WINDOW(windows->data);
     } else {
-        win = urn_app_window_new(URN_APP(app));
+        win = last_app_window_new(LAST_APP(app));
     }
     dialog = gtk_file_chooser_dialog_new (
         "Open File", GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -740,7 +740,7 @@ static void open_activated(GSimpleAction *action,
         char *filename;
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
         filename = gtk_file_chooser_get_filename(chooser);
-        urn_app_window_open(win, filename);
+        last_app_window_open(win, filename);
         g_free(filename);
     }
     gtk_widget_destroy(dialog);
@@ -750,19 +750,19 @@ static void save_activated(GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       app) {
     GList *windows;
-    UrnAppWindow *win;
+    LASTAppWindow *win;
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows) {
-        win = URN_APP_WINDOW(windows->data);
+        win = LAST_APP_WINDOW(windows->data);
     } else {
-        win = urn_app_window_new(URN_APP(app));
+        win = last_app_window_new(LAST_APP(app));
     }
     if (win->game && win->timer) {
         int width, height;
         gtk_window_get_size(GTK_WINDOW(win), &width, &height);
         win->game->width = width;
         win->game->height = height;
-        urn_game_update_splits(win->game, win->timer);
+        last_game_update_splits(win->game, win->timer);
         save_game(win->game);
     }
 }
@@ -771,15 +771,15 @@ static void save_bests_activated(GSimpleAction *action,
                                  GVariant      *parameter,
                                  gpointer       app) {
     GList *windows;
-    UrnAppWindow *win;
+    LASTAppWindow *win;
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows) {
-        win = URN_APP_WINDOW(windows->data);
+        win = LAST_APP_WINDOW(windows->data);
     } else {
-        win = urn_app_window_new(URN_APP(app));
+        win = last_app_window_new(LAST_APP(app));
     }
     if (win->game && win->timer) {
-        urn_game_update_bests(win->game, win->timer);
+        last_game_update_bests(win->game, win->timer);
         save_game(win->game);
     }
 }
@@ -788,17 +788,17 @@ static void reload_activated(GSimpleAction *action,
                              GVariant      *parameter,
                              gpointer       app) {
     GList *windows;
-    UrnAppWindow *win;
+    LASTAppWindow *win;
     char *path;
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows) {
-        win = URN_APP_WINDOW(windows->data);
+        win = LAST_APP_WINDOW(windows->data);
     } else {
-        win = urn_app_window_new(URN_APP(app));
+        win = last_app_window_new(LAST_APP(app));
     }
     if (win->game) {
         path = strdup(win->game->path);
-        urn_app_window_open(win, path);
+        last_app_window_open(win, path);
         free(path);
     }
 }
@@ -807,22 +807,22 @@ static void close_activated(GSimpleAction *action,
                              GVariant      *parameter,
                              gpointer       app) {
     GList *windows;
-    UrnAppWindow *win;
+    LASTAppWindow *win;
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows) {
-        win = URN_APP_WINDOW(windows->data);
+        win = LAST_APP_WINDOW(windows->data);
     } else {
-        win = urn_app_window_new(URN_APP(app));
+        win = last_app_window_new(LAST_APP(app));
     }
     if (win->game && win->timer) {
-        urn_app_window_clear_game(win);
+        last_app_window_clear_game(win);
     }
     if (win->timer) {
-        urn_timer_release(win->timer);
+        last_timer_release(win->timer);
         win->timer = 0;
     }
     if (win->game) {
-        urn_game_release(win->game);
+        last_game_release(win->game);
         win->game = 0;
     }
     gtk_widget_set_size_request(GTK_WIDGET(win), -1, -1);
@@ -843,17 +843,17 @@ static GActionEntry app_entries[] = {
     { "quit", quit_activated, NULL, NULL, NULL }
 };
 
-static void urn_app_activate(GApplication *app) {
-    UrnAppWindow *win;
-    win = urn_app_window_new(URN_APP(app));
+static void last_app_activate(GApplication *app) {
+    LASTAppWindow *win;
+    win = last_app_window_new(LAST_APP(app));
     gtk_window_present(GTK_WINDOW(win));
     open_activated(NULL, NULL, app);
 }
 
-static void urn_app_startup(GApplication *app) {
+static void last_app_startup(GApplication *app) {
     GtkBuilder *builder;
     GMenuModel *menubar;
-    G_APPLICATION_CLASS(urn_app_parent_class)->startup(app);
+    G_APPLICATION_CLASS(last_app_parent_class)->startup(app);
     builder = gtk_builder_new_from_string (
         "<interface>"
         "  <menu id='menubar'>"
@@ -895,42 +895,42 @@ static void urn_app_startup(GApplication *app) {
     g_object_unref(builder);
 }
 
-static void urn_app_init(UrnApp *app) {
+static void last_app_init(LASTApp *app) {
 }
 
-static void urn_app_open(GApplication  *app,
+static void last_app_open(GApplication  *app,
                          GFile        **files,
                          gint           n_files,
                          const gchar   *hint) {
     GList *windows;
-    UrnAppWindow *win;
+    LASTAppWindow *win;
     int i;
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows) {
-        win = URN_APP_WINDOW(windows->data);
+        win = LAST_APP_WINDOW(windows->data);
     } else {
-        win = urn_app_window_new(URN_APP(app));
+        win = last_app_window_new(LAST_APP(app));
     }
     for (i = 0; i < n_files; i++) {
-        urn_app_window_open(win, g_file_get_path(files[i]));
+        last_app_window_open(win, g_file_get_path(files[i]));
     }
     gtk_window_present(GTK_WINDOW(win));
 }
 
-UrnApp *urn_app_new(void) {
-    g_set_application_name("urn");
-    return g_object_new(URN_APP_TYPE,
-                        "application-id", "wildmouse.urn",
+LASTApp *last_app_new(void) {
+    g_set_application_name("last");
+    return g_object_new(LAST_APP_TYPE,
+                        "application-id", "wildmouse.last",
                         "flags", G_APPLICATION_HANDLES_OPEN,
                         NULL);
 }
 
-static void urn_app_class_init(UrnAppClass *class) {
-    G_APPLICATION_CLASS(class)->activate = urn_app_activate;
-    G_APPLICATION_CLASS(class)->open = urn_app_open;
-    G_APPLICATION_CLASS(class)->startup = urn_app_startup;
+static void last_app_class_init(LASTAppClass *class) {
+    G_APPLICATION_CLASS(class)->activate = last_app_activate;
+    G_APPLICATION_CLASS(class)->open = last_app_open;
+    G_APPLICATION_CLASS(class)->startup = last_app_startup;
 }
 
-int startUrn(int argc, char *argv[]) {
-    return g_application_run(G_APPLICATION(urn_app_new()), argc, argv);
+int open_timer(int argc, char *argv[]) {
+    return g_application_run(G_APPLICATION(last_app_new()), argc, argv);
 }

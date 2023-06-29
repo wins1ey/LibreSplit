@@ -1,12 +1,12 @@
-#ifndef __urn_h__
-#define __urn_h__
+#ifndef __last_h__
+#define __last_h__
 
-#define URN_INFO_BEHIND_TIME   (1)
-#define URN_INFO_LOSING_TIME   (2)
-#define URN_INFO_BEST_SPLIT    (4)
-#define URN_INFO_BEST_SEGMENT  (8)
+#define LAST_INFO_BEHIND_TIME   (1)
+#define LAST_INFO_LOSING_TIME   (2)
+#define LAST_INFO_BEST_SPLIT    (4)
+#define LAST_INFO_BEST_SEGMENT  (8)
 
-struct urn_game {
+struct last_game {
     char *path;
     char *title;
     char *theme;
@@ -23,9 +23,9 @@ struct urn_game {
     long long *best_splits;
     long long *best_segments;
 };
-typedef struct urn_game urn_game;
+typedef struct last_game last_game;
 
-struct urn_timer {
+struct last_timer {
     int started;
     int running;
     long long now;
@@ -41,51 +41,51 @@ struct urn_timer {
     int *split_info;
     long long *best_splits;
     long long *best_segments;
-    const urn_game *game;
+    const last_game *game;
   int *attempt_count;
 };
-typedef struct urn_timer urn_timer;
+typedef struct last_timer last_timer;
 
-long long urn_time_now(void);
+long long last_time_now(void);
 
-long long urn_time_value(const char *string);
+long long last_time_value(const char *string);
 
-void urn_time_string(char *string, long long time);
+void last_time_string(char *string, long long time);
 
-void urn_time_millis_string(char *seconds, char *millis, long long time);
+void last_time_millis_string(char *seconds, char *millis, long long time);
 
-void urn_split_string(char *string, long long time);
+void last_split_string(char *string, long long time);
 
-void urn_delta_string(char *string, long long time);
+void last_delta_string(char *string, long long time);
 
-int urn_game_create(urn_game **game_ptr, const char *path);
+int last_game_create(last_game **game_ptr, const char *path);
 
-void urn_game_update_splits(urn_game *game, const urn_timer *timer);
+void last_game_update_splits(last_game *game, const last_timer *timer);
 
-void urn_game_update_bests(urn_game *game, const urn_timer *timer);
+void last_game_update_bests(last_game *game, const last_timer *timer);
 
-int urn_game_save(const urn_game *game);
+int last_game_save(const last_game *game);
 
-void urn_game_release(urn_game *game);
+void last_game_release(last_game *game);
 
-int urn_timer_create(urn_timer **timer_ptr, urn_game *game);
+int last_timer_create(last_timer **timer_ptr, last_game *game);
 
-void urn_timer_release(urn_timer *timer);
+void last_timer_release(last_timer *timer);
 
-int urn_timer_start(urn_timer *timer);
+int last_timer_start(last_timer *timer);
 
-void urn_timer_step(urn_timer *timer, long long now);
+void last_timer_step(last_timer *timer, long long now);
 
-int urn_timer_split(urn_timer *timer);
+int last_timer_split(last_timer *timer);
 
-int urn_timer_skip(urn_timer *timer);
+int last_timer_skip(last_timer *timer);
 
-int urn_timer_unsplit(urn_timer *timer);
+int last_timer_unsplit(last_timer *timer);
 
-void urn_timer_stop(urn_timer *timer);
+void last_timer_stop(last_timer *timer);
 
-int urn_timer_reset(urn_timer *timer);
+int last_timer_reset(last_timer *timer);
 
-int urn_timer_cancel(urn_timer *timer);
+int last_timer_cancel(last_timer *timer);
 
 #endif

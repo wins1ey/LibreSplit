@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Urn
-Exec=/usr/local/bin/urn-gtk
-Icon=urn
+Name=LAST
+Exec=/usr/local/bin/last-gtk
+Icon=last
 Type=Application
 Categories=GTK;GNOME;Utility;

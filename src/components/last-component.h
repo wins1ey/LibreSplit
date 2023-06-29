@@ -1,5 +1,5 @@
-#ifndef __urn_component_h__
-#define __urn_component_h__
+#ifndef __last_component_h__
+#define __last_component_h__
 
 #include <string.h>
 #include <stdlib.h>
@@ -8,37 +8,37 @@
 
 #include "../headers/last.h"
 
-typedef struct _UrnComponent UrnComponent;
-typedef struct _UrnComponentOps UrnComponentOps;
-typedef struct _UrnComponentAvailable UrnComponentAvailable;
+typedef struct _LASTComponent LASTComponent;
+typedef struct _LASTComponentOps LASTComponentOps;
+typedef struct _LASTComponentAvailable LASTComponentAvailable;
 
-struct _UrnComponent {
-    UrnComponentOps *ops;
+struct _LASTComponent {
+    LASTComponentOps *ops;
 };
 
-struct _UrnComponentOps {
-    void (*delete)(UrnComponent *self);
-    GtkWidget *(*widget)(UrnComponent *self);
+struct _LASTComponentOps {
+    void (*delete)(LASTComponent *self);
+    GtkWidget *(*widget)(LASTComponent *self);
 
-    void (*resize)(UrnComponent *self, int win_width, int win_height);
-    void (*show_game)(UrnComponent *self, urn_game *game, urn_timer *timer);
-    void (*clear_game)(UrnComponent *self);
-    void (*draw)(UrnComponent *self, urn_game *game, urn_timer *timer);
+    void (*resize)(LASTComponent *self, int win_width, int win_height);
+    void (*show_game)(LASTComponent *self, last_game *game, last_timer *timer);
+    void (*clear_game)(LASTComponent *self);
+    void (*draw)(LASTComponent *self, last_game *game, last_timer *timer);
 
-    void (*start_split)(UrnComponent *self, urn_timer *timer);
-    void (*skip)(UrnComponent *self, urn_timer *timer);
-    void (*unsplit)(UrnComponent *self, urn_timer *timer);
-    void (*stop_reset)(UrnComponent *self, urn_timer *timer);
-    void (*cancel_run)(UrnComponent *self, urn_timer *timer);
+    void (*start_split)(LASTComponent *self, last_timer *timer);
+    void (*skip)(LASTComponent *self, last_timer *timer);
+    void (*unsplit)(LASTComponent *self, last_timer *timer);
+    void (*stop_reset)(LASTComponent *self, last_timer *timer);
+    void (*cancel_run)(LASTComponent *self, last_timer *timer);
 };
 
-struct _UrnComponentAvailable {
+struct _LASTComponentAvailable {
     char *name;
-    UrnComponent *(*new)();
+    LASTComponent *(*new)();
 };
 
 // A NULL-terminated array of all available components
-extern UrnComponentAvailable urn_components[];
+extern LASTComponentAvailable last_components[];
 
 // Utility functions
 void add_class(GtkWidget *widget, const char *class);

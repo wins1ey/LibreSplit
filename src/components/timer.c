@@ -1,20 +1,20 @@
 #include "last-component.h"
 
-typedef struct _UrnTimer {
-    UrnComponent base;
+typedef struct _LASTTimer {
+    LASTComponent base;
     GtkWidget *time;
     GtkWidget *time_seconds;
     GtkWidget *time_millis;
-} UrnTimer;
-extern UrnComponentOps urn_timer_operations;
+} LASTTimer;
+extern LASTComponentOps last_timer_operations;
 
-UrnComponent *urn_component_timer_new() {
-    UrnTimer *self;
+LASTComponent *last_component_timer_new() {
+    LASTTimer *self;
     GtkWidget *spacer;
 
-    self = malloc(sizeof(UrnTimer));
+    self = malloc(sizeof(LASTTimer));
     if (!self) return NULL;
-    self->base.ops = &urn_timer_operations;
+    self->base.ops = &last_timer_operations;
 
     self->time = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     add_class(self->time, "timer");
@@ -44,20 +44,20 @@ UrnComponent *urn_component_timer_new() {
     gtk_widget_show(self->time_millis);
 
 
-    return (UrnComponent *)self;
+    return (LASTComponent *)self;
 }
 
 // Avoid collision with timer_delete of time.h
-static void urn_timer_delete(UrnComponent *self) {
+static void last_timer_delete(LASTComponent *self) {
     free(self);
 }
 
-static GtkWidget *timer_widget(UrnComponent *self) {
-    return ((UrnTimer *)self)->time;
+static GtkWidget *timer_widget(LASTComponent *self) {
+    return ((LASTTimer *)self)->time;
 }
 
-static void timer_clear_game(UrnComponent *self_) {
-    UrnTimer *self = (UrnTimer *)self_;
+static void timer_clear_game(LASTComponent *self_) {
+    LASTTimer *self = (LASTTimer *)self_;
     gtk_label_set_text(GTK_LABEL(self->time_seconds), "");
     gtk_label_set_text(GTK_LABEL(self->time_millis), "");
     remove_class(self->time, "behind");
@@ -65,8 +65,8 @@ static void timer_clear_game(UrnComponent *self_) {
 
 }
 
-static void timer_draw(UrnComponent *self_, urn_game *game, urn_timer *timer) {
-    UrnTimer *self = (UrnTimer *)self_;
+static void timer_draw(LASTComponent *self_, last_game *game, last_timer *timer) {
+    LASTTimer *self = (LASTTimer *)self_;
     char str[256], millis[256];
     int curr;
 
@@ -88,27 +88,27 @@ static void timer_draw(UrnComponent *self_, urn_game *game, urn_timer *timer) {
     } else {
         if (timer->curr_split == game->split_count
             && timer->split_info[curr]
-               & URN_INFO_BEST_SPLIT) {
+               & LAST_INFO_BEST_SPLIT) {
             add_class(self->time, "best-split");
         } else{
             if (timer->split_info[curr]
-                & URN_INFO_BEHIND_TIME) {
+                & LAST_INFO_BEHIND_TIME) {
                 add_class(self->time, "behind");
             }
             if (timer->split_info[curr]
-                & URN_INFO_LOSING_TIME) {
+                & LAST_INFO_LOSING_TIME) {
                 add_class(self->time, "losing");
             }
         }
     }
-    urn_time_millis_string(str, &millis[1], timer->time);
+    last_time_millis_string(str, &millis[1], timer->time);
     millis[0] = '.';
     gtk_label_set_text(GTK_LABEL(self->time_seconds), str);
     gtk_label_set_text(GTK_LABEL(self->time_millis), millis);
 }
 
-UrnComponentOps urn_timer_operations = {
-    .delete = urn_timer_delete,
+LASTComponentOps last_timer_operations = {
+    .delete = last_timer_delete,
     .widget = timer_widget,
     .clear_game = timer_clear_game,
     .draw = timer_draw

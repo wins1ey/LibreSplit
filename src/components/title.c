@@ -1,19 +1,19 @@
 #include "last-component.h"
 
-typedef struct _UrnTitle {
-    UrnComponent base;
+typedef struct _LASTTitle {
+    LASTComponent base;
     GtkWidget *header;
     GtkWidget *title;
     GtkWidget *attempt_count;
-} UrnTitle;
-extern UrnComponentOps urn_title_operations; // defined at the end of the file
+} LASTTitle;
+extern LASTComponentOps last_title_operations; // defined at the end of the file
 
-UrnComponent *urn_component_title_new() {
-    UrnTitle *self;
+LASTComponent *last_component_title_new() {
+    LASTTitle *self;
 
-    self = malloc(sizeof(UrnTitle));
+    self = malloc(sizeof(LASTTitle));
     if (!self) return NULL;
-    self->base.ops = &urn_title_operations;
+    self->base.ops = &last_title_operations;
 
     self->header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     add_class(self->header, "header");
@@ -33,22 +33,22 @@ UrnComponent *urn_component_title_new() {
     gtk_container_add(GTK_CONTAINER(self->header), self->attempt_count);
     gtk_widget_show(self->attempt_count);
 
-    return (UrnComponent *)self;
+    return (LASTComponent *)self;
 }
 
-static void title_delete(UrnComponent *self) {
+static void title_delete(LASTComponent *self) {
     free(self);
 }
 
-static GtkWidget *title_widget(UrnComponent *self) {
-    return ((UrnTitle *)self)->header;
+static GtkWidget *title_widget(LASTComponent *self) {
+    return ((LASTTitle *)self)->header;
 }
 
-static void title_resize(UrnComponent *self_, int win_width, int win_height) {
+static void title_resize(LASTComponent *self_, int win_width, int win_height) {
     GdkRectangle rect;
     int attempt_count_width;
     int title_width;
-    UrnTitle *self = (UrnTitle *)self_;
+    LASTTitle *self = (LASTTitle *)self_;
 
     gtk_widget_hide(self->title);
     gtk_widget_get_allocation(self->attempt_count, &rect);
@@ -59,23 +59,23 @@ static void title_resize(UrnComponent *self_, int win_width, int win_height) {
     gtk_widget_set_allocation(self->title, &rect);
 }
 
-static void title_show_game(UrnComponent *self_, urn_game *game,
-        urn_timer *timer) {
+static void title_show_game(LASTComponent *self_, last_game *game,
+        last_timer *timer) {
     char str[64];
-    UrnTitle *self = (UrnTitle *)self_;
+    LASTTitle *self = (LASTTitle *)self_;
     gtk_label_set_text(GTK_LABEL(self->title), game->title);
     sprintf(str, "#%d", game->attempt_count);
     gtk_label_set_text(GTK_LABEL(self->attempt_count), str);
 }
 
-static void title_draw(UrnComponent *self_, urn_game *game, urn_timer *timer) {
+static void title_draw(LASTComponent *self_, last_game *game, last_timer *timer) {
     char str[64];
-    UrnTitle *self = (UrnTitle *)self_;
+    LASTTitle *self = (LASTTitle *)self_;
     sprintf(str, "#%d", game->attempt_count);
     gtk_label_set_text(GTK_LABEL(self->attempt_count), str);
 }
 
-UrnComponentOps urn_title_operations = {
+LASTComponentOps last_title_operations = {
     .delete = title_delete,
     .widget = title_widget,
     .resize = title_resize,

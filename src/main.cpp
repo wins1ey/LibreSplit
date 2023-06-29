@@ -30,17 +30,10 @@ int autoSplitterThread(int argc, char *argv[])
     return 0;
 }
 
-int timerThread(int argc, char *argv[])
-{
-    startUrn(argc, argv);
-
-    return 0;
-}
-
 int main(int argc, char *argv[])
 {
     thread t1(autoSplitterThread, argc, argv);
-    thread t2(timerThread, argc, argv);
+    thread t2(open_timer, argc, argv);
 
     t1.join();
     t2.join();

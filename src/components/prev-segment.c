@@ -1,22 +1,22 @@
 #include "last-component.h"
 
-typedef struct _UrnPrevSegment {
-    UrnComponent base;
+typedef struct _LASTPrevSegment {
+    LASTComponent base;
     GtkWidget *container;
     GtkWidget *previous_segment_label;
     GtkWidget *previous_segment;
-} UrnPrevSegment;
-extern UrnComponentOps urn_prev_segment_operations;
+} LASTPrevSegment;
+extern LASTComponentOps last_prev_segment_operations;
 
 #define PREVIOUS_SEGMENT "Previous segment"
 #define LIVE_SEGMENT     "Live segment"
 
-UrnComponent *urn_component_prev_segment_new() {
-    UrnPrevSegment *self;
+LASTComponent *last_component_prev_segment_new() {
+    LASTPrevSegment *self;
 
-    self = malloc(sizeof(UrnPrevSegment));
+    self = malloc(sizeof(LASTPrevSegment));
     if (!self) return NULL;
-    self->base.ops = &urn_prev_segment_operations;
+    self->base.ops = &last_prev_segment_operations;
 
     self->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     add_class(self->container, "footer");
@@ -37,35 +37,35 @@ UrnComponent *urn_component_prev_segment_new() {
     gtk_container_add(GTK_CONTAINER(self->container), self->previous_segment);
     gtk_widget_show(self->previous_segment);
 
-    return (UrnComponent *)self;
+    return (LASTComponent *)self;
 }
 
-static void prev_segment_delete(UrnComponent *self) {
+static void prev_segment_delete(LASTComponent *self) {
     free(self);
 }
 
-static GtkWidget *prev_segment_widget(UrnComponent *self) {
-    return ((UrnPrevSegment *)self)->container;
+static GtkWidget *prev_segment_widget(LASTComponent *self) {
+    return ((LASTPrevSegment *)self)->container;
 }
 
-static void prev_segment_show_game(UrnComponent *self_,
-        urn_game *game, urn_timer *timer) {
-    UrnPrevSegment *self = (UrnPrevSegment *)self_;
+static void prev_segment_show_game(LASTComponent *self_,
+        last_game *game, last_timer *timer) {
+    LASTPrevSegment *self = (LASTPrevSegment *)self_;
     remove_class(self->previous_segment, "behind");
     remove_class(self->previous_segment, "losing");
     remove_class(self->previous_segment, "best-segment");
 }
 
-static void prev_segment_clear_game(UrnComponent *self_) {
-    UrnPrevSegment *self = (UrnPrevSegment *)self_;
+static void prev_segment_clear_game(LASTComponent *self_) {
+    LASTPrevSegment *self = (LASTPrevSegment *)self_;
     gtk_label_set_text(GTK_LABEL(self->previous_segment_label),
                        PREVIOUS_SEGMENT);
     gtk_label_set_text(GTK_LABEL(self->previous_segment), "");
 }
 
-static void prev_segment_draw(UrnComponent *self_, urn_game *game,
-        urn_timer *timer) {
-    UrnPrevSegment *self = (UrnPrevSegment *)self_;
+static void prev_segment_draw(LASTComponent *self_, last_game *game,
+        last_timer *timer) {
+    LASTPrevSegment *self = (LASTPrevSegment *)self_;
     const char *label;
     char str[256];
     int prev, curr = timer->curr_split;
@@ -86,7 +86,7 @@ static void prev_segment_draw(UrnComponent *self_, urn_game *game,
         add_class(self->previous_segment, "behind");
         add_class(self->previous_segment, "losing");
         add_class(self->previous_segment, "delta");
-        urn_delta_string(str, timer->segment_deltas[curr]);
+        last_delta_string(str, timer->segment_deltas[curr]);
         gtk_label_set_text(GTK_LABEL(self->previous_segment), str);
     } else if (curr) {
         prev = timer->curr_split - 1;
@@ -95,14 +95,14 @@ static void prev_segment_draw(UrnComponent *self_, urn_game *game,
             prev = timer->curr_split - 1;
             if (timer->segment_deltas[prev]) {
                 if (timer->split_info[prev]
-                    & URN_INFO_BEST_SEGMENT) {
+                    & LAST_INFO_BEST_SEGMENT) {
                     add_class(self->previous_segment, "best-segment");
                 } else if (timer->segment_deltas[prev] > 0) {
                     add_class(self->previous_segment, "behind");
                     add_class(self->previous_segment, "losing");
                 }
                 add_class(self->previous_segment, "delta");
-                urn_delta_string(str, timer->segment_deltas[prev]);
+                last_delta_string(str, timer->segment_deltas[prev]);
                 gtk_label_set_text(GTK_LABEL(self->previous_segment), str);
             }
         }
@@ -110,7 +110,7 @@ static void prev_segment_draw(UrnComponent *self_, urn_game *game,
     gtk_label_set_text(GTK_LABEL(self->previous_segment_label), label);
 }
 
-UrnComponentOps urn_prev_segment_operations = {
+LASTComponentOps last_prev_segment_operations = {
     .delete = prev_segment_delete,
     .widget = prev_segment_widget,
     .show_game = prev_segment_show_game,

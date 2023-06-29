@@ -5,13 +5,13 @@
 #include <jansson.h>
 #include "headers/last.h"
 
-long long urn_time_now(void) {
+long long last_time_now(void) {
     struct timespec timespec;
     clock_gettime(CLOCK_MONOTONIC, &timespec);
     return timespec.tv_sec * 1000000LL + timespec.tv_nsec / 1000;
 }
 
-long long urn_time_value(const char *string) {
+long long last_time_value(const char *string) {
     char seconds_part[256];
     double subseconds_part = 0.;
     int hours = 0;
@@ -45,7 +45,7 @@ long long urn_time_value(const char *string) {
                    + (int)(subseconds_part * 1000000.));
 }
 
-static void urn_time_string_format(char *string,
+static void last_time_string_format(char *string,
                                    char *millis,
                                    long long time,
                                    int serialized,
@@ -91,28 +91,28 @@ static void urn_time_string_format(char *string,
     }
 }
 
-static void urn_time_string_serialized(char *string,
+static void last_time_string_serialized(char *string,
                                        long long time) {
-    urn_time_string_format(string, NULL, time, 1, 0, 0);
+    last_time_string_format(string, NULL, time, 1, 0, 0);
 }
 
-void urn_time_string(char *string, long long time) {
-    urn_time_string_format(string, NULL, time, 0, 0, 0);
+void last_time_string(char *string, long long time) {
+    last_time_string_format(string, NULL, time, 0, 0, 0);
 }
 
-void urn_time_millis_string(char *seconds, char *millis, long long time) {
-    urn_time_string_format(seconds, millis, time, 0, 0, 0);
+void last_time_millis_string(char *seconds, char *millis, long long time) {
+    last_time_string_format(seconds, millis, time, 0, 0, 0);
 }
 
-void urn_split_string(char *string, long long time) {
-    urn_time_string_format(string, NULL, time, 0, 0, 1);
+void last_split_string(char *string, long long time) {
+    last_time_string_format(string, NULL, time, 0, 0, 1);
 }
 
-void urn_delta_string(char *string, long long time) {
-    urn_time_string_format(string, NULL, time, 0, 1, 1);
+void last_delta_string(char *string, long long time) {
+    last_time_string_format(string, NULL, time, 0, 1, 1);
 }
 
-void urn_game_release(urn_game *game) {
+void last_game_release(last_game *game) {
     int i;
     if (game->path) {
         free(game->path);
@@ -148,15 +148,15 @@ void urn_game_release(urn_game *game) {
     }
 }
 
-int urn_game_create(urn_game **game_ptr, const char *path) {
+int last_game_create(last_game **game_ptr, const char *path) {
     int error = 0;
-    urn_game *game;
+    last_game *game;
     int i;
     json_t *json = 0;
     json_t *ref;
     json_error_t json_error;
     // allocate game
-    game = calloc(1, sizeof(urn_game));
+    game = calloc(1, sizeof(last_game));
     if (!game) {
         error = 1;
         goto game_create_done;
@@ -218,13 +218,13 @@ int urn_game_create(urn_game **game_ptr, const char *path) {
     // get delay
     ref = json_object_get(json, "start_delay");
     if (ref) {
-        game->start_delay = urn_time_value(
+        game->start_delay = last_time_value(
             json_string_value(ref));
     }
     // get wr
     ref = json_object_get(json, "world_record");
     if (ref) {
-        game->world_record = urn_time_value(
+        game->world_record = last_time_value(
             json_string_value(ref));
     }
     // get splits
@@ -279,7 +279,7 @@ int urn_game_create(urn_game **game_ptr, const char *path) {
             }
             split_ref = json_object_get(split, "time");
             if (split_ref) {
-                game->split_times[i] = urn_time_value(
+                game->split_times[i] = last_time_value(
                     json_string_value(split_ref));
             }
             if (i && game->split_times[i] && game->split_times[i-1]) {
@@ -289,14 +289,14 @@ int urn_game_create(urn_game **game_ptr, const char *path) {
             }
             split_ref = json_object_get(split, "best_time");
             if (split_ref) {
-                game->best_splits[i] = urn_time_value(
+                game->best_splits[i] = last_time_value(
                     json_string_value(split_ref));
             } else if (game->split_times[i]) {
                 game->best_splits[i] = game->split_times[i];
             }
             split_ref = json_object_get(split, "best_segment");
             if (split_ref) {
-                game->best_segments[i] = urn_time_value(
+                game->best_segments[i] = last_time_value(
                     json_string_value(split_ref));
             } else if (game->segment_times[i]) {
                 game->best_segments[i] = game->segment_times[i];
@@ -307,7 +307,7 @@ int urn_game_create(urn_game **game_ptr, const char *path) {
     if (!error) {
         *game_ptr = game;
     } else if (game) {
-        urn_game_release(game);
+        last_game_release(game);
     }
     if (json) {
         json_decref(json);
@@ -315,8 +315,8 @@ int urn_game_create(urn_game **game_ptr, const char *path) {
     return error;
 }
 
-void urn_game_update_splits(urn_game *game,
-                            const urn_timer *timer) {
+void last_game_update_splits(last_game *game,
+                            const last_timer *timer) {
     if (timer->curr_split) {
         int size;
         if (timer->split_times[game->split_count - 1]
@@ -332,8 +332,8 @@ void urn_game_update_splits(urn_game *game,
     }
 }
 
-void urn_game_update_bests(urn_game *game,
-                           const urn_timer *timer) {
+void last_game_update_bests(last_game *game,
+                           const last_timer *timer) {
     if (timer->curr_split) {
         int size;
         size = timer->curr_split * sizeof(long long);
@@ -342,7 +342,7 @@ void urn_game_update_bests(urn_game *game,
     }
 }
 
-int urn_game_save(const urn_game *game) {
+int last_game_save(const last_game *game) {
     int error = 0;
     char str[256];
     json_t *json = json_object();
@@ -356,22 +356,22 @@ int urn_game_save(const urn_game *game) {
                             json_integer(game->attempt_count));
     }
     if (game->world_record) {
-        urn_time_string_serialized(str, game->world_record);
+        last_time_string_serialized(str, game->world_record);
         json_object_set_new(json, "world_record", json_string(str));
     }
     if (game->start_delay) {
-        urn_time_string_serialized(str, game->start_delay);
+        last_time_string_serialized(str, game->start_delay);
         json_object_set_new(json, "start_delay", json_string(str));
     }
     for (i = 0; i < game->split_count; ++i) {
         json_t *split = json_object();
         json_object_set_new(split, "title",
                             json_string(game->split_titles[i]));
-        urn_time_string_serialized(str, game->split_times[i]);
+        last_time_string_serialized(str, game->split_times[i]);
         json_object_set_new(split, "time", json_string(str));
-        urn_time_string_serialized(str, game->best_splits[i]);
+        last_time_string_serialized(str, game->best_splits[i]);
         json_object_set_new(split, "best_time", json_string(str));
-        urn_time_string_serialized(str, game->best_segments[i]);
+        last_time_string_serialized(str, game->best_segments[i]);
         json_object_set_new(split, "best_segment", json_string(str));
         json_array_append_new(splits, split);
     }
@@ -397,7 +397,7 @@ int urn_game_save(const urn_game *game) {
     return error;
 }
 
-void urn_timer_release(urn_timer *timer) {
+void last_timer_release(last_timer *timer) {
     if (timer->split_times) {
         free(timer->split_times);
     }
@@ -421,7 +421,7 @@ void urn_timer_release(urn_timer *timer) {
     }
 }
 
-static void reset_timer(urn_timer *timer) {
+static void reset_timer(last_timer *timer) {
     int i;
     int size;
     timer->started = 0;
@@ -450,11 +450,11 @@ static void reset_timer(urn_timer *timer) {
     }
 }
 
-int urn_timer_create(urn_timer **timer_ptr, urn_game *game) {
+int last_timer_create(last_timer **timer_ptr, last_game *game) {
     int error = 0;
-    urn_timer *timer;
+    last_timer *timer;
     // allocate timer
-    timer = calloc(1, sizeof(urn_timer));
+    timer = calloc(1, sizeof(last_timer));
     if (!timer) {
         error = 1;
         goto timer_create_done;
@@ -509,12 +509,12 @@ int urn_timer_create(urn_timer **timer_ptr, urn_game *game) {
     if (!error) {
         *timer_ptr = timer;
     } else if (timer) {
-        urn_timer_release(timer);
+        last_timer_release(timer);
     }
     return error;
 }
 
-void urn_timer_step(urn_timer *timer, long long now) {
+void last_timer_step(last_timer *timer, long long now) {
     timer->now = now;
     if (timer->running) {
         long long delta = timer->now - timer->start_time;
@@ -529,9 +529,9 @@ void urn_timer_step(urn_timer *timer, long long now) {
             }
             // check for behind time
             if (timer->split_deltas[timer->curr_split] > 0) {
-                timer->split_info[timer->curr_split] |= URN_INFO_BEHIND_TIME;
+                timer->split_info[timer->curr_split] |= LAST_INFO_BEHIND_TIME;
             } else {
-                timer->split_info[timer->curr_split] &= ~URN_INFO_BEHIND_TIME;
+                timer->split_info[timer->curr_split] &= ~LAST_INFO_BEHIND_TIME;
             }
             if (!timer->curr_split || timer->split_times[timer->curr_split - 1]) {
                 // calc segment time and delta
@@ -552,24 +552,24 @@ void urn_timer_step(urn_timer *timer, long long now) {
                 if (timer->split_deltas[timer->curr_split]
                     > timer->split_deltas[timer->curr_split - 1]) {
                     timer->split_info[timer->curr_split]
-                        |= URN_INFO_LOSING_TIME;
+                        |= LAST_INFO_LOSING_TIME;
                 } else {
                     timer->split_info[timer->curr_split]
-                        &= ~URN_INFO_LOSING_TIME;
+                        &= ~LAST_INFO_LOSING_TIME;
                 }
             } else if (timer->split_deltas[timer->curr_split] > 0) {
                 timer->split_info[timer->curr_split]
-                    |= URN_INFO_LOSING_TIME;
+                    |= LAST_INFO_LOSING_TIME;
             } else {
                 timer->split_info[timer->curr_split]
-                    &= ~URN_INFO_LOSING_TIME;
+                    &= ~LAST_INFO_LOSING_TIME;
             }
         }
     }
     timer->start_time = now;  // Update the start time for the next iteration
 }
 
-int urn_timer_start(urn_timer *timer) {
+int last_timer_start(last_timer *timer) {
     if (timer->curr_split < timer->game->split_count) {
         if (!timer->start_time) {
             timer->start_time = timer->now + timer->game->start_delay;
@@ -581,7 +581,7 @@ int urn_timer_start(urn_timer *timer) {
     return timer->running;
 }
 
-int urn_timer_split(urn_timer *timer) {
+int last_timer_split(last_timer *timer) {
     if (timer->running && timer->time > 0) {
         if (timer->curr_split < timer->game->split_count) {
             int i;
@@ -592,7 +592,7 @@ int urn_timer_split(urn_timer *timer) {
                 timer->best_splits[timer->curr_split] =
                     timer->split_times[timer->curr_split];
                 timer->split_info[timer->curr_split]
-                    |= URN_INFO_BEST_SPLIT;
+                    |= LAST_INFO_BEST_SPLIT;
             }
             if (!timer->best_segments[timer->curr_split]
                 || timer->segment_times[timer->curr_split]
@@ -600,7 +600,7 @@ int urn_timer_split(urn_timer *timer) {
                 timer->best_segments[timer->curr_split] =
                     timer->segment_times[timer->curr_split];
                 timer->split_info[timer->curr_split]
-                    |= URN_INFO_BEST_SEGMENT;
+                    |= LAST_INFO_BEST_SEGMENT;
             }
             // update sum of bests
             timer->sum_of_bests = 0;
@@ -616,7 +616,7 @@ int urn_timer_split(urn_timer *timer) {
             }
             // stop timer if last split
             if (timer->curr_split + 1 == timer->game->split_count) {
-                urn_timer_stop(timer);
+                last_timer_stop(timer);
             }
             return ++timer->curr_split;
         }
@@ -624,7 +624,7 @@ int urn_timer_split(urn_timer *timer) {
     return 0;
 }
 
-int urn_timer_skip(urn_timer *timer) {
+int last_timer_skip(last_timer *timer) {
     if (timer->running && timer->time > 0) {
         if (timer->curr_split < timer->game->split_count) {
             timer->split_times[timer->curr_split] = 0;
@@ -638,7 +638,7 @@ int urn_timer_skip(urn_timer *timer) {
     return 0;
 }
 
-int urn_timer_unsplit(urn_timer *timer) {
+int last_timer_unsplit(last_timer *timer) {
     if (timer->curr_split) {
         int i;
         int curr = --timer->curr_split;
@@ -657,14 +657,14 @@ int urn_timer_unsplit(urn_timer *timer) {
     return 0;
 }
 
-void urn_timer_stop(urn_timer *timer) {
+void last_timer_stop(last_timer *timer) {
     timer->running = 0;
 }
 
-int urn_timer_reset(urn_timer *timer) {
+int last_timer_reset(last_timer *timer) {
     if (!timer->running) {
         if (timer->started && timer->time <= 0) {
-            return urn_timer_cancel(timer);
+            return last_timer_cancel(timer);
         }
         reset_timer(timer);
         return 1;
@@ -672,7 +672,7 @@ int urn_timer_reset(urn_timer *timer) {
     return 0;
 }
 
-int urn_timer_cancel(urn_timer *timer) {
+int last_timer_cancel(last_timer *timer) {
     if (!timer->running) {
         if (timer->started) {
             if (*timer->attempt_count <= 0) {
