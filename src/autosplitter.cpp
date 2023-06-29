@@ -204,8 +204,24 @@ void runAutoSplitter()
     lua_pushcfunction(L, luaPrint);
     lua_setglobal(L, "lasPrint");
 
+    // Load the Lua file
+    if (luaL_loadfile(L, chosenAutoSplitter.c_str()) != LUA_OK)
+    {
+        // Error loading the file
+        const char* errorMsg = lua_tostring(L, -1);
+        lua_pop(L, 1); // Remove the error message from the stack
+        throw std::runtime_error("Lua syntax error: " + std::string(errorMsg));
+    }
+
+    // Execute the Lua file
+    if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK)
+    {
+        // Error executing the file
+        const char* errorMsg = lua_tostring(L, -1);
+        lua_pop(L, 1); // Remove the error message from the stack
+        throw std::runtime_error("Lua runtime error: " + std::string(errorMsg));
+    }
     atomic_store(&usingAutoSplitter, true);
-    luaL_dofile(L, chosenAutoSplitter.c_str());
 
     lua_getglobal(L, "state");
     bool stateExists = lua_isfunction(L, -1);
