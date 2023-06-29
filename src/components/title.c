@@ -1,4 +1,4 @@
-#include "urn-component.h"
+#include "last-component.h"
 
 typedef struct _UrnTitle {
     UrnComponent base;

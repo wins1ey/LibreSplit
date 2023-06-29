@@ -1,4 +1,4 @@
-#include "urn-component.h"
+#include "last-component.h"
 
 UrnComponent *urn_component_title_new();
 UrnComponent *urn_component_splits_new();

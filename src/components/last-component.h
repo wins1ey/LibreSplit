@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <gtk/gtk.h>
 
-#include "../headers/urn.h"
+#include "../headers/last.h"
 
 typedef struct _UrnComponent UrnComponent;
 typedef struct _UrnComponentOps UrnComponentOps;

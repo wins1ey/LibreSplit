@@ -4,7 +4,7 @@
 #include "headers/downloader.hpp"
 #include "headers/autosplitter.hpp"
 extern "C" {
-    #include "headers/urn-gtk.h"
+    #include "headers/last-gtk.h"
 }
 
 using std::thread;

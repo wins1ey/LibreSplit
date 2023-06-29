@@ -6,10 +6,10 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <gtk/gtk.h>
-#include "headers/urn.h"
-#include "headers/urn-gtk.h"
+#include "headers/last.h"
+#include "headers/last-gtk.h"
 #include "headers/keybinder.h"
-#include "components/urn-component.h"
+#include "components/last-component.h"
 #include "headers/autosplitter.h"
 
 unsigned char urn_gtk_css[] = {
