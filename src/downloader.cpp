@@ -53,7 +53,7 @@ void startDownloader(string autoSplittersDirectory)
     {
         istringstream iss(input);
         int singleChoice;
-        if (iss >> singleChoice && singleChoice > 0 && singleChoice <= gameNamesVector.size())
+        if (iss >> singleChoice && singleChoice > 0 && singleChoice <= static_cast<int>(gameNamesVector.size()))
         {
             choiceOfAutoSplitters.push_back(singleChoice);
         }
@@ -65,10 +65,10 @@ void startDownloader(string autoSplittersDirectory)
     }
     cin.ignore();
 
-    for (int i = 0; i < choiceOfAutoSplitters.size(); i++)
+    for (int i = 0; i < static_cast<int>(choiceOfAutoSplitters.size()); i++)
     {
         int singleChoice = choiceOfAutoSplitters[i];
-        if (singleChoice > 0 && singleChoice <= gameNamesVector.size())
+        if (singleChoice > 0 && singleChoice <= static_cast<int>(gameNamesVector.size()))
         {
             cout << "Downloading " + gameNamesVector[singleChoice - 1] + "'s auto splitter\n";
             downloadFile(urlsVector[singleChoice - 1]);
@@ -79,7 +79,6 @@ void startDownloader(string autoSplittersDirectory)
 void downloadFile(string url)
 {
     CURL *curl;
-    CURLcode res;
     string filename = url.substr(url.find_last_of("/"));
     string filepath = directory + filename;
 
@@ -90,7 +89,7 @@ void downloadFile(string url)
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        res = curl_easy_perform(curl);
+        curl_easy_perform(curl);
         curl_easy_cleanup(curl);
         fclose(fp);
     }
