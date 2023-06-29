@@ -4,6 +4,8 @@
 #include <vector>
 #include <filesystem>
 #include <algorithm>
+#include <chrono>
+#include <thread>
 
 #include <lua.hpp>
 
@@ -19,15 +21,22 @@ using std::cin;
 using std::endl;
 using std::vector;
 using std::sort;
+using std::to_string;
 using std::filesystem::directory_iterator;
 using std::filesystem::create_directory;
 using std::filesystem::exists;
 using std::filesystem::is_empty;
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::microseconds;
+using std::this_thread::sleep_for;
 
 lua_State* L = luaL_newstate();
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
+bool isTimerRunning = false;
+int refreshRate = 60;
 
 void checkDirectories()
 {
@@ -108,6 +117,79 @@ void chooseAutoSplitter()
     lasPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
 }
 
+void startup()
+{
+    lua_getglobal(L, "startup");
+    lua_pcall(L, 0, 0, 0);
+
+    lua_getglobal(L, "refreshRate");
+    bool refreshRateExists = lua_isnumber(L, -1);
+    lua_pop(L, 1); // Remove 'refreshRate' from the stack
+
+    if (refreshRateExists)
+    {
+        lua_getglobal(L, "refreshRate");
+        refreshRate = lua_tointeger(L, -1);
+        lua_pop(L, 1); // Remove 'refreshRate' from the stack
+    }
+}
+
+void state()
+{
+    lua_getglobal(L, "state");
+    lua_pcall(L, 0, 0, 0);
+}
+
+void start()
+{
+    lua_getglobal(L, "start");
+    lua_pcall(L, 0, 1, 0);
+    if (lua_toboolean(L, -1))
+    {
+        sendLiveSplitCommand("starttimer");
+    }
+    lua_pop(L, 1); // Remove the return value from the stack
+}
+
+void split()
+{
+    lua_getglobal(L, "split");
+    lua_pcall(L, 0, 1, 0);
+    if (lua_toboolean(L, -1))
+    {
+        sendLiveSplitCommand("split");
+    }
+    lua_pop(L, 1); // Remove the return value from the stack
+}
+
+void isLoading()
+{
+    lua_getglobal(L, "isLoading");
+    lua_pcall(L, 0, 1, 0);
+    if (lua_toboolean(L, -1) && isTimerRunning)
+    {
+        sendLiveSplitCommand("pausegametime");
+        isTimerRunning = false;
+    }
+    else if (!lua_toboolean(L, -1) && !isTimerRunning)
+    {
+        sendLiveSplitCommand("unpausegametime");
+        isTimerRunning = true;
+    }
+    lua_pop(L, 1); // Remove the return value from the stack
+}
+
+void reset()
+{
+    lua_getglobal(L, "reset");
+    lua_pcall(L, 0, 1, 0);
+    if (lua_toboolean(L, -1))
+    {
+        sendLiveSplitCommand("reset");
+    }
+    lua_pop(L, 1); // Remove the return value from the stack
+}
+
 void runAutoSplitter()
 {
     luaL_openlibs(L);
@@ -121,5 +203,80 @@ void runAutoSplitter()
     lua_setglobal(L, "lasPrint");
 
     luaL_dofile(L, chosenAutoSplitter.c_str());
+
+    lua_getglobal(L, "state");
+    bool stateExists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'state' from the stack
+    
+    lua_getglobal(L, "start");
+    bool startExists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'start' from the stack
+    
+    lua_getglobal(L, "split");
+    bool splitExists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'split' from the stack
+
+    lua_getglobal(L, "isLoading");
+    bool isLoadingExists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'isLoading' from the stack
+
+    lua_getglobal(L, "startup");
+    bool startupExists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'startup' from the stack
+
+    lua_getglobal(L, "reset");
+    bool resetExists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'reset' from the stack
+
+    if (isLoadingExists)
+    {
+        sendLiveSplitCommand("initgametime");
+    }
+
+    if (startupExists)
+    {
+        startup();
+    }
+
+    lasPrint("Refresh rate: " + to_string(refreshRate));
+    int rate = static_cast<int>(1000000 / refreshRate);
+
+    while (processExists())
+    {
+        auto clockStart = high_resolution_clock::now();
+
+        if (stateExists)
+        {
+            state();
+        }
+            
+        if (startExists)
+        {
+            start();
+        }
+
+        if (splitExists)
+        {
+            split();
+        }
+
+        if (isLoadingExists)
+        {
+            isLoading();
+        }
+
+        if (resetExists)
+        {
+            reset();
+        }
+
+        auto clockEnd = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(clockEnd - clockStart).count();
+        if (duration < rate)
+        {
+            sleep_for(microseconds(rate - duration));
+        }
+    }
+
     lua_close(L);
 }
