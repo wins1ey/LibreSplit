@@ -6,7 +6,8 @@
 #define LAST_INFO_BEST_SPLIT    (4)
 #define LAST_INFO_BEST_SEGMENT  (8)
 
-struct last_game {
+struct last_game
+{
     char *path;
     char *title;
     char *theme;
@@ -25,7 +26,8 @@ struct last_game {
 };
 typedef struct last_game last_game;
 
-struct last_timer {
+struct last_timer
+{
     int started;
     int running;
     long long now;

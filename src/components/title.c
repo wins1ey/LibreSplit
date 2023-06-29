@@ -1,6 +1,7 @@
 #include "last-component.h"
 
-typedef struct _LASTTitle {
+typedef struct _LASTTitle
+{
     LASTComponent base;
     GtkWidget *header;
     GtkWidget *title;
@@ -8,11 +9,15 @@ typedef struct _LASTTitle {
 } LASTTitle;
 extern LASTComponentOps last_title_operations; // defined at the end of the file
 
-LASTComponent *last_component_title_new() {
+LASTComponent *last_component_title_new()
+{
     LASTTitle *self;
 
     self = malloc(sizeof(LASTTitle));
-    if (!self) return NULL;
+    if (!self)
+    {
+        return NULL;
+    }
     self->base.ops = &last_title_operations;
 
     self->header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -36,15 +41,18 @@ LASTComponent *last_component_title_new() {
     return (LASTComponent *)self;
 }
 
-static void title_delete(LASTComponent *self) {
+static void title_delete(LASTComponent *self)
+{
     free(self);
 }
 
-static GtkWidget *title_widget(LASTComponent *self) {
+static GtkWidget *title_widget(LASTComponent *self)
+{
     return ((LASTTitle *)self)->header;
 }
 
-static void title_resize(LASTComponent *self_, int win_width, int win_height) {
+static void title_resize(LASTComponent *self_, int win_width, int win_height)
+{
     GdkRectangle rect;
     int attempt_count_width;
     int title_width;
@@ -60,7 +68,8 @@ static void title_resize(LASTComponent *self_, int win_width, int win_height) {
 }
 
 static void title_show_game(LASTComponent *self_, last_game *game,
-        last_timer *timer) {
+        last_timer *timer)
+{
     char str[64];
     LASTTitle *self = (LASTTitle *)self_;
     gtk_label_set_text(GTK_LABEL(self->title), game->title);
@@ -68,14 +77,16 @@ static void title_show_game(LASTComponent *self_, last_game *game,
     gtk_label_set_text(GTK_LABEL(self->attempt_count), str);
 }
 
-static void title_draw(LASTComponent *self_, last_game *game, last_timer *timer) {
+static void title_draw(LASTComponent *self_, last_game *game, last_timer *timer)
+{
     char str[64];
     LASTTitle *self = (LASTTitle *)self_;
     sprintf(str, "#%d", game->attempt_count);
     gtk_label_set_text(GTK_LABEL(self->attempt_count), str);
 }
 
-LASTComponentOps last_title_operations = {
+LASTComponentOps last_title_operations =
+{
     .delete = title_delete,
     .widget = title_widget,
     .resize = title_resize,

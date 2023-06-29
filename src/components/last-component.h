@@ -12,11 +12,13 @@ typedef struct _LASTComponent LASTComponent;
 typedef struct _LASTComponentOps LASTComponentOps;
 typedef struct _LASTComponentAvailable LASTComponentAvailable;
 
-struct _LASTComponent {
+struct _LASTComponent
+{
     LASTComponentOps *ops;
 };
 
-struct _LASTComponentOps {
+struct _LASTComponentOps
+{
     void (*delete)(LASTComponent *self);
     GtkWidget *(*widget)(LASTComponent *self);
 
@@ -32,7 +34,8 @@ struct _LASTComponentOps {
     void (*cancel_run)(LASTComponent *self, last_timer *timer);
 };
 
-struct _LASTComponentAvailable {
+struct _LASTComponentAvailable
+{
     char *name;
     LASTComponent *(*new)();
 };

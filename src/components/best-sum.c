@@ -1,6 +1,7 @@
 #include "last-component.h"
 
-typedef struct _LASTBestSum {
+typedef struct _LASTBestSum
+{
     LASTComponent base;
     GtkWidget *container;
     GtkWidget *sum_of_bests;
@@ -9,12 +10,16 @@ extern LASTComponentOps last_best_sum_operations;
 
 #define SUM_OF_BEST_SEGMENTS "Sum of best segments"
 
-LASTComponent *last_component_best_sum_new() {
+LASTComponent *last_component_best_sum_new()
+{
     LASTBestSum *self;
     GtkWidget *label;
 
     self = malloc(sizeof(LASTBestSum));
-    if (!self) return NULL;
+    if (!self)
+    {
+        return NULL;
+    }
     self->base.ops = &last_best_sum_operations;
 
     self->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -37,43 +42,51 @@ LASTComponent *last_component_best_sum_new() {
     return (LASTComponent *)self;
 }
 
-static void best_sum_delete(LASTComponent *self) {
+static void best_sum_delete(LASTComponent *self)
+{
     free(self);
 }
 
-static GtkWidget *best_sum_widget(LASTComponent *self) {
+static GtkWidget *best_sum_widget(LASTComponent *self)
+{
     return ((LASTBestSum *)self)->container;
 }
 
 static void best_sum_show_game(LASTComponent *self_,
-        last_game *game, last_timer *timer) {
+        last_game *game, last_timer *timer)
+{
     LASTBestSum *self = (LASTBestSum *)self_;
     char str[256];
-    if (game->split_count && timer->sum_of_bests) {
+    if (game->split_count && timer->sum_of_bests)
+    {
         last_time_string(str, timer->sum_of_bests);
         gtk_label_set_text(GTK_LABEL(self->sum_of_bests), str);
     }
 }
 
-static void best_sum_clear_game(LASTComponent *self_) {
+static void best_sum_clear_game(LASTComponent *self_)
+{
     LASTBestSum *self = (LASTBestSum *)self_;
     gtk_label_set_text(GTK_LABEL(self->sum_of_bests), "");
 }
 
 static void best_sum_draw(LASTComponent *self_, last_game *game,
-        last_timer *timer) {
+        last_timer *timer)
+{
     LASTBestSum *self = (LASTBestSum *)self_;
     char str[256];
     remove_class(self->sum_of_bests, "time");
     gtk_label_set_text(GTK_LABEL(self->sum_of_bests), "-");
-    if (timer->sum_of_bests) {
+    if (timer->sum_of_bests)
+    {
         add_class(self->sum_of_bests, "time");
         last_time_string(str, timer->sum_of_bests);
         gtk_label_set_text(GTK_LABEL(self->sum_of_bests), str);
     }
 }
 
-LASTComponentOps last_best_sum_operations = {
+LASTComponentOps last_best_sum_operations =
+{
     .delete = best_sum_delete,
     .widget = best_sum_widget,
     .show_game = best_sum_show_game,

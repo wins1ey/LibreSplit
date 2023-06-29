@@ -3,11 +3,11 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+    #endif
 
-int open_timer(int argc, char *argv[]);
+    int open_timer(int argc, char *argv[]);
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
 #endif
 
