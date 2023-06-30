@@ -30,6 +30,7 @@ struct last_timer
 {
     int started;
     int running;
+    int loading;
     long long now;
     long long start_time;
     long long time;

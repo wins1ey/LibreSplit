@@ -220,7 +220,7 @@ static gboolean last_app_window_step(gpointer data)
         
         if(atomic_load(&usingAutoSplitter))
         {
-            if (atomic_load(&callStart))
+            if (atomic_load(&callStart) && !win->timer->loading)
             {
                 timer_start(win);
                 atomic_store(&callStart, 0);
@@ -230,13 +230,18 @@ static gboolean last_app_window_step(gpointer data)
                 timer_split(win);
                 atomic_store(&callSplit, 0);
             }
-            if (win->timer->running && atomic_load(&callIsLoading))
+            if (atomic_load(&toggleLoading))
             {
-                timer_stop(win);
-            }
-            else if (!win->timer->running && win->timer->time > 0 && !atomic_load(&callIsLoading))
-            {
-                timer_start(win);
+                win->timer->loading = !win->timer->loading;
+                if (win->timer->running && win->timer->loading)
+                {
+                    timer_stop(win);
+                }
+                else if (win->timer->started && !win->timer->running && !win->timer->loading)
+                {
+                    timer_start(win);
+                }
+                atomic_store(&toggleLoading, 0);
             }
             if (atomic_load(&callReset))
             {

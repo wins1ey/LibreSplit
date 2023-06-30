@@ -42,8 +42,9 @@ int refreshRate = 60;
 atomic<bool> usingAutoSplitter(false);
 atomic<bool> callStart(false);
 atomic<bool> callSplit(false);
-atomic<bool> callIsLoading(false);
+atomic<bool> toggleLoading(false);
 atomic<bool> callReset(false);
+bool prevIsLoading;
 
 void checkDirectories()
 {
@@ -178,13 +179,15 @@ void isLoading()
 {
     lua_getglobal(L, "isLoading");
     lua_pcall(L, 0, 1, 0);
-    if (lua_toboolean(L, -1) && !callIsLoading.load())
+    if (lua_toboolean(L, -1) != prevIsLoading)
     {
-        callIsLoading.store(true);
+        toggleLoading.store(true);
+        prevIsLoading = !prevIsLoading;
     }
-    else if (!lua_toboolean(L, -1) && callIsLoading.load())
+    else if (!lua_toboolean(L, -1) == prevIsLoading)
     {
-        callIsLoading.store(false);
+        toggleLoading.store(true);
+        prevIsLoading = !prevIsLoading;
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
