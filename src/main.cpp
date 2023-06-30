@@ -1,5 +1,6 @@
 #include <cstring>
 #include <thread>
+#include <unistd.h>
 
 #include "headers/downloader.hpp"
 #include "headers/autosplitter.hpp"
@@ -22,7 +23,6 @@ void launchArgs(int argc, char *argv[])
 
 int autoSplitterThread(int argc, char *argv[])
 {
-    checkDirectories();
     launchArgs(argc, argv);
     chooseAutoSplitter();
     runAutoSplitter();
@@ -32,11 +32,19 @@ int autoSplitterThread(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
-    thread t1(autoSplitterThread, argc, argv);
-    thread t2(open_timer, argc, argv);
+    checkDirectories();
+    if (isatty(fileno(stdin)))
+    {
+        thread t1(autoSplitterThread, argc, argv);
+        thread t2(open_timer, argc, argv);
 
-    t1.join();
-    t2.join();
+        t1.join();
+        t2.join();
+    }
+    else
+    {
+        open_timer(argc, argv);
+    }
 
     return 0;
 }
