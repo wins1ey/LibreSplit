@@ -765,12 +765,18 @@ int last_timer_split(last_timer *timer)
                     break;
                 }
             }
+            ++timer->curr_split;
             // stop timer if last split
-            if (timer->curr_split + 1 == timer->game->split_count)
+            if (timer->curr_split == timer->game->split_count)
             {
                 last_timer_stop(timer);
+                if (timer->split_times[timer->game->split_count - 1] < 
+                    timer->game->best_splits[timer->game->split_count - 1])
+                {
+                    last_game_update_splits(timer->game, timer);
+                }
             }
-            return ++timer->curr_split;
+            return timer->curr_split;
         }
     }
     return 0;
