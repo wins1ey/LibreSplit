@@ -407,8 +407,17 @@ void last_game_update_splits(last_game *game,
         size = timer->curr_split * sizeof(long long);
         memcpy(game->split_times, timer->split_times, size);
         memcpy(game->segment_times, timer->segment_times, size);
-        memcpy(game->best_splits, timer->best_splits, size);
-        memcpy(game->best_segments, timer->best_segments, size);
+        if (timer->split_times[game->split_count - 1] < game->best_splits[game->split_count - 1])
+        {
+            memcpy(game->best_splits, timer->split_times, size);
+        }
+        for (int i = 0; i < game->split_count; ++i)
+        {
+            if (timer->segment_times[i] < game->best_segments[i])
+            {
+                game->best_segments[i] = timer->segment_times[i];
+            }
+        }
     }
 }
 
@@ -770,11 +779,7 @@ int last_timer_split(last_timer *timer)
             if (timer->curr_split == timer->game->split_count)
             {
                 last_timer_stop(timer);
-                if (timer->split_times[timer->game->split_count - 1] < 
-                    timer->game->best_splits[timer->game->split_count - 1])
-                {
-                    last_game_update_splits(timer->game, timer);
-                }
+                last_game_update_splits(timer->game, timer);
             }
             return timer->curr_split;
         }
