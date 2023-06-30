@@ -24,12 +24,7 @@ ICON = last
 ICON_DIR = /usr/share/icons/hicolor
 SCHEMAS_DIR = /usr/share/glib-2.0/schemas
 
-all: $(BIN)
-
-$(OBJECTS): last-css.h
-
-last-css.h: last.css
-	xxd --include last.css > $(HEADERS_DIR)/last-css.h || (rm $(HEADERS_DIR)/last-css.h; false)
+all: last-css.h $(BIN)
 
 # Rule to link object files to create executable
 $(BIN): $(OBJECTS) | $(BIN_DIR)
@@ -55,6 +50,9 @@ $(BIN_DIR):
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
+last-css.h: last.css
+	xxd --include last.css > $(HEADERS_DIR)/last-css.h || (rm $(HEADERS_DIR)/last-css.h; false)
+
 install:
 	cp $(BIN) $(USR_BIN_DIR)
 	cp $(APP) $(APP_DIR)
@@ -63,7 +61,7 @@ install:
 	          $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
 	gtk-update-icon-cache -f -t $(ICON_DIR)
-	cp last-gtk.gschema.xml $(SCHEMAS_DIR)
+	cp last.gschema.xml $(SCHEMAS_DIR)
 	glib-compile-schemas $(SCHEMAS_DIR)
 	mkdir -p /usr/share/last/themes
 	rsync -a --exclude=".*" themes /usr/share/last
@@ -77,11 +75,11 @@ uninstall:
 	done
 
 remove-schema:
-	rm -f $(SCHEMAS_DIR)/last-gtk.gschema.xml
+	rm -f $(SCHEMAS_DIR)/last.gschema.xml
 	glib-compile-schemas $(SCHEMAS_DIR)
 
 # Clean target to remove object files and LAS executable
 clean:
 	rm -rf $(BIN_DIR) $(HEADERS_DIR)/last-css.h
 
-.PHONY: all install uninstall remove-schema clean clean-all
+.PHONY: all last-css.h install uninstall remove-schema clean
