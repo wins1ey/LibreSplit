@@ -711,9 +711,8 @@ int last_timer_start(last_timer *timer)
 {
     if (timer->curr_split < timer->game->split_count)
     {
-        if (!timer->start_time)
+        if (!timer->started)
         {
-            timer->start_time = timer->now + timer->game->start_delay;
             ++*timer->attempt_count;
             timer->started = 1;
         }
@@ -842,11 +841,7 @@ int last_timer_cancel(last_timer *timer)
     {
         if (timer->started)
         {
-            if (*timer->attempt_count <= 0)
-            {
-                *timer->attempt_count = 0;
-            }
-            else
+            if (*timer->attempt_count > 0)
             {
                 --*timer->attempt_count;
             }
