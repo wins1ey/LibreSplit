@@ -32,9 +32,10 @@ LAST requires the following dependencies on your system to compile and install:
 
 ## Getting Started
 
-1. Launch LAST by executing the compiled binary. `./bin/LAST`
-2. The initial window is undecorated, but you can toggle window decorations by pressing the right Control key.
-3. Control the timer using the following key presses:
+1. When first launched, LAST will create the `.last/` directory in your home directory. Auto splitters, splits and themes go in their respective folders inside.
+2. Launch LAST by executing the compiled binary. `./bin/LAST`
+3. The initial window is undecorated, but you can toggle window decorations by pressing the right Control key.
+4. Control the timer using the following key presses:
 
    | Key        | Stopped Action | Started Action |
    |------------|----------------|----------------|
