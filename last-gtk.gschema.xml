@@ -7,7 +7,7 @@
       <description>Start with window decorations.</description>
     </key>
     <key name="hide-cursor" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Hide cursor</summary>
       <description>Hides the cursor when it hovers over the window.</description>
     </key>
