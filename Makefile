@@ -7,6 +7,7 @@ LDFLAGS = -llua -lcurl -lstdc++fs `pkg-config --libs gtk+-3.0 x11 jansson`
 SRC_DIR = ./src
 BIN_DIR = ./bin
 OBJ_DIR = $(BIN_DIR)/objects
+HEADERS_DIR = $(SRC_DIR)/headers
 
 # Obtain list of source files and create list of object files
 CPP_SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
@@ -24,6 +25,11 @@ ICON_DIR = /usr/share/icons/hicolor
 SCHEMAS_DIR = /usr/share/glib-2.0/schemas
 
 all: $(BIN)
+
+$(OBJECTS): last-css.h
+
+last-css.h: last.css
+	xxd --include last.css > $(HEADERS_DIR)/last-css.h || (rm $(HEADERS_DIR)/last-css.h; false)
 
 # Rule to link object files to create executable
 $(BIN): $(OBJECTS) | $(BIN_DIR)
@@ -76,11 +82,6 @@ remove-schema:
 
 # Clean target to remove object files and LAS executable
 clean:
-	rm -rf $(OBJ_DIR)
-	rm -f $(BIN)
-
-# Clean target to remove the entire bin directory
-clean-all: clean
-	rm -rf $(BIN_DIR)
+	rm -rf $(BIN_DIR) $(HEADERS_DIR)/last-css.h
 
 .PHONY: all install uninstall remove-schema clean clean-all
