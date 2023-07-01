@@ -159,7 +159,7 @@ ValueType readMemory(uint64_t memAddress)
     }
     else if (memNread == -1 && !processExists())
     {
-        runAutoSplitter();
+        openAutoSplitter();
     }
     else if (memNread != static_cast<ssize_t>(memRemote.iov_len))
     {
@@ -188,7 +188,7 @@ string readMemory(uint64_t memAddress, int bufferSize)
     }
     else if (memNread == -1 && kill(pid, 0))
     {
-        runAutoSplitter();
+        openAutoSplitter();
     }
     else if (memNread != static_cast<ssize_t>(memRemote.iov_len))
     {
