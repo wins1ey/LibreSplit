@@ -9,6 +9,6 @@ extern string autoSplittersDirectory;
 
 void checkDirectories();
 void chooseAutoSplitter();
-void runAutoSplitter();
+void openAutoSplitter();
 
 #endif

@@ -48,6 +48,7 @@ struct _LASTAppWindow
     GtkWidget *box;
     GList *components;
     GtkWidget *footer;
+    GtkWidget *menu;
     GtkCssProvider *style;
     gboolean hide_cursor;
     gboolean global_hotkeys;
@@ -510,6 +511,32 @@ static void timer_unsplit(LASTAppWindow *win)
     }
 }
 
+static void toggle_option(GtkCheckMenuItem *menu_item, gpointer user_data)
+{
+    gboolean active = gtk_check_menu_item_get_active(menu_item);
+    if (active)
+    {
+        atomic_store(&usingAutoSplitter, 1);
+    }
+    else
+    {
+        atomic_store(&usingAutoSplitter, 0);
+    }
+}
+
+static gboolean button_right_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    if (event->button == GDK_BUTTON_SECONDARY)
+    {
+        LASTAppWindow *win = (LASTAppWindow*)widget;
+        win->menu = GTK_WIDGET(data);
+        gtk_widget_show_all(win->menu);
+        gtk_menu_popup_at_pointer(GTK_MENU(win->menu), (GdkEvent *)event);
+        return TRUE;
+    }
+    return FALSE;
+}
+
 static void toggle_decorations(LASTAppWindow *win)
 {
     gtk_window_set_decorated(GTK_WINDOW(win), !win->decorated);
@@ -744,6 +771,21 @@ static void last_app_window_init(LASTAppWindow *win)
     gtk_widget_set_margin_end(win->footer, WINDOW_PAD);
     gtk_container_add(GTK_CONTAINER(win->box), win->footer);
     gtk_widget_show(win->footer);
+
+    // Create context menu and menu items
+    win->menu = gtk_menu_new();
+    GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable auto splitter");
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), TRUE);
+
+    // Attach the callback functions to the menu items
+    g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_option), NULL);
+
+    // Add the menu items to the menu
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_enable_auto_splitter);
+
+    // Attach the menu to the window
+    gtk_widget_add_events(win, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect(win, "button_press_event", G_CALLBACK(button_right_click), win->menu);
 
     g_timeout_add(1, last_app_window_step, win);
     g_timeout_add((int)(1000 / 30.), last_app_window_draw, win); 
