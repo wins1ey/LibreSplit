@@ -3,19 +3,19 @@
 
 #include <lua.hpp>
 
-#include "headers/lasprint.hpp"
+#include "headers/lastprint.hpp"
 
 using std::string;
 using std::cout;
 using std::endl;
 
-static string output = "LAS (Linux Auto Splitter)\n";
+static string output = "LAST (Linux Auto Splitting Timer)\n";
 
-void lasPrint(string message)
+void lastPrint(string message)
 {
     if (message == "clear")
     {
-        output = "LAS (Linux Auto Splitter)\n";
+        output = "LAST (Linux Auto Splitting Timer)\n";
     }
     else
     {
@@ -28,6 +28,6 @@ void lasPrint(string message)
 int luaPrint(lua_State* L)
 {
     string message = lua_tostring(L, 1);
-    lasPrint(message);
+    lastPrint(message);
     return 0;
 }

@@ -13,7 +13,7 @@
 
 #include "headers/autosplitter.hpp"
 #include "headers/autosplitter.h"
-#include "headers/lasprint.hpp"
+#include "headers/lastprint.hpp"
 #include "headers/downloader.hpp"
 #include "headers/readmem.hpp"
 
@@ -74,8 +74,8 @@ void chooseAutoSplitter()
         startDownloader(autoSplittersDirectory);
     }
 
-    lasPrint("clear");
-    lasPrint("Auto Splitter: ");
+    lastPrint("clear");
+    lastPrint("Auto Splitter: ");
     cout << endl;
 
     for (const auto & entry : directory_iterator(autoSplittersDirectory))
@@ -121,7 +121,7 @@ void chooseAutoSplitter()
             break;
         }
     }
-    lasPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
+    lastPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
 }
 
 void startup()
@@ -211,7 +211,7 @@ void runAutoSplitter()
     lua_pushcfunction(L, readAddress);
     lua_setglobal(L, "readAddress");
     lua_pushcfunction(L, luaPrint);
-    lua_setglobal(L, "lasPrint");
+    lua_setglobal(L, "lastPrint");
 
     // Load the Lua file
     if (luaL_loadfile(L, chosenAutoSplitter.c_str()) != LUA_OK)
@@ -270,7 +270,7 @@ void runAutoSplitter()
         state();
     }
 
-    lasPrint("Refresh rate: " + to_string(refreshRate));
+    lastPrint("Refresh rate: " + to_string(refreshRate));
     int rate = static_cast<int>(1000000 / refreshRate);
 
     while (processExists())

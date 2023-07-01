@@ -1,5 +1,5 @@
-#ifndef LASPRINT_HPP
-#define LASPRINT_HPP
+#ifndef LASTPRINT_HPP
+#define LASTPRINT_HPP
 
 #include <string>
 
@@ -7,7 +7,7 @@
 
 using std::string;
 
-void lasPrint(string message);
+void lastPrint(string message);
 int luaPrint(lua_State* L);
 
 #endif

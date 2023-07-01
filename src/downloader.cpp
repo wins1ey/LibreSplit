@@ -7,7 +7,7 @@
 #include <curl/curl.h>
 
 #include "headers/downloader.hpp"
-#include "headers/lasprint.hpp"
+#include "headers/lastprint.hpp"
 #include "headers/autosplitter.hpp"
 
 using std::cout;
@@ -23,8 +23,8 @@ string directory;
 void startDownloader(string autoSplittersDirectory)
 {
     directory = autoSplittersDirectory;
-    lasPrint("clear");
-    lasPrint("Auto Splitter Downloader\n");
+    lastPrint("clear");
+    lastPrint("Auto Splitter Downloader\n");
     downloadFile("https://raw.githubusercontent.com/Wins1ey/LuaAutoSplitters/main/autosplitters.csv");
 
     ifstream file(directory + "/autosplitters.csv");
