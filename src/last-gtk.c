@@ -511,7 +511,7 @@ static void timer_unsplit(LASTAppWindow *win)
     }
 }
 
-static void toggle_option(GtkCheckMenuItem *menu_item, gpointer user_data)
+static void toggle_auto_splitter(GtkCheckMenuItem *menu_item, gpointer user_data)
 {
     gboolean active = gtk_check_menu_item_get_active(menu_item);
     if (active)
@@ -778,7 +778,7 @@ static void last_app_window_init(LASTAppWindow *win)
     gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), TRUE);
 
     // Attach the callback functions to the menu items
-    g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_option), NULL);
+    g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_auto_splitter), NULL);
 
     // Add the menu items to the menu
     gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_enable_auto_splitter);
