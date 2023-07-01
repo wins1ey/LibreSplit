@@ -161,7 +161,7 @@ ValueType readMemory(uint64_t memAddress)
     {
         runAutoSplitter();
     }
-    else if (memNread != memRemote.iov_len)
+    else if (memNread != static_cast<ssize_t>(memRemote.iov_len))
     {
         throw runtime_error("Error reading process memory: short read of " + to_string(memNread) + " bytes\n");
     }
@@ -190,7 +190,7 @@ string readMemory(uint64_t memAddress, int bufferSize)
     {
         runAutoSplitter();
     }
-    else if (memNread != memRemote.iov_len)
+    else if (memNread != static_cast<ssize_t>(memRemote.iov_len))
     {
         throw runtime_error("Error reading process memory: short read of " + to_string(memNread) + " bytes\n");
     }
@@ -236,7 +236,7 @@ int readAddress(lua_State* L)
         i = 4;
     }
 
-    for (i; i <= lua_gettop(L); i++)
+    for (; i <= lua_gettop(L); i++)
     {
         if (address <= UINT32_MAX)
         {
