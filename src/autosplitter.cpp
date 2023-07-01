@@ -52,6 +52,7 @@ void checkDirectories()
     string userDirectory = getpwuid(getuid())->pw_dir;
     string lastDirectory = userDirectory + "/.last";
     autoSplittersDirectory = lastDirectory + "/auto-splitters";
+    string themesDirectory = lastDirectory + "/themes";
 
     // Make the LAST directory if it doesn't exist
     if (!exists(lastDirectory))
@@ -62,6 +63,11 @@ void checkDirectories()
     if (!exists(autoSplittersDirectory))
     {
         create_directory(autoSplittersDirectory);
+    }
+
+    if (!exists(themesDirectory))
+    {
+        create_directory(themesDirectory);
     }
 }
 
