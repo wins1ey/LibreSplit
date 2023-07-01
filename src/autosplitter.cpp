@@ -93,7 +93,7 @@ void chooseAutoSplitter()
     }
     sort(fileNames.begin(), fileNames.end());
     
-    for (int i = 0; i < fileNames.size(); i++)
+    for (int i = 0; i < static_cast<int>(fileNames.size()); i++)
     {
         cout << i + 1 << ". " << fileNames[i].substr(fileNames[i].find_last_of("/") + 1) << endl;
     }
@@ -115,7 +115,7 @@ void chooseAutoSplitter()
         {
             int userChoice;
             cout << "Which auto splitter would you like to use? ";
-            if (!(cin >> userChoice) || userChoice > fileNames.size() || userChoice < 1)
+            if (!(cin >> userChoice) || userChoice > static_cast<int>(fileNames.size()) || userChoice < 1)
             {
                 cin.clear(); // Clear error flags
                 cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input

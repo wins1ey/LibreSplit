@@ -779,7 +779,7 @@ int last_timer_split(last_timer *timer)
             if (timer->curr_split == timer->game->split_count)
             {
                 last_timer_stop(timer);
-                last_game_update_splits(timer->game, timer);
+                last_game_update_splits((last_game *)timer->game, timer);
             }
             return timer->curr_split;
         }
