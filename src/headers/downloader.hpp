@@ -1,5 +1,5 @@
-#ifndef DOWNLOADER_H
-#define DOWNLOADER_H
+#ifndef DOWNLOADER_HPP
+#define DOWNLOADER_HPP
 
 #include <string>
 

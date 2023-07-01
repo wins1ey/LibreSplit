@@ -1,5 +1,5 @@
-#ifndef AUTOSPLITTER_H
-#define AUTOSPLITTER_H
+#ifndef AUTOSPLITTER_HPP
+#define AUTOSPLITTER_HPP
 
 #include <string>
 

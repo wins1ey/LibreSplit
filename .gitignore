@@ -1,4 +1,5 @@
 # Compiled files
 bin/
+src/headers/last-css.h
 
 .vscode/

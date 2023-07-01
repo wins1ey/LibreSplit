@@ -1,0 +1,6 @@
+[submodule "themes"]
+	path = themes
+	url = https://github.com/Wins1ey/LAST-Themes
+[submodule "auto-splitters"]
+	path = auto-splitters
+	url = https://github.com/Wins1ey/LuaAutoSplitters

@@ -1,18 +1,20 @@
 #include <iostream>
 #include <unistd.h>
+#include <pwd.h>
 #include <string>
 #include <vector>
 #include <filesystem>
 #include <algorithm>
 #include <chrono>
 #include <thread>
+#include <atomic>
 
 #include <lua.hpp>
 
 #include "headers/autosplitter.hpp"
-#include "headers/lasprint.hpp"
+#include "headers/autosplitter.h"
+#include "headers/lastprint.hpp"
 #include "headers/downloader.hpp"
-#include "headers/client.hpp"
 #include "headers/readmem.hpp"
 
 using std::string;
@@ -30,31 +32,42 @@ using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
 using std::chrono::microseconds;
 using std::this_thread::sleep_for;
+using std::atomic;
 
 lua_State* L = luaL_newstate();
 
 string autoSplittersDirectory;
 string chosenAutoSplitter;
-bool isTimerRunning = false;
 int refreshRate = 60;
+atomic<bool> usingAutoSplitter(false);
+atomic<bool> callStart(false);
+atomic<bool> callSplit(false);
+atomic<bool> toggleLoading(false);
+atomic<bool> callReset(false);
+bool prevIsLoading;
 
 void checkDirectories()
 {
-    string executablePath;
-    string executableDirectory;
+    // Get the path to the users directory
+    string userDirectory = getpwuid(getuid())->pw_dir;
+    string lastDirectory = userDirectory + "/.last";
+    autoSplittersDirectory = lastDirectory + "/auto-splitters";
+    string themesDirectory = lastDirectory + "/themes";
 
-    // Get the path to the executable
-    char result[ PATH_MAX ];
-    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-    executablePath = string(result, (count > 0) ? count : 0);
-    executableDirectory = executablePath.substr(0, executablePath.find_last_of("/"));
-
-    autoSplittersDirectory = executableDirectory + "/autosplitters";
-
+    // Make the LAST directory if it doesn't exist
+    if (!exists(lastDirectory))
+    {
+        create_directory(lastDirectory);
+    }
     // Make the autosplitters directory if it doesn't exist
     if (!exists(autoSplittersDirectory))
     {
         create_directory(autoSplittersDirectory);
+    }
+
+    if (!exists(themesDirectory))
+    {
+        create_directory(themesDirectory);
     }
 }
 
@@ -67,8 +80,8 @@ void chooseAutoSplitter()
         startDownloader(autoSplittersDirectory);
     }
 
-    lasPrint("clear");
-    lasPrint("Auto Splitter: ");
+    lastPrint("clear");
+    lastPrint("Auto Splitter: ");
     cout << endl;
 
     for (const auto & entry : directory_iterator(autoSplittersDirectory))
@@ -114,7 +127,7 @@ void chooseAutoSplitter()
             break;
         }
     }
-    lasPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
+    lastPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
 }
 
 void startup()
@@ -140,13 +153,19 @@ void state()
     lua_pcall(L, 0, 0, 0);
 }
 
+void update()
+{
+    lua_getglobal(L, "update");
+    lua_pcall(L, 0, 0, 0);
+}
+
 void start()
 {
     lua_getglobal(L, "start");
     lua_pcall(L, 0, 1, 0);
     if (lua_toboolean(L, -1))
     {
-        sendLiveSplitCommand("starttimer");
+        callStart.store(true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -157,7 +176,7 @@ void split()
     lua_pcall(L, 0, 1, 0);
     if (lua_toboolean(L, -1))
     {
-        sendLiveSplitCommand("split");
+        callSplit.store(true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -166,15 +185,15 @@ void isLoading()
 {
     lua_getglobal(L, "isLoading");
     lua_pcall(L, 0, 1, 0);
-    if (lua_toboolean(L, -1) && isTimerRunning)
+    if (lua_toboolean(L, -1) != prevIsLoading)
     {
-        sendLiveSplitCommand("pausegametime");
-        isTimerRunning = false;
+        toggleLoading.store(true);
+        prevIsLoading = !prevIsLoading;
     }
-    else if (!lua_toboolean(L, -1) && !isTimerRunning)
+    else if (!lua_toboolean(L, -1) == prevIsLoading)
     {
-        sendLiveSplitCommand("unpausegametime");
-        isTimerRunning = true;
+        toggleLoading.store(true);
+        prevIsLoading = !prevIsLoading;
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -185,7 +204,7 @@ void reset()
     lua_pcall(L, 0, 1, 0);
     if (lua_toboolean(L, -1))
     {
-        sendLiveSplitCommand("reset");
+        callReset.store(true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -197,12 +216,27 @@ void runAutoSplitter()
     lua_setglobal(L, "process");
     lua_pushcfunction(L, readAddress);
     lua_setglobal(L, "readAddress");
-    lua_pushcfunction(L, sendCommand);
-    lua_setglobal(L, "sendCommand");
     lua_pushcfunction(L, luaPrint);
-    lua_setglobal(L, "lasPrint");
+    lua_setglobal(L, "lastPrint");
 
-    luaL_dofile(L, chosenAutoSplitter.c_str());
+    // Load the Lua file
+    if (luaL_loadfile(L, chosenAutoSplitter.c_str()) != LUA_OK)
+    {
+        // Error loading the file
+        const char* errorMsg = lua_tostring(L, -1);
+        lua_pop(L, 1); // Remove the error message from the stack
+        throw std::runtime_error("Lua syntax error: " + std::string(errorMsg));
+    }
+
+    // Execute the Lua file
+    if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK)
+    {
+        // Error executing the file
+        const char* errorMsg = lua_tostring(L, -1);
+        lua_pop(L, 1); // Remove the error message from the stack
+        throw std::runtime_error("Lua runtime error: " + std::string(errorMsg));
+    }
+    atomic_store(&usingAutoSplitter, true);
 
     lua_getglobal(L, "state");
     bool stateExists = lua_isfunction(L, -1);
@@ -228,17 +262,21 @@ void runAutoSplitter()
     bool resetExists = lua_isfunction(L, -1);
     lua_pop(L, 1); // Remove 'reset' from the stack
 
-    if (isLoadingExists)
-    {
-        sendLiveSplitCommand("initgametime");
-    }
+    lua_getglobal(L, "update");
+    bool updateExists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'update' from the stack
 
     if (startupExists)
     {
         startup();
     }
 
-    lasPrint("Refresh rate: " + to_string(refreshRate));
+    if (stateExists)
+    {
+        state();
+    }
+
+    lastPrint("Refresh rate: " + to_string(refreshRate));
     int rate = static_cast<int>(1000000 / refreshRate);
 
     while (processExists())
@@ -248,6 +286,11 @@ void runAutoSplitter()
         if (stateExists)
         {
             state();
+        }
+
+        if (updateExists)
+        {
+            update();
         }
             
         if (startExists)
@@ -277,6 +320,7 @@ void runAutoSplitter()
             sleep_for(microseconds(rate - duration));
         }
     }
-
+    
+    atomic_store(&usingAutoSplitter, false);
     lua_close(L);
 }
