@@ -7,7 +7,7 @@ LAST brings auto splitting functionality to [urn](https://github.com/3snowp7im/u
 ## Features
 
 - **Split Tracking and Timing:** Accurately track and time your speedruns with ease.
-- **Autosplitter Support:** Utilize Lua-based autosplitters to automate split timing based on in-game events.
+- **Auto Splitter Support:** Utilize Lua-based auto splitters to automate split timing based on in-game events.
 - **Customizable Themes:** Personalize your timer's appearance by creating and applying custom themes.
 - **Flexible Configuration:** Configure keybindings and various settings to suit your preferences.
 
