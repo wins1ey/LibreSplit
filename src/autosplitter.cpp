@@ -257,7 +257,6 @@ void runAutoSplitter()
         }
     }
     
-    atomic_store(&usingAutoSplitter, false);
     lua_close(L);
     openAutoSplitter();
 }

@@ -73,7 +73,8 @@ uintptr_t findMemoryOffset()
     }
     else
     {
-        throw runtime_error("Couldn't find memory offset");
+        cout << "Couldn't find memory offset" << endl;
+        return 0;
     }
 }
 
@@ -95,7 +96,7 @@ void stockProcessID(const char* processtarget)
 
     if (spacePos != string::npos)
     {
-        throw runtime_error("Multiple PID's found for process: " + processName + "\n");
+        cout << "Multiple PID's found for process: " << processName << endl;
     }
 
     pid = strtoul(pidOutput.c_str(), nullptr, 10);
@@ -115,13 +116,11 @@ int findProcessID(lua_State* L)
     cCommand = command.c_str();
 
     stockProcessID(cCommand);
-    while (pid == 0)
-    {
-        cout << "\033[2J\033[1;1H"; // Clear the console
-        cout << processName + " isn't running. Retrying...\n";
-        sleep_for(milliseconds(100));
-        stockProcessID(cCommand);
-    }
+    
+    cout << "\033[2J\033[1;1H"; // Clear the console
+    cout << processName + " isn't running. Retrying...\n";
+    sleep_for(milliseconds(100));
+    stockProcessID(cCommand);
 
     memoryOffset = dllMemoryOffset = findMemoryOffset();
 

@@ -900,7 +900,6 @@ static void open_auto_splitter(GSimpleAction *action,
         char *filename;
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
         filename = gtk_file_chooser_get_filename(chooser);
-        printf("Loading auto splitter: %s\n", filename);
         strcpy(autoSplitterFile, filename);
         g_free(filename);
     }
