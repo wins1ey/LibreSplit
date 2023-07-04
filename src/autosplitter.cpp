@@ -34,6 +34,7 @@ using std::chrono::microseconds;
 using std::this_thread::sleep_for;
 using std::atomic;
 
+char autoSplitterFile[256];
 string autoSplittersDirectory;
 string chosenAutoSplitter;
 int refreshRate = 60;
@@ -67,65 +68,6 @@ void checkDirectories()
     {
         create_directory(themesDirectory);
     }
-}
-
-void chooseAutoSplitter()
-{
-    vector<string> fileNames;
-
-    if (is_empty(autoSplittersDirectory))
-    {
-        startDownloader(autoSplittersDirectory);
-    }
-
-    lastPrint("clear");
-    lastPrint("Auto Splitter: ");
-    cout << endl;
-
-    for (const auto & entry : directory_iterator(autoSplittersDirectory))
-    {
-        if (entry.path().extension() == ".lua")
-        {
-            fileNames.push_back(entry.path().string());
-        }
-    }
-    sort(fileNames.begin(), fileNames.end());
-    
-    for (int i = 0; i < static_cast<int>(fileNames.size()); i++)
-    {
-        cout << i + 1 << ". " << fileNames[i].substr(fileNames[i].find_last_of("/") + 1) << endl;
-    }
-
-    switch (fileNames.size())
-    {
-        case 0:
-        {
-            startDownloader(autoSplittersDirectory);
-            chooseAutoSplitter();
-            return;
-        }
-        case 1:
-        {
-            chosenAutoSplitter = fileNames[0];
-            break;
-        }
-        default:
-        {
-            int userChoice;
-            cout << "Which auto splitter would you like to use? ";
-            if (!(cin >> userChoice) || userChoice > static_cast<int>(fileNames.size()) || userChoice < 1)
-            {
-                cin.clear(); // Clear error flags
-                cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Ignore invalid input
-                chooseAutoSplitter(); // Ask for input again
-                return;
-            }
-            cin.ignore();
-            chosenAutoSplitter = fileNames[userChoice - 1];
-            break;
-        }
-    }
-    lastPrint(chosenAutoSplitter.substr(chosenAutoSplitter.find_last_of("/") + 1) + "\n");
 }
 
 void startup(lua_State* L)
@@ -217,9 +159,10 @@ void runAutoSplitter()
     lua_setglobal(L, "readAddress");
     lua_pushcfunction(L, luaPrint);
     lua_setglobal(L, "lastPrint");
+    string currentAutoSplitterFile = autoSplitterFile;
 
     // Load the Lua file
-    if (luaL_loadfile(L, chosenAutoSplitter.c_str()) != LUA_OK)
+    if (luaL_loadfile(L, autoSplitterFile) != LUA_OK)
     {
         // Error loading the file
         const char* errorMsg = lua_tostring(L, -1);
@@ -277,7 +220,7 @@ void runAutoSplitter()
     lastPrint("Refresh rate: " + to_string(refreshRate));
     int rate = static_cast<int>(1000000 / refreshRate);
 
-    while (usingAutoSplitter.load())
+    while (usingAutoSplitter.load() && currentAutoSplitterFile == autoSplitterFile)
     {
         auto clockStart = high_resolution_clock::now();
 
@@ -321,15 +264,15 @@ void runAutoSplitter()
     
     atomic_store(&usingAutoSplitter, false);
     lua_close(L);
+    openAutoSplitter();
 }
 
 void openAutoSplitter()
 {
     while (true)
     {
-        if (usingAutoSplitter.load())
+        if (usingAutoSplitter.load() && autoSplitterFile[0] != '\0')
         {
-            chooseAutoSplitter();
             runAutoSplitter();
         }
     std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for 100 milliseconds before checking again

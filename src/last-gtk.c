@@ -5,7 +5,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <pwd.h>
+
 #include <gtk/gtk.h>
+
 #include "headers/last.h"
 #include "headers/last-css.h"
 #include "headers/last-gtk.h"
@@ -853,6 +855,58 @@ static void open_activated(GSimpleAction *action,
     gtk_widget_destroy(dialog);
 }
 
+static void open_auto_splitter(GSimpleAction *action,
+                           GVariant      *parameter,
+                           gpointer       app)
+{
+    char auto_splitters_path[256];
+    GList *windows;
+    LASTAppWindow *win;
+    GtkWidget *dialog;
+    struct stat st = {0};
+    gint res;
+    if (app == 1)
+    {
+        app = parameter;
+    }
+
+    windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    if (windows)
+    {
+        win = LAST_APP_WINDOW(windows->data);
+    }
+    else
+    {
+        win = last_app_window_new(LAST_APP(app));
+    }
+    dialog = gtk_file_chooser_dialog_new (
+        "Open File", GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+        "_Cancel", GTK_RESPONSE_CANCEL,
+        "_Open", GTK_RESPONSE_ACCEPT,
+        NULL);
+
+    strcpy(auto_splitters_path, win->data_path);
+    strcat(auto_splitters_path, "/auto-splitters");
+    if (stat(auto_splitters_path, &st) == -1)
+    {
+        mkdir(auto_splitters_path, 0700);
+    }
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+                                        auto_splitters_path);
+
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (res == GTK_RESPONSE_ACCEPT)
+    {
+        char *filename;
+        GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+        filename = gtk_file_chooser_get_filename(chooser);
+        printf("Loading auto splitter: %s\n", filename);
+        strcpy(autoSplitterFile, filename);
+        g_free(filename);
+    }
+    gtk_widget_destroy(dialog);
+}
+
 static void save_activated(GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       app)
@@ -988,6 +1042,7 @@ static void create_context_menu(LASTAppWindow *win, GApplication *app)
     win->menu = gtk_menu_new();
     GtkWidget *menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
     GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
+    GtkWidget *menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
     GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
     gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), TRUE);
     GtkWidget *menu_reload = gtk_menu_item_new_with_label("Reload");
@@ -997,6 +1052,7 @@ static void create_context_menu(LASTAppWindow *win, GApplication *app)
     // Attach the callback functions to the menu items
     g_signal_connect(menu_open_splits, "activate", G_CALLBACK(open_activated), app);
     g_signal_connect(menu_save_splits, "activate", G_CALLBACK(save_activated), app);
+    g_signal_connect(menu_open_auto_splitter, "activate", G_CALLBACK(open_auto_splitter), app);
     g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_auto_splitter), NULL);
     g_signal_connect(menu_reload, "activate", G_CALLBACK(reload_activated), app);
     g_signal_connect(menu_close, "activate", G_CALLBACK(close_activated), app);
@@ -1005,6 +1061,7 @@ static void create_context_menu(LASTAppWindow *win, GApplication *app)
     // Add the menu items to the menu
     gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_open_splits);
     gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_save_splits);
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_open_auto_splitter);
     gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_enable_auto_splitter);
     gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_reload);
     gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_close);
