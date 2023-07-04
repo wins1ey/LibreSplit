@@ -3,11 +3,12 @@
 #include <sstream>
 #include <vector>
 #include <filesystem>
+#include <unistd.h>
+#include <pwd.h>
 
 #include <curl/curl.h>
 
 #include "headers/downloader.hpp"
-#include "headers/lastprint.hpp"
 #include "headers/autosplitter.hpp"
 
 using std::cout;
@@ -18,16 +19,34 @@ using std::ifstream;
 using std::istringstream;
 using std::filesystem::create_directory;
 
-string directory;
+void downloadFile(string url, string directory)
+{
+    CURL *curl;
+    string filename = url.substr(url.find_last_of("/"));
+    string filepath = directory + filename;
+
+    curl = curl_easy_init();
+    if (curl)
+    {
+        FILE *fp = fopen(filepath.c_str(),"wb");
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        curl_easy_perform(curl);
+        curl_easy_cleanup(curl);
+        fclose(fp);
+    }
+}
 
 void startDownloader(string autoSplittersDirectory)
 {
-    directory = autoSplittersDirectory;
-    lastPrint("clear");
-    lastPrint("Auto Splitter Downloader\n");
-    downloadFile("https://raw.githubusercontent.com/Wins1ey/LuaAutoSplitters/main/autosplitters.csv");
+    string userDirectory = getpwuid(getuid())->pw_dir;
+    string lastDirectory = userDirectory + "/.last";
+    autoSplittersDirectory = lastDirectory + "/auto-splitters";
+    cout << "Auto Splitter Downloader" << endl;
+    downloadFile("https://raw.githubusercontent.com/Wins1ey/LuaAutoSplitters/main/autosplitters.csv", autoSplittersDirectory);
 
-    ifstream file(directory + "/autosplitters.csv");
+    ifstream file(autoSplittersDirectory + "/autosplitters.csv");
     string line;
     int i = 1;
     vector<string> gameNamesVector;
@@ -71,26 +90,8 @@ void startDownloader(string autoSplittersDirectory)
         if (singleChoice > 0 && singleChoice <= static_cast<int>(gameNamesVector.size()))
         {
             cout << "Downloading " + gameNamesVector[singleChoice - 1] + "'s auto splitter\n";
-            downloadFile(urlsVector[singleChoice - 1]);
+            downloadFile(urlsVector[singleChoice - 1], autoSplittersDirectory);
         }
     }
 }
 
-void downloadFile(string url)
-{
-    CURL *curl;
-    string filename = url.substr(url.find_last_of("/"));
-    string filepath = directory + filename;
-
-    curl = curl_easy_init();
-    if (curl)
-    {
-        FILE *fp = fopen(filepath.c_str(),"wb");
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, NULL);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
-        curl_easy_perform(curl);
-        curl_easy_cleanup(curl);
-        fclose(fp);
-    }
-}

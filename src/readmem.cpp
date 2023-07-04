@@ -11,7 +11,6 @@
 #include <signal.h>
 
 #include "headers/readmem.hpp"
-#include "headers/lastprint.hpp"
 #include "headers/autosplitter.hpp"
 
 using std::string;
@@ -103,13 +102,9 @@ void stockProcessID(const char* processtarget)
 
     if (pid != 0)
     {
-        cout << processName + " is running - PID NUMBER -> " << pid << endl;
-        lastPrint("Process: " + processName + "\n");
-        lastPrint("PID: " + to_string(pid) + "\n");
-    }
-    else
-    {
-        cout << "Error reading process ID: " << strerror(errno) << endl;
+        cout << "\033[2J\033[1;1H"; // Clear the console
+        cout << "Process: " << processName << endl;
+        cout << "PID: " << to_string(pid) << endl;
     }
 }
 
@@ -122,12 +117,11 @@ int findProcessID(lua_State* L)
     stockProcessID(cCommand);
     while (pid == 0)
     {
-        lastPrint("");
+        cout << "\033[2J\033[1;1H"; // Clear the console
         cout << processName + " isn't running. Retrying...\n";
-        sleep_for(milliseconds(1));
+        sleep_for(milliseconds(100));
         stockProcessID(cCommand);
     }
-    lastPrint("\n");
 
     memoryOffset = dllMemoryOffset = findMemoryOffset();
 
