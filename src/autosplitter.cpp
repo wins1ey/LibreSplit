@@ -13,7 +13,6 @@
 
 #include "headers/autosplitter.hpp"
 #include "headers/autosplitter.h"
-#include "headers/lastprint.hpp"
 #include "headers/downloader.hpp"
 #include "headers/readmem.hpp"
 
@@ -157,8 +156,6 @@ void runAutoSplitter()
     lua_setglobal(L, "process");
     lua_pushcfunction(L, readAddress);
     lua_setglobal(L, "readAddress");
-    lua_pushcfunction(L, luaPrint);
-    lua_setglobal(L, "lastPrint");
     string currentAutoSplitterFile = autoSplitterFile;
 
     // Load the Lua file
@@ -217,7 +214,7 @@ void runAutoSplitter()
         state(L);
     }
 
-    lastPrint("Refresh rate: " + to_string(refreshRate));
+    cout << "Refresh rate: " << to_string(refreshRate) << endl;
     int rate = static_cast<int>(1000000 / refreshRate);
 
     while (usingAutoSplitter.load() && currentAutoSplitterFile == autoSplitterFile)
