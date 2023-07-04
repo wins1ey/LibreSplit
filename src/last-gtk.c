@@ -986,9 +986,9 @@ static gboolean button_right_click(GtkWidget *widget, GdkEventButton *event, gpo
 static void create_context_menu(LASTAppWindow *win, GApplication *app)
 {
     win->menu = gtk_menu_new();
-    GtkWidget *menu_open_splits = gtk_menu_item_new_with_label("Open splits");
-    GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save splits");
-    GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable auto splitter");
+    GtkWidget *menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
+    GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
+    GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
     gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), TRUE);
     GtkWidget *menu_reload = gtk_menu_item_new_with_label("Reload");
     GtkWidget *menu_close = gtk_menu_item_new_with_label("Close");
