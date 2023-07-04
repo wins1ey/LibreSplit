@@ -34,8 +34,6 @@ using std::this_thread::sleep_for;
 using std::atomic;
 
 char autoSplitterFile[256];
-string autoSplittersDirectory;
-string chosenAutoSplitter;
 int refreshRate = 60;
 atomic<bool> usingAutoSplitter(true);
 atomic<bool> callStart(false);
@@ -49,7 +47,7 @@ void checkDirectories()
     // Get the path to the users directory
     string userDirectory = getpwuid(getuid())->pw_dir;
     string lastDirectory = userDirectory + "/.last";
-    autoSplittersDirectory = lastDirectory + "/auto-splitters";
+    string autoSplittersDirectory = lastDirectory + "/auto-splitters";
     string themesDirectory = lastDirectory + "/themes";
 
     // Make the LAST directory if it doesn't exist
