@@ -14,7 +14,7 @@ void launchArgs(int argc, char *argv[])
     {
         if (strcmp(argv[i], "-downloader") == 0)
         {
-            startDownloader(autoSplittersDirectory);
+            startDownloader();
             exit(0);
         }
     }

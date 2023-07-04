@@ -38,11 +38,11 @@ void downloadFile(string url, string directory)
     }
 }
 
-void startDownloader(string autoSplittersDirectory)
+void startDownloader()
 {
     string userDirectory = getpwuid(getuid())->pw_dir;
     string lastDirectory = userDirectory + "/.last";
-    autoSplittersDirectory = lastDirectory + "/auto-splitters";
+    string autoSplittersDirectory = lastDirectory + "/auto-splitters";
     cout << "Auto Splitter Downloader" << endl;
     downloadFile("https://raw.githubusercontent.com/Wins1ey/LuaAutoSplitters/main/autosplitters.csv", autoSplittersDirectory);
 
