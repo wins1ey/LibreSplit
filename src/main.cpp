@@ -15,33 +15,21 @@ void launchArgs(int argc, char *argv[])
         if (strcmp(argv[i], "-downloader") == 0)
         {
             startDownloader(autoSplittersDirectory);
+            exit(0);
         }
     }
-}
-
-int autoSplitterThread(int argc, char *argv[])
-{
-    launchArgs(argc, argv);
-    openAutoSplitter();
-
-    return 0;
 }
 
 int main(int argc, char *argv[])
 {
     checkDirectories();
-    if (isatty(fileno(stdin)))
-    {
-        std::thread t1(autoSplitterThread, argc, argv);
-        std::thread t2(open_timer, argc, argv);
+    launchArgs(argc, argv);
 
-        t1.join();
-        t2.join();
-    }
-    else
-    {
-        open_timer(argc, argv);
-    }
+    std::thread t1(openAutoSplitter);
+    std::thread t2(open_timer, argc, argv);
 
+    t1.join();
+    t2.join();
+    
     return 0;
 }
