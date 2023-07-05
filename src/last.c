@@ -405,14 +405,18 @@ void last_game_update_splits(last_game *game,
             game->world_record = timer->split_times[game->split_count - 1];
         }
         size = timer->curr_split * sizeof(long long);
-        memcpy(game->split_times, timer->split_times, size);
-        memcpy(game->segment_times, timer->segment_times, size);
-        if (timer->split_times[game->split_count - 1] < game->best_splits[game->split_count - 1])
+        if (timer->split_times[game->split_count - 1]
+            < game->split_times[game->split_count - 1])
         {
-            memcpy(game->best_splits, timer->split_times, size);
+            memcpy(game->split_times, timer->split_times, size);
         }
+        memcpy(game->segment_times, timer->segment_times, size);
         for (int i = 0; i < game->split_count; ++i)
         {
+            if (timer->split_times[i] < game->best_splits[i])
+            {
+                game->best_splits[i] = timer->split_times[i];
+            }
             if (timer->segment_times[i] < game->best_segments[i])
             {
                 game->best_segments[i] = timer->segment_times[i];
