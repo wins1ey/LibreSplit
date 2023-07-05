@@ -18,7 +18,6 @@
 
 using std::string;
 using std::cout;
-using std::cin;
 using std::endl;
 using std::vector;
 using std::sort;
@@ -273,6 +272,6 @@ void openAutoSplitter()
         {
             runAutoSplitter();
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for 100 milliseconds before checking again
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // Wait for 1 second before checking again
     }
 }
