@@ -5,7 +5,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <pwd.h>
+
 #include <gtk/gtk.h>
+
 #include "headers/last.h"
 #include "headers/last-css.h"
 #include "headers/last-gtk.h"
@@ -48,6 +50,7 @@ struct _LASTAppWindow
     GtkWidget *box;
     GList *components;
     GtkWidget *footer;
+    GtkWidget *menu;
     GtkCssProvider *style;
     gboolean hide_cursor;
     gboolean global_hotkeys;
@@ -510,6 +513,7 @@ static void timer_unsplit(LASTAppWindow *win)
     }
 }
 
+
 static void toggle_decorations(LASTAppWindow *win)
 {
     gtk_window_set_decorated(GTK_WINDOW(win), !win->decorated);
@@ -810,6 +814,10 @@ static void open_activated(GSimpleAction *action,
     GtkWidget *dialog;
     struct stat st = {0};
     gint res;
+    if (app == 1)
+    {
+        app = parameter;
+    }
 
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows)
@@ -847,12 +855,68 @@ static void open_activated(GSimpleAction *action,
     gtk_widget_destroy(dialog);
 }
 
+static void open_auto_splitter(GSimpleAction *action,
+                           GVariant      *parameter,
+                           gpointer       app)
+{
+    char auto_splitters_path[256];
+    GList *windows;
+    LASTAppWindow *win;
+    GtkWidget *dialog;
+    struct stat st = {0};
+    gint res;
+    if (app == 1)
+    {
+        app = parameter;
+    }
+
+    windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    if (windows)
+    {
+        win = LAST_APP_WINDOW(windows->data);
+    }
+    else
+    {
+        win = last_app_window_new(LAST_APP(app));
+    }
+    dialog = gtk_file_chooser_dialog_new (
+        "Open File", GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
+        "_Cancel", GTK_RESPONSE_CANCEL,
+        "_Open", GTK_RESPONSE_ACCEPT,
+        NULL);
+
+    strcpy(auto_splitters_path, win->data_path);
+    strcat(auto_splitters_path, "/auto-splitters");
+    if (stat(auto_splitters_path, &st) == -1)
+    {
+        mkdir(auto_splitters_path, 0700);
+    }
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),
+                                        auto_splitters_path);
+
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    if (res == GTK_RESPONSE_ACCEPT)
+    {
+        char *filename;
+        GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+        filename = gtk_file_chooser_get_filename(chooser);
+        strcpy(autoSplitterFile, filename);
+        g_free(filename);
+    }
+    gtk_widget_destroy(dialog);
+}
+
 static void save_activated(GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       app)
 {
     GList *windows;
     LASTAppWindow *win;
+    if (app == 1)
+    {
+        app = parameter;
+    }
+
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows)
     {
@@ -873,28 +937,6 @@ static void save_activated(GSimpleAction *action,
     }
 }
 
-static void save_bests_activated(GSimpleAction *action,
-                                 GVariant      *parameter,
-                                 gpointer       app)
-{
-    GList *windows;
-    LASTAppWindow *win;
-    windows = gtk_application_get_windows(GTK_APPLICATION(app));
-    if (windows)
-    {
-        win = LAST_APP_WINDOW(windows->data);
-    }
-    else
-    {
-        win = last_app_window_new(LAST_APP(app));
-    }
-    if (win->game && win->timer)
-    {
-        last_game_update_bests(win->game, win->timer);
-        save_game(win->game);
-    }
-}
-
 static void reload_activated(GSimpleAction *action,
                              GVariant      *parameter,
                              gpointer       app)
@@ -902,6 +944,11 @@ static void reload_activated(GSimpleAction *action,
     GList *windows;
     LASTAppWindow *win;
     char *path;
+    if (app == 1)
+    {
+        app = parameter;
+    }
+
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows)
     {
@@ -925,6 +972,11 @@ static void close_activated(GSimpleAction *action,
 {
     GList *windows;
     LASTAppWindow *win;
+    if (app == 1)
+    {
+        app = parameter;
+    }
+    
     windows = gtk_application_get_windows(GTK_APPLICATION(app));
     if (windows)
     {
@@ -955,71 +1007,77 @@ static void quit_activated(GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       app)
 {
-    g_application_quit(G_APPLICATION(app));
+    exit(0);
 }
 
-static GActionEntry app_entries[] =
+static void toggle_auto_splitter(GtkCheckMenuItem *menu_item, gpointer user_data)
 {
-    { "open", open_activated, NULL, NULL, NULL },
-    { "save", save_activated, NULL, NULL, NULL },
-    { "save_bests", save_bests_activated, NULL, NULL, NULL },
-    { "reload", reload_activated, NULL, NULL, NULL },
-    { "close", close_activated, NULL, NULL, NULL },
-    { "quit", quit_activated, NULL, NULL, NULL }
-};
+    gboolean active = gtk_check_menu_item_get_active(menu_item);
+    if (active)
+    {
+        atomic_store(&usingAutoSplitter, 1);
+    }
+    else
+    {
+        atomic_store(&usingAutoSplitter, 0);
+    }
+}
+
+static gboolean button_right_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    if (event->button == GDK_BUTTON_SECONDARY)
+    {
+        LASTAppWindow *win = (LASTAppWindow*)widget;
+        win->menu = GTK_WIDGET(data);
+        gtk_widget_show_all(win->menu);
+        gtk_menu_popup_at_pointer(GTK_MENU(win->menu), (GdkEvent *)event);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+static void create_context_menu(LASTAppWindow *win, GApplication *app)
+{
+    win->menu = gtk_menu_new();
+    GtkWidget *menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
+    GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
+    GtkWidget *menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
+    GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), TRUE);
+    GtkWidget *menu_reload = gtk_menu_item_new_with_label("Reload");
+    GtkWidget *menu_close = gtk_menu_item_new_with_label("Close");
+    GtkWidget *menu_quit = gtk_menu_item_new_with_label("Quit");
+
+    // Attach the callback functions to the menu items
+    g_signal_connect(menu_open_splits, "activate", G_CALLBACK(open_activated), app);
+    g_signal_connect(menu_save_splits, "activate", G_CALLBACK(save_activated), app);
+    g_signal_connect(menu_open_auto_splitter, "activate", G_CALLBACK(open_auto_splitter), app);
+    g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_auto_splitter), NULL);
+    g_signal_connect(menu_reload, "activate", G_CALLBACK(reload_activated), app);
+    g_signal_connect(menu_close, "activate", G_CALLBACK(close_activated), app);
+    g_signal_connect(menu_quit, "activate", G_CALLBACK(quit_activated), app);
+
+    // Add the menu items to the menu
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_open_splits);
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_save_splits);
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_open_auto_splitter);
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_enable_auto_splitter);
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_reload);
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_close);
+    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_quit);
+
+    // Attach the menu to the window
+    gtk_widget_add_events(win, GDK_BUTTON_PRESS_MASK);
+    g_signal_connect(win, "button_press_event", G_CALLBACK(button_right_click), win->menu);
+}
 
 static void last_app_activate(GApplication *app)
 {
     LASTAppWindow *win;
     win = last_app_window_new(LAST_APP(app));
     gtk_window_present(GTK_WINDOW(win));
+    create_context_menu(win, app);
     open_activated(NULL, NULL, app);
-}
-
-static void last_app_startup(GApplication *app)
-{
-    GtkBuilder *builder;
-    GMenuModel *menubar;
-    G_APPLICATION_CLASS(last_app_parent_class)->startup(app);
-    builder = gtk_builder_new_from_string (
-        "<interface>"
-        "  <menu id='menubar'>"
-        "    <submenu>"
-        "      <attribute name='label'>File</attribute>"
-        "      <item>"
-        "        <attribute name='label'>Open</attribute>"
-        "        <attribute name='action'>app.open</attribute>"
-        "      </item>"
-        "      <item>"
-        "        <attribute name='label'>Save</attribute>"
-        "        <attribute name='action'>app.save</attribute>"
-        "      </item>"
-        "      <item>"
-        "        <attribute name='label'>Save bests</attribute>"
-        "        <attribute name='action'>app.save_bests</attribute>"
-        "      </item>"
-        "      <item>"
-        "        <attribute name='label'>Reload</attribute>"
-        "        <attribute name='action'>app.reload</attribute>"
-        "      </item>"
-        "      <item>"
-        "        <attribute name='label'>Close</attribute>"
-        "        <attribute name='action'>app.close</attribute>"
-        "      </item>"
-        "      <item>"
-        "        <attribute name='label'>Quit</attribute>"
-        "        <attribute name='action'>app.quit</attribute>"
-        "      </item>"
-        "    </submenu>"
-        "  </menu>"
-        "</interface>",
-        -1);
-    g_action_map_add_action_entries(G_ACTION_MAP(app),
-                                    app_entries, G_N_ELEMENTS(app_entries),
-                                    app);
-    menubar = G_MENU_MODEL(gtk_builder_get_object(builder, "menubar"));
-    gtk_application_set_menubar(GTK_APPLICATION(app), menubar);
-    g_object_unref(builder);
 }
 
 static void last_app_init(LASTApp *app)
@@ -1063,7 +1121,6 @@ static void last_app_class_init(LASTAppClass *class)
 {
     G_APPLICATION_CLASS(class)->activate = last_app_activate;
     G_APPLICATION_CLASS(class)->open = last_app_open;
-    G_APPLICATION_CLASS(class)->startup = last_app_startup;
 }
 
 int open_timer(int argc, char *argv[])

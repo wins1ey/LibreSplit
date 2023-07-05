@@ -5,7 +5,6 @@
 
 using std::string;
 
-void startDownloader(string autoSplittersDirectory);
-void downloadFile(string url);
+void startDownloader();
 
 #endif

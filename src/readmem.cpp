@@ -11,7 +11,6 @@
 #include <signal.h>
 
 #include "headers/readmem.hpp"
-#include "headers/lastprint.hpp"
 #include "headers/autosplitter.hpp"
 
 using std::string;
@@ -74,7 +73,8 @@ uintptr_t findMemoryOffset()
     }
     else
     {
-        throw runtime_error("Couldn't find memory offset");
+        cout << "Couldn't find memory offset" << endl;
+        return 0;
     }
 }
 
@@ -96,20 +96,16 @@ void stockProcessID(const char* processtarget)
 
     if (spacePos != string::npos)
     {
-        throw runtime_error("Multiple PID's found for process: " + processName + "\n");
+        cout << "Multiple PID's found for process: " << processName << endl;
     }
 
     pid = strtoul(pidOutput.c_str(), nullptr, 10);
 
     if (pid != 0)
     {
-        cout << processName + " is running - PID NUMBER -> " << pid << endl;
-        lastPrint("Process: " + processName + "\n");
-        lastPrint("PID: " + to_string(pid) + "\n");
-    }
-    else
-    {
-        cout << "Error reading process ID: " << strerror(errno) << endl;
+        cout << "\033[2J\033[1;1H"; // Clear the console
+        cout << "Process: " << processName << endl;
+        cout << "PID: " << to_string(pid) << endl;
     }
 }
 
@@ -120,14 +116,11 @@ int findProcessID(lua_State* L)
     cCommand = command.c_str();
 
     stockProcessID(cCommand);
-    while (pid == 0)
-    {
-        lastPrint("");
-        cout << processName + " isn't running. Retrying...\n";
-        sleep_for(milliseconds(1));
-        stockProcessID(cCommand);
-    }
-    lastPrint("\n");
+    
+    cout << "\033[2J\033[1;1H"; // Clear the console
+    cout << processName + " isn't running. Retrying...\n";
+    sleep_for(milliseconds(100));
+    stockProcessID(cCommand);
 
     memoryOffset = dllMemoryOffset = findMemoryOffset();
 
@@ -159,7 +152,7 @@ ValueType readMemory(uint64_t memAddress)
     }
     else if (memNread == -1 && !processExists())
     {
-        runAutoSplitter();
+        openAutoSplitter();
     }
     else if (memNread != static_cast<ssize_t>(memRemote.iov_len))
     {
@@ -188,7 +181,7 @@ string readMemory(uint64_t memAddress, int bufferSize)
     }
     else if (memNread == -1 && kill(pid, 0))
     {
-        runAutoSplitter();
+        openAutoSplitter();
     }
     else if (memNread != static_cast<ssize_t>(memRemote.iov_len))
     {
