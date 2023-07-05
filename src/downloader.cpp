@@ -9,7 +9,6 @@
 #include <curl/curl.h>
 
 #include "headers/downloader.hpp"
-#include "headers/autosplitter.hpp"
 
 using std::cout;
 using std::endl;

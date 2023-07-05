@@ -18,7 +18,6 @@
 
 using std::string;
 using std::cout;
-using std::cin;
 using std::endl;
 using std::vector;
 using std::sort;
@@ -215,9 +214,14 @@ void runAutoSplitter()
     cout << "Refresh rate: " << to_string(refreshRate) << endl;
     int rate = static_cast<int>(1000000 / refreshRate);
 
-    while (usingAutoSplitter.load() && currentAutoSplitterFile == autoSplitterFile)
+    while (true)
     {
         auto clockStart = high_resolution_clock::now();
+
+        if (!usingAutoSplitter.load() || currentAutoSplitterFile != autoSplitterFile || !processExists() || pid == 0)
+        {
+            break;
+        }
 
         if (stateExists)
         {
@@ -258,7 +262,6 @@ void runAutoSplitter()
     }
     
     lua_close(L);
-    openAutoSplitter();
 }
 
 void openAutoSplitter()
@@ -269,6 +272,6 @@ void openAutoSplitter()
         {
             runAutoSplitter();
         }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100)); // Wait for 100 milliseconds before checking again
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000)); // Wait for 1 second before checking again
     }
 }

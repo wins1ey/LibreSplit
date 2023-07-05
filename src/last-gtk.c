@@ -14,6 +14,7 @@
 #include "headers/keybinder.h"
 #include "components/last-component.h"
 #include "headers/autosplitter.h"
+#include "headers/settings.h"
 
 #define LAST_APP_TYPE (last_app_get_type ())
 #define LAST_APP(obj)                            \
@@ -850,6 +851,7 @@ static void open_activated(GSimpleAction *action,
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
         filename = gtk_file_chooser_get_filename(chooser);
         last_app_window_open(win, filename);
+        last_update_setting("split_file", json_string(filename));
         g_free(filename);
     }
     gtk_widget_destroy(dialog);
@@ -901,6 +903,7 @@ static void open_auto_splitter(GSimpleAction *action,
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
         filename = gtk_file_chooser_get_filename(chooser);
         strcpy(autoSplitterFile, filename);
+        last_update_setting("auto_splitter_file", json_string(filename));
         g_free(filename);
     }
     gtk_widget_destroy(dialog);
@@ -1016,10 +1019,12 @@ static void toggle_auto_splitter(GtkCheckMenuItem *menu_item, gpointer user_data
     if (active)
     {
         atomic_store(&usingAutoSplitter, 1);
+        last_update_setting("auto_splitter_enabled", json_true());
     }
     else
     {
         atomic_store(&usingAutoSplitter, 0);
+        last_update_setting("auto_splitter_enabled", json_false());
     }
 }
 
@@ -1043,7 +1048,7 @@ static void create_context_menu(LASTAppWindow *win, GApplication *app)
     GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
     GtkWidget *menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
     GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), TRUE);
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), atomic_load(&usingAutoSplitter));
     GtkWidget *menu_reload = gtk_menu_item_new_with_label("Reload");
     GtkWidget *menu_close = gtk_menu_item_new_with_label("Close");
     GtkWidget *menu_quit = gtk_menu_item_new_with_label("Quit");
@@ -1076,8 +1081,26 @@ static void last_app_activate(GApplication *app)
     LASTAppWindow *win;
     win = last_app_window_new(LAST_APP(app));
     gtk_window_present(GTK_WINDOW(win));
+    if (get_setting_value("LAST", "split_file") != NULL)
+    {
+        last_app_window_open(win, json_string_value(get_setting_value("LAST", "split_file")));
+    }
+    if (get_setting_value("LAST", "auto_splitter_file") != NULL)
+    {
+        strcpy(autoSplitterFile, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
+    }
+    if (get_setting_value("LAST", "auto_splitter_enabled") != NULL)
+    {
+        if (json_is_true(get_setting_value("LAST", "auto_splitter_enabled")))
+        {
+            atomic_store(&usingAutoSplitter, 1);
+        }
+        else
+        {
+            atomic_store(&usingAutoSplitter, 0);
+        }
+    }
     create_context_menu(win, app);
-    open_activated(NULL, NULL, app);
 }
 
 static void last_app_init(LASTApp *app)
