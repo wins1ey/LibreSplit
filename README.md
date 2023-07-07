@@ -13,13 +13,15 @@ LAST brings auto splitting functionality to [urn](https://github.com/3snowp7im/u
 
 ## Dependencies
 
-LAST requires the following dependencies on your system to compile and install:
+LAST requires the following dependencies on your system to compile:
 
 - `libgtk+-3.0`
 - `x11`
 - `libjansson`
-- `curl`
 - `lua`
+
+And to install:
+
 - `imagemagick`
 - `rsync`
 
