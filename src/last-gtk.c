@@ -9,11 +9,10 @@
 #include <gtk/gtk.h>
 
 #include "headers/last.h"
-#include "headers/last-css.h"
 #include "headers/last-gtk.h"
-#include "headers/keybinder.h"
+#include "headers/bind.h"
 #include "components/last-component.h"
-#include "headers/autosplitter.h"
+#include "headers/auto-splitter.h"
 #include "headers/settings.h"
 
 #define LAST_APP_TYPE (last_app_get_type ())
@@ -160,19 +159,19 @@ static gboolean last_app_window_step(gpointer data)
     {
         last_timer_step(win->timer, now);
         
-        if(atomic_load(&usingAutoSplitter))
+        if(atomic_load(&auto_splitter_enabled))
         {
-            if (atomic_load(&callStart) && !win->timer->loading)
+            if (atomic_load(&call_start) && !win->timer->loading)
             {
                 timer_start(win);
-                atomic_store(&callStart, 0);
+                atomic_store(&call_start, 0);
             }
-            if (atomic_load(&callSplit))
+            if (atomic_load(&call_split))
             {
                 timer_split(win);
-                atomic_store(&callSplit, 0);
+                atomic_store(&call_split, 0);
             }
-            if (atomic_load(&toggleLoading))
+            if (atomic_load(&toggle_loading))
             {
                 win->timer->loading = !win->timer->loading;
                 if (win->timer->running && win->timer->loading)
@@ -183,12 +182,12 @@ static gboolean last_app_window_step(gpointer data)
                 {
                     timer_start(win);
                 }
-                atomic_store(&toggleLoading, 0);
+                atomic_store(&toggle_loading, 0);
             }
-            if (atomic_load(&callReset))
+            if (atomic_load(&call_reset))
             {
                 timer_reset(win);
-                atomic_store(&callReset, 0);
+                atomic_store(&call_reset, 0);
             }
         }
     }
@@ -654,7 +653,7 @@ static void last_app_window_init(LASTAppWindow *win)
         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_css_provider_load_from_data(
         GTK_CSS_PROVIDER(provider),
-        (char *)last_css, last_css_len, NULL);
+        (char *)last_gtk_css, last_gtk_css_len, NULL);
     g_object_unref(provider);
 
     // Load theme
@@ -902,7 +901,7 @@ static void open_auto_splitter(GSimpleAction *action,
         char *filename;
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
         filename = gtk_file_chooser_get_filename(chooser);
-        strcpy(autoSplitterFile, filename);
+        strcpy(auto_splitter_file, filename);
         last_update_setting("auto_splitter_file", json_string(filename));
         g_free(filename);
     }
@@ -1018,12 +1017,12 @@ static void toggle_auto_splitter(GtkCheckMenuItem *menu_item, gpointer user_data
     gboolean active = gtk_check_menu_item_get_active(menu_item);
     if (active)
     {
-        atomic_store(&usingAutoSplitter, 1);
+        atomic_store(&auto_splitter_enabled, 1);
         last_update_setting("auto_splitter_enabled", json_true());
     }
     else
     {
-        atomic_store(&usingAutoSplitter, 0);
+        atomic_store(&auto_splitter_enabled, 0);
         last_update_setting("auto_splitter_enabled", json_false());
     }
 }
@@ -1048,7 +1047,7 @@ static void create_context_menu(LASTAppWindow *win, GApplication *app)
     GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
     GtkWidget *menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
     GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), atomic_load(&usingAutoSplitter));
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), atomic_load(&auto_splitter_enabled));
     GtkWidget *menu_reload = gtk_menu_item_new_with_label("Reload");
     GtkWidget *menu_close = gtk_menu_item_new_with_label("Close");
     GtkWidget *menu_quit = gtk_menu_item_new_with_label("Quit");
@@ -1087,17 +1086,17 @@ static void last_app_activate(GApplication *app)
     }
     if (get_setting_value("LAST", "auto_splitter_file") != NULL)
     {
-        strcpy(autoSplitterFile, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
+        strcpy(auto_splitter_file, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
     }
     if (get_setting_value("LAST", "auto_splitter_enabled") != NULL)
     {
         if (json_is_true(get_setting_value("LAST", "auto_splitter_enabled")))
         {
-            atomic_store(&usingAutoSplitter, 1);
+            atomic_store(&auto_splitter_enabled, 1);
         }
         else
         {
-            atomic_store(&usingAutoSplitter, 0);
+            atomic_store(&auto_splitter_enabled, 0);
         }
     }
     create_context_menu(win, app);
@@ -1146,7 +1145,30 @@ static void last_app_class_init(LASTAppClass *class)
     G_APPLICATION_CLASS(class)->open = last_app_open;
 }
 
-int open_timer(int argc, char *argv[])
-{
-    return g_application_run(G_APPLICATION(last_app_new()), argc, argv);
+struct ThreadArgs {
+    int argc;
+    char** argv;
+};
+
+void* run_application(void* args) {
+    struct ThreadArgs* threadArgs = (struct ThreadArgs*)args;
+    int argc = threadArgs->argc;
+    char** argv = threadArgs->argv;
+    g_application_run(G_APPLICATION(last_app_new()), argc, argv);
+    return NULL;
+}
+
+int main(int argc, char *argv[]) {
+    check_directories();
+
+    pthread_t t1, t2;
+    struct ThreadArgs threadArgs;
+    threadArgs.argc = argc;
+    threadArgs.argv = argv;
+    pthread_create(&t1, NULL, &run_application, (void*)&threadArgs);
+    pthread_create(&t2, NULL, &last_auto_splitter, NULL);
+
+    pthread_join(t1, t2);
+
+    return 0;
 }

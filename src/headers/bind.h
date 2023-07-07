@@ -21,8 +21,8 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#ifndef __KEY_BINDER_H__
-#define __KEY_BINDER_H__
+#ifndef __BIND_H__
+#define __BIND_H__
 
 #include <glib.h>
 
@@ -51,4 +51,4 @@ guint32 keybinder_get_current_event_time (void);
 
 G_END_DECLS
 
-#endif /* __KEY_BINDER_H__ */
+#endif /* __BIND__ */
