@@ -1,5 +1,5 @@
-#ifndef __last_component_h__
-#define __last_component_h__
+#ifndef __LAST_COMPONENT_H__
+#define __LAST_COMPONENT_H__
 
 #include <string.h>
 #include <stdlib.h>
@@ -48,4 +48,4 @@ void add_class(GtkWidget *widget, const char *class);
 
 void remove_class(GtkWidget *widget, const char *class);
 
-#endif
+#endif /* __LAST_COMPONENT_H__ */
