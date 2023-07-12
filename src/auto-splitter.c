@@ -33,7 +33,7 @@ void check_directories()
     // Get the path to the user's directory
     struct passwd *pw = getpwuid(getuid());
     const char *user_directory = pw->pw_dir;
-    char last_directory[MAX_PATH_LENGTH];
+    char last_directory[241];
     char auto_splitters_directory[MAX_PATH_LENGTH];
     char themes_directory[MAX_PATH_LENGTH];
     char splits_directory[MAX_PATH_LENGTH];

@@ -42,17 +42,15 @@ extern last_process process;
 
 READ_MEMORY_FUNCTION(int8_t)
 READ_MEMORY_FUNCTION(uint8_t)
-READ_MEMORY_FUNCTION(short)
-READ_MEMORY_FUNCTION(ushort)
-READ_MEMORY_FUNCTION(int)
-READ_MEMORY_FUNCTION(uint)
-READ_MEMORY_FUNCTION(long)
-READ_MEMORY_FUNCTION(ulong)
+READ_MEMORY_FUNCTION(int16_t)
+READ_MEMORY_FUNCTION(uint16_t)
+READ_MEMORY_FUNCTION(int32_t)
+READ_MEMORY_FUNCTION(uint32_t)
+READ_MEMORY_FUNCTION(int64_t)
+READ_MEMORY_FUNCTION(uint64_t)
 READ_MEMORY_FUNCTION(float)
 READ_MEMORY_FUNCTION(double)
 READ_MEMORY_FUNCTION(bool)
-READ_MEMORY_FUNCTION(uint32_t)
-READ_MEMORY_FUNCTION(uint64_t)
 
 char* read_memory_string(uint64_t mem_address, int buffer_size)
 {
@@ -133,32 +131,32 @@ int read_address(lua_State* L)
     }
     else if (strcmp(value_type, "short") == 0)
     {
-        short value = read_memory_short(address);
+        short value = read_memory_int16_t(address);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "ushort") == 0)
     {
-        unsigned short value = read_memory_ushort(address);
+        unsigned short value = read_memory_uint16_t(address);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "int") == 0)
     {
-        int value = read_memory_int(address);
+        int value = read_memory_int32_t(address);
         lua_pushinteger(L, value);
     }
     else if (strcmp(value_type, "uint") == 0)
     {
-        unsigned int value = read_memory_uint(address);
+        unsigned int value = read_memory_uint32_t(address);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "long") == 0)
     {
-        long value = read_memory_long(address);
+        long value = read_memory_int64_t(address);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "ulong") == 0)
     {
-        unsigned long value = read_memory_ulong(address);
+        unsigned long value = read_memory_uint64_t(address);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "float") == 0)

@@ -50,7 +50,7 @@ uintptr_t find_base_address()
     }
     else
     {
-        printf("Couldn't find memory offset\n");
+        printf("Couldn't find base address\n");
         return 0;
     }
 }
@@ -79,7 +79,13 @@ void stock_process_id(const char* processtarget)
     {
         printf("\033[2J\033[1;1H"); // Clear the console
         printf("Process: %s\n", process.name);
-        printf("PID: %lu\n", process.pid);
+        printf("PID: %u\n", process.pid);
+        process.base_address = find_base_address();
+        process.dll_address = process.base_address;
+    }
+    else
+    {
+        printf("Process not found\n");
     }
 }
 
@@ -87,17 +93,10 @@ int find_process_id(lua_State* L)
 {
     process.name = lua_tostring(L, 1);
     char command[256];
+    printf("\033[2J\033[1;1H"); // Clear the console
     snprintf(command, sizeof(command), "pgrep \"%.*s\"", (int)strnlen(process.name, 15), process.name);
 
     stock_process_id(command);
-    
-    printf("\033[2J\033[1;1H"); // Clear the console
-    printf("%s isn't running. Retrying...\n", process.name);
-    usleep(100000);
-    stock_process_id(command);
-
-    process.base_address = find_base_address();
-    process.dll_address = find_base_address();
 
     return 0;
 }

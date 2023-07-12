@@ -7,7 +7,7 @@
 
 struct last_process
 {
-    char *name;
+    const char *name;
     int pid;
     uintptr_t base_address;
     uintptr_t dll_address;

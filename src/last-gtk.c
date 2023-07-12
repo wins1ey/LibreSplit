@@ -50,7 +50,6 @@ struct _LASTAppWindow
     GtkWidget *box;
     GList *components;
     GtkWidget *footer;
-    GtkWidget *menu;
     GtkCssProvider *style;
     gboolean hide_cursor;
     gboolean global_hotkeys;
@@ -814,7 +813,7 @@ static void open_activated(GSimpleAction *action,
     GtkWidget *dialog;
     struct stat st = {0};
     gint res;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -866,7 +865,7 @@ static void open_auto_splitter(GSimpleAction *action,
     GtkWidget *dialog;
     struct stat st = {0};
     gint res;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -914,7 +913,7 @@ static void save_activated(GSimpleAction *action,
 {
     GList *windows;
     LASTAppWindow *win;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -946,7 +945,7 @@ static void reload_activated(GSimpleAction *action,
     GList *windows;
     LASTAppWindow *win;
     char *path;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -974,7 +973,7 @@ static void close_activated(GSimpleAction *action,
 {
     GList *windows;
     LASTAppWindow *win;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -1031,10 +1030,9 @@ static gboolean button_right_click(GtkWidget *widget, GdkEventButton *event, gpo
 {
     if (event->button == GDK_BUTTON_SECONDARY)
     {
-        LASTAppWindow *win = (LASTAppWindow*)widget;
-        win->menu = GTK_WIDGET(data);
-        gtk_widget_show_all(win->menu);
-        gtk_menu_popup_at_pointer(GTK_MENU(win->menu), (GdkEvent *)event);
+        GtkWidget *menu = GTK_WIDGET(data);
+        gtk_widget_show_all(menu);
+        gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
         return TRUE;
     }
     return FALSE;
@@ -1042,7 +1040,7 @@ static gboolean button_right_click(GtkWidget *widget, GdkEventButton *event, gpo
 
 static void create_context_menu(LASTAppWindow *win, GApplication *app)
 {
-    win->menu = gtk_menu_new();
+    GtkWidget *menu = gtk_menu_new();
     GtkWidget *menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
     GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
     GtkWidget *menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
@@ -1052,7 +1050,17 @@ static void create_context_menu(LASTAppWindow *win, GApplication *app)
     GtkWidget *menu_close = gtk_menu_item_new_with_label("Close");
     GtkWidget *menu_quit = gtk_menu_item_new_with_label("Quit");
 
+    // Add the menu items to the menu
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_splits);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save_splits);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_auto_splitter);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_enable_auto_splitter);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_reload);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_close);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_quit);
+
     // Attach the callback functions to the menu items
+    g_signal_connect(win, "button_press_event", G_CALLBACK(button_right_click), menu);
     g_signal_connect(menu_open_splits, "activate", G_CALLBACK(open_activated), app);
     g_signal_connect(menu_save_splits, "activate", G_CALLBACK(save_activated), app);
     g_signal_connect(menu_open_auto_splitter, "activate", G_CALLBACK(open_auto_splitter), app);
@@ -1060,19 +1068,6 @@ static void create_context_menu(LASTAppWindow *win, GApplication *app)
     g_signal_connect(menu_reload, "activate", G_CALLBACK(reload_activated), app);
     g_signal_connect(menu_close, "activate", G_CALLBACK(close_activated), app);
     g_signal_connect(menu_quit, "activate", G_CALLBACK(quit_activated), app);
-
-    // Add the menu items to the menu
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_open_splits);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_save_splits);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_open_auto_splitter);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_enable_auto_splitter);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_reload);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_close);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_quit);
-
-    // Attach the menu to the window
-    gtk_widget_add_events(win, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect(win, "button_press_event", G_CALLBACK(button_right_click), win->menu);
 }
 
 static void last_app_activate(GApplication *app)
@@ -1168,7 +1163,8 @@ int main(int argc, char *argv[]) {
     pthread_create(&t1, NULL, &run_application, (void*)&threadArgs);
     pthread_create(&t2, NULL, &last_auto_splitter, NULL);
 
-    pthread_join(t1, t2);
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
 
     return 0;
 }
