@@ -85,7 +85,7 @@ void stock_process_id(const char* processtarget)
     }
     else
     {
-        printf("Process not found\n");
+        printf("%s isn't running.\n", process.name);
     }
 }
 
