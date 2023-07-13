@@ -11,9 +11,9 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "headers/memory.h"
-#include "headers/auto-splitter.h"
-#include "headers/process.h"
+#include "memory.h"
+#include "auto-splitter.h"
+#include "process.h"
 
 #define MAX_PATH_LENGTH 256
 

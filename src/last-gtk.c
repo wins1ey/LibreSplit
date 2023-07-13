@@ -8,12 +8,12 @@
 
 #include <gtk/gtk.h>
 
-#include "headers/last.h"
-#include "headers/last-gtk.h"
-#include "headers/bind.h"
+#include "last.h"
+#include "last-gtk.h"
+#include "bind.h"
 #include "components/last-component.h"
-#include "headers/auto-splitter.h"
-#include "headers/settings.h"
+#include "auto-splitter.h"
+#include "settings.h"
 
 #define LAST_APP_TYPE (last_app_get_type ())
 #define LAST_APP(obj)                            \

@@ -7,7 +7,6 @@ LDFLAGS = -llua `pkg-config --libs gtk+-3.0 x11 jansson`
 SRC_DIR = ./src
 BIN_DIR = ./bin
 OBJ_DIR = $(BIN_DIR)/objects
-HEADERS_DIR = $(SRC_DIR)/headers
 
 # Obtain list of source files and create list of object files
 SOURCES = $(wildcard $(SRC_DIR)/*.c)
@@ -45,7 +44,7 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 last-gtk.h: last-gtk.css
-	xxd --include last-gtk.css > $(HEADERS_DIR)/last-gtk.h || (rm $(HEADERS_DIR)/last-gtk.h; false)
+	xxd --include last-gtk.css > $(SRC_DIR)/last-gtk.h || (rm $(SRC_DIR)/last-gtk.h; false)
 
 install:
 	cp $(BIN) $(USR_BIN_DIR)
@@ -74,6 +73,6 @@ remove-schema:
 
 # Clean target to remove object files and LAS executable
 clean:
-	rm -rf $(BIN_DIR) $(HEADERS_DIR)/last-gtk.h
+	rm -rf $(BIN_DIR) $(SRC_DIR)/last-gtk.h
 
 .PHONY: all last-gtk.h install uninstall remove-schema clean

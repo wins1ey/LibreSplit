@@ -7,7 +7,7 @@
 
 #include <jansson.h>
 
-#include "headers/settings.h"
+#include "settings.h"
 
 char *get_home_folder_path()
 {

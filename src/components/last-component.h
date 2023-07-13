@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <gtk/gtk.h>
 
-#include "../headers/last.h"
+#include "../last.h"
 
 typedef struct _LASTComponent LASTComponent;
 typedef struct _LASTComponentOps LASTComponentOps;

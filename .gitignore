@@ -1,5 +1,5 @@
 # Compiled files
 bin/
-src/headers/last-gtk.h
+src/last-gtk.h
 
 .vscode/

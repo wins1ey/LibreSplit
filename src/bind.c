@@ -31,7 +31,7 @@
 #include <X11/Xlib.h>
 #include <X11/XKBlib.h>
 
-#include "headers/bind.h"
+#include "bind.h"
 
 /* Uncomment the next line to print a debug trace. */
 /* #define DEBUG */

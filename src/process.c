@@ -6,7 +6,7 @@
 
 #include <lua.h>
 
-#include "headers/process.h"
+#include "process.h"
 
 struct last_process process;
 

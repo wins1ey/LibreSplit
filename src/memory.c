@@ -7,8 +7,8 @@
 
 #include <lua.h>
 
-#include "headers/memory.h"
-#include "headers/process.h"
+#include "memory.h"
+#include "process.h"
 
 bool memory_error;
 extern last_process process;
