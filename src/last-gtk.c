@@ -1153,7 +1153,7 @@ static void last_app_open(GApplication  *app,
 
 LASTApp *last_app_new(void)
 {
-    g_set_application_name("last");
+    g_set_application_name("LAST");
     return g_object_new(LAST_APP_TYPE,
                         "application-id", "wildmouse.last",
                         "flags", G_APPLICATION_HANDLES_OPEN,
