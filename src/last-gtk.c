@@ -1077,21 +1077,47 @@ static void last_app_activate(GApplication *app)
     gtk_window_present(GTK_WINDOW(win));
     if (get_setting_value("LAST", "split_file") != NULL)
     {
-        last_app_window_open(win, json_string_value(get_setting_value("LAST", "split_file")));
-    }
-    if (get_setting_value("LAST", "auto_splitter_file") != NULL)
-    {
-        strcpy(auto_splitter_file, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
-    }
-    if (get_setting_value("LAST", "auto_splitter_enabled") != NULL)
-    {
-        if (json_is_true(get_setting_value("LAST", "auto_splitter_enabled")))
+        // Check if split file exists
+        struct stat st = {0};
+        char splits_path[256];
+        strcpy(splits_path, json_string_value(get_setting_value("LAST", "split_file")));
+        if (stat(splits_path, &st) == -1)
         {
-            atomic_store(&auto_splitter_enabled, 1);
+            printf("%s does not exist\n", splits_path);
+            open_activated(NULL, NULL, app);
         }
         else
         {
+            last_app_window_open(win, json_string_value(get_setting_value("LAST", "split_file")));
+        }
+    }
+    else
+    {
+        open_activated(NULL, NULL, app);
+    }
+    if (get_setting_value("LAST", "auto_splitter_file") != NULL)
+    {
+        struct stat st = {0};
+        char auto_splitters_path[256];
+        strcpy(auto_splitters_path, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
+        if (stat(auto_splitters_path, &st) == -1)
+        {
+            printf("%s does not exist\n", auto_splitters_path);
+        }
+        else
+        {
+            strcpy(auto_splitter_file, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
+        }
+    }
+    if (get_setting_value("LAST", "auto_splitter_enabled") != NULL)
+    {
+        if (json_is_false(get_setting_value("LAST", "auto_splitter_enabled")))
+        {
             atomic_store(&auto_splitter_enabled, 0);
+        }
+        else
+        {
+            atomic_store(&auto_splitter_enabled, 1);
         }
     }
     create_context_menu(win, app);
