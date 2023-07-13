@@ -56,13 +56,10 @@ install:
 	gtk-update-icon-cache -f -t $(ICON_DIR)
 	cp last.gschema.xml $(SCHEMAS_DIR)
 	glib-compile-schemas $(SCHEMAS_DIR)
-	mkdir -p /usr/share/last/themes
-	rsync -a --exclude=".*" themes /usr/share/last
 
 uninstall:
 	rm -f $(USR_BIN_DIR)/LAST
 	rm -f $(APP_DIR)/$(APP)
-	rm -rf /usr/share/last
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
 	  rm -f $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done

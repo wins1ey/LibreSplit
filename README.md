@@ -23,7 +23,6 @@ LAST requires the following dependencies on your system to compile:
 And to install:
 
 - `imagemagick`
-- `rsync`
 
 ## Installation
 
