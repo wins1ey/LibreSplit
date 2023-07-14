@@ -106,7 +106,7 @@ Times are strings in HH:MM:SS.mmmmmm format
 LAST supports customizable themes, allowing you to personalize the timer's appearance. To create a theme:
 
 1. Create a CSS stylesheet with your desired styles.
-2. Place the stylesheet in the `~/.urn/themes/<name>/<name>.css` directory.
+2. Place the stylesheet in the `~/.last/themes/<name>/<name>.css` directory.
 3. Set the global theme by modifying the `theme` value in `gsettings`.
 4. Theme variants should follow the pattern `<name>-<variant>.css`.
 5. Individual splits can apply their own themes by specifying a `theme` key in the main split object.
