@@ -153,6 +153,7 @@ void run_auto_splitter()
         lua_pop(L, 1); // Remove the error message from the stack
         fprintf(stderr, "Lua syntax error: %s\n", error_msg);
         lua_close(L);
+        atomic_store(&auto_splitter_enabled, false);
         return;
     }
 
@@ -164,6 +165,7 @@ void run_auto_splitter()
         lua_pop(L, 1); // Remove the error message from the stack
         fprintf(stderr, "Lua runtime error: %s\n", error_msg);
         lua_close(L);
+        atomic_store(&auto_splitter_enabled, false);
         return;
     }
 

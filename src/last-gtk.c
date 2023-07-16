@@ -1026,48 +1026,44 @@ static void toggle_auto_splitter(GtkCheckMenuItem *menu_item, gpointer user_data
     }
 }
 
-static gboolean button_right_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
+// Create the context menu
+static gboolean button_right_click(GtkWidget *widget, GdkEventButton *event, gpointer app)
 {
     if (event->button == GDK_BUTTON_SECONDARY)
     {
-        GtkWidget *menu = GTK_WIDGET(data);
+        GtkWidget *menu = gtk_menu_new();
+        GtkWidget *menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
+        GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
+        GtkWidget *menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
+        GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), atomic_load(&auto_splitter_enabled));
+        GtkWidget *menu_reload = gtk_menu_item_new_with_label("Reload");
+        GtkWidget *menu_close = gtk_menu_item_new_with_label("Close");
+        GtkWidget *menu_quit = gtk_menu_item_new_with_label("Quit");
+
+        // Add the menu items to the menu
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_splits);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save_splits);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_auto_splitter);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_enable_auto_splitter);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_reload);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_close);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_quit);
+
+        // Attach the callback functions to the menu items
+        g_signal_connect(menu_open_splits, "activate", G_CALLBACK(open_activated), app);
+        g_signal_connect(menu_save_splits, "activate", G_CALLBACK(save_activated), app);
+        g_signal_connect(menu_open_auto_splitter, "activate", G_CALLBACK(open_auto_splitter), app);
+        g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_auto_splitter), NULL);
+        g_signal_connect(menu_reload, "activate", G_CALLBACK(reload_activated), app);
+        g_signal_connect(menu_close, "activate", G_CALLBACK(close_activated), app);
+        g_signal_connect(menu_quit, "activate", G_CALLBACK(quit_activated), app);
+
         gtk_widget_show_all(menu);
         gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
         return TRUE;
     }
     return FALSE;
-}
-
-static void create_context_menu(LASTAppWindow *win, GApplication *app)
-{
-    GtkWidget *menu = gtk_menu_new();
-    GtkWidget *menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
-    GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
-    GtkWidget *menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
-    GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), atomic_load(&auto_splitter_enabled));
-    GtkWidget *menu_reload = gtk_menu_item_new_with_label("Reload");
-    GtkWidget *menu_close = gtk_menu_item_new_with_label("Close");
-    GtkWidget *menu_quit = gtk_menu_item_new_with_label("Quit");
-
-    // Add the menu items to the menu
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_splits);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save_splits);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_auto_splitter);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_enable_auto_splitter);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_reload);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_close);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_quit);
-
-    // Attach the callback functions to the menu items
-    g_signal_connect(win, "button_press_event", G_CALLBACK(button_right_click), menu);
-    g_signal_connect(menu_open_splits, "activate", G_CALLBACK(open_activated), app);
-    g_signal_connect(menu_save_splits, "activate", G_CALLBACK(save_activated), app);
-    g_signal_connect(menu_open_auto_splitter, "activate", G_CALLBACK(open_auto_splitter), app);
-    g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_auto_splitter), NULL);
-    g_signal_connect(menu_reload, "activate", G_CALLBACK(reload_activated), app);
-    g_signal_connect(menu_close, "activate", G_CALLBACK(close_activated), app);
-    g_signal_connect(menu_quit, "activate", G_CALLBACK(quit_activated), app);
 }
 
 static void last_app_activate(GApplication *app)
@@ -1120,7 +1116,7 @@ static void last_app_activate(GApplication *app)
             atomic_store(&auto_splitter_enabled, 1);
         }
     }
-    create_context_menu(win, app);
+    g_signal_connect(win, "button_press_event", G_CALLBACK(button_right_click), app);
 }
 
 static void last_app_init(LASTApp *app)
