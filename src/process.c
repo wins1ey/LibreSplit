@@ -7,6 +7,7 @@
 #include <lua.h>
 
 #include "process.h"
+#include "auto-splitter.h"
 
 struct last_process process;
 
@@ -83,9 +84,12 @@ void stock_process_id(const char* processtarget)
         process.base_address = find_base_address();
         process.dll_address = process.base_address;
     }
-    else
+    else while (process.pid == 0 && atomic_load(&auto_splitter_enabled))
     {
+        printf("\033[2J\033[1;1H"); // Clear the console
         printf("%s isn't running.\n", process.name);
+        stock_process_id(pid_command);
+        sleep(1);
     }
 }
 

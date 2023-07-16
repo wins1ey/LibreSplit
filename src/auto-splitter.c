@@ -213,7 +213,7 @@ void run_auto_splitter()
         struct timespec clock_start;
         clock_gettime(CLOCK_MONOTONIC, &clock_start);
 
-        if (!auto_splitter_enabled || strcmp(current_file, auto_splitter_file) != 0 || !process_exists() || process.pid == 0)
+        if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0 || !process_exists() || process.pid == 0)
         {
             break;
         }
