@@ -70,4 +70,4 @@ remove-schema:
 clean:
 	rm -rf $(TARGET) $(OBJ_DIR) $(SRC_DIR)/last-gtk.h
 
-.PHONY: all last-gtk.h install uninstall remove-schema clean
+.PHONY: build last-gtk.h install uninstall remove-schema clean
