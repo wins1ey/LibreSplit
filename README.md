@@ -26,15 +26,16 @@ And to install:
 
 ## Installation
 
-1. `git clone https://github.com/Wins1ey/LAST`
-2. `cd LAST`
-3. Build LAST: `make`
-4. Install LAST: `sudo make install`
+```bash
+git clone https://github.com/Wins1ey/LAST
+cd LAST
+make build install
+```
 
 ## Getting Started
 
-1. When first launched, LAST will create the `.last/` directory in your home directory. Auto splitters, splits and themes go in their respective folders inside.
-2. Launch LAST by executing the compiled binary. `./bin/LAST`
+1. Launch LAST by executing the compiled binary. `./LAST`
+2. When first launched, LAST will create the `.last/` directory in your home directory. Auto splitters, splits and themes go in their respective folders inside.
 3. The initial window is undecorated, but you can toggle window decorations by pressing the right Control key.
 4. Control the timer using the following key presses:
 

@@ -23,7 +23,7 @@ ICON_DIR := /usr/share/icons/hicolor
 SCHEMA := last.gschema.xml
 SCHEMAS_DIR := /usr/share/glib-2.0/schemas
 
-all: last-gtk.h $(TARGET)
+build: last-gtk.h $(TARGET)
 
 # Rule to link object files to create executable
 $(TARGET): $(OBJECTS)
@@ -45,26 +45,26 @@ last-gtk.h: $(SRC_DIR)/last-gtk.css
 	xxd --include $(SRC_DIR)/last-gtk.css > $(SRC_DIR)/last-gtk.h || (rm $(SRC_DIR)/last-gtk.h; false)
 
 install:
-	cp $(TARGET) $(BIN_DIR)/$(BIN)
-	cp $(ASSETS_DIR)/$(APP) $(APP_DIR)
+	sudo cp $(TARGET) $(BIN_DIR)/$(BIN)
+	sudo cp $(ASSETS_DIR)/$(APP) $(APP_DIR)
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
-	  convert assets/$(ICON).png -resize "$$size"x"$$size" \
+	  sudo convert assets/$(ICON).png -resize "$$size"x"$$size" \
 	          $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
-	gtk-update-icon-cache -f -t $(ICON_DIR)
-	cp $(SRC_DIR)/$(SCHEMA) $(SCHEMAS_DIR)
-	glib-compile-schemas $(SCHEMAS_DIR)
+	sudo gtk-update-icon-cache -f -t $(ICON_DIR)
+	sudo cp $(SRC_DIR)/$(SCHEMA) $(SCHEMAS_DIR)
+	sudo glib-compile-schemas $(SCHEMAS_DIR)
 
 uninstall:
-	rm -f $(BIN_DIR)/$(BIN)
-	rm -f $(APP_DIR)/$(APP)
+	sudo rm -f $(BIN_DIR)/$(BIN)
+	sudo rm -f $(APP_DIR)/$(APP)
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
-	  rm -f $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
+	  sudo rm -f $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
 
 remove-schema:
-	rm $(SCHEMAS_DIR)/$(SCHEMA)
-	glib-compile-schemas $(SCHEMAS_DIR)
+	sudo rm $(SCHEMAS_DIR)/$(SCHEMA)
+	sudo glib-compile-schemas $(SCHEMAS_DIR)
 
 # Clean target to remove object files and LAS executable
 clean:
