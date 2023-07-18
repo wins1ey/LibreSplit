@@ -7,7 +7,7 @@
 
 #include <jansson.h>
 
-#include "headers/settings.h"
+#include "settings.h"
 
 char *get_home_folder_path()
 {
@@ -20,21 +20,6 @@ char *get_home_folder_path()
     }
 
     return pw->pw_dir;
-}
-
-void update_setting(json_t *root, const char *setting, json_t *value, const char *description)
-{
-    json_t *setting_obj = json_object_get(root, setting);
-    if (!setting_obj)
-    {
-        setting_obj = json_object();
-        json_object_set(setting_obj, "value", value);
-        if (description)
-        {
-            json_object_set(setting_obj, "description", json_string(description));
-        }
-        json_object_set(root, setting, setting_obj);
-    }
 }
 
 void last_update_setting(const char *setting, json_t *value)

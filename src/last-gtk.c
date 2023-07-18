@@ -8,13 +8,12 @@
 
 #include <gtk/gtk.h>
 
-#include "headers/last.h"
-#include "headers/last-css.h"
-#include "headers/last-gtk.h"
-#include "headers/keybinder.h"
+#include "last.h"
+#include "last-gtk.h"
+#include "bind.h"
 #include "components/last-component.h"
-#include "headers/autosplitter.h"
-#include "headers/settings.h"
+#include "auto-splitter.h"
+#include "settings.h"
 
 #define LAST_APP_TYPE (last_app_get_type ())
 #define LAST_APP(obj)                            \
@@ -51,7 +50,6 @@ struct _LASTAppWindow
     GtkWidget *box;
     GList *components;
     GtkWidget *footer;
-    GtkWidget *menu;
     GtkCssProvider *style;
     gboolean hide_cursor;
     gboolean global_hotkeys;
@@ -160,19 +158,19 @@ static gboolean last_app_window_step(gpointer data)
     {
         last_timer_step(win->timer, now);
         
-        if(atomic_load(&usingAutoSplitter))
+        if(atomic_load(&auto_splitter_enabled))
         {
-            if (atomic_load(&callStart) && !win->timer->loading)
+            if (atomic_load(&call_start) && !win->timer->loading)
             {
                 timer_start(win);
-                atomic_store(&callStart, 0);
+                atomic_store(&call_start, 0);
             }
-            if (atomic_load(&callSplit))
+            if (atomic_load(&call_split))
             {
                 timer_split(win);
-                atomic_store(&callSplit, 0);
+                atomic_store(&call_split, 0);
             }
-            if (atomic_load(&toggleLoading))
+            if (atomic_load(&toggle_loading))
             {
                 win->timer->loading = !win->timer->loading;
                 if (win->timer->running && win->timer->loading)
@@ -183,12 +181,12 @@ static gboolean last_app_window_step(gpointer data)
                 {
                     timer_start(win);
                 }
-                atomic_store(&toggleLoading, 0);
+                atomic_store(&toggle_loading, 0);
             }
-            if (atomic_load(&callReset))
+            if (atomic_load(&call_reset))
             {
                 timer_reset(win);
-                atomic_store(&callReset, 0);
+                atomic_store(&call_reset, 0);
             }
         }
     }
@@ -654,7 +652,7 @@ static void last_app_window_init(LASTAppWindow *win)
         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_css_provider_load_from_data(
         GTK_CSS_PROVIDER(provider),
-        (char *)last_css, last_css_len, NULL);
+        (char *)__src_last_gtk_css, __src_last_gtk_css_len, NULL);
     g_object_unref(provider);
 
     // Load theme
@@ -815,7 +813,7 @@ static void open_activated(GSimpleAction *action,
     GtkWidget *dialog;
     struct stat st = {0};
     gint res;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -867,7 +865,7 @@ static void open_auto_splitter(GSimpleAction *action,
     GtkWidget *dialog;
     struct stat st = {0};
     gint res;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -902,7 +900,7 @@ static void open_auto_splitter(GSimpleAction *action,
         char *filename;
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
         filename = gtk_file_chooser_get_filename(chooser);
-        strcpy(autoSplitterFile, filename);
+        strcpy(auto_splitter_file, filename);
         last_update_setting("auto_splitter_file", json_string(filename));
         g_free(filename);
     }
@@ -915,7 +913,7 @@ static void save_activated(GSimpleAction *action,
 {
     GList *windows;
     LASTAppWindow *win;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -947,7 +945,7 @@ static void reload_activated(GSimpleAction *action,
     GList *windows;
     LASTAppWindow *win;
     char *path;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -975,7 +973,7 @@ static void close_activated(GSimpleAction *action,
 {
     GList *windows;
     LASTAppWindow *win;
-    if (app == 1)
+    if (parameter != NULL)
     {
         app = parameter;
     }
@@ -1018,62 +1016,54 @@ static void toggle_auto_splitter(GtkCheckMenuItem *menu_item, gpointer user_data
     gboolean active = gtk_check_menu_item_get_active(menu_item);
     if (active)
     {
-        atomic_store(&usingAutoSplitter, 1);
+        atomic_store(&auto_splitter_enabled, 1);
         last_update_setting("auto_splitter_enabled", json_true());
     }
     else
     {
-        atomic_store(&usingAutoSplitter, 0);
+        atomic_store(&auto_splitter_enabled, 0);
         last_update_setting("auto_splitter_enabled", json_false());
     }
 }
 
-static gboolean button_right_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
+// Create the context menu
+static gboolean button_right_click(GtkWidget *widget, GdkEventButton *event, gpointer app)
 {
     if (event->button == GDK_BUTTON_SECONDARY)
     {
-        LASTAppWindow *win = (LASTAppWindow*)widget;
-        win->menu = GTK_WIDGET(data);
-        gtk_widget_show_all(win->menu);
-        gtk_menu_popup_at_pointer(GTK_MENU(win->menu), (GdkEvent *)event);
+        GtkWidget *menu = gtk_menu_new();
+        GtkWidget *menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
+        GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
+        GtkWidget *menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
+        GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), atomic_load(&auto_splitter_enabled));
+        GtkWidget *menu_reload = gtk_menu_item_new_with_label("Reload");
+        GtkWidget *menu_close = gtk_menu_item_new_with_label("Close");
+        GtkWidget *menu_quit = gtk_menu_item_new_with_label("Quit");
+
+        // Add the menu items to the menu
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_splits);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save_splits);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_auto_splitter);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_enable_auto_splitter);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_reload);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_close);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_quit);
+
+        // Attach the callback functions to the menu items
+        g_signal_connect(menu_open_splits, "activate", G_CALLBACK(open_activated), app);
+        g_signal_connect(menu_save_splits, "activate", G_CALLBACK(save_activated), app);
+        g_signal_connect(menu_open_auto_splitter, "activate", G_CALLBACK(open_auto_splitter), app);
+        g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_auto_splitter), NULL);
+        g_signal_connect(menu_reload, "activate", G_CALLBACK(reload_activated), app);
+        g_signal_connect(menu_close, "activate", G_CALLBACK(close_activated), app);
+        g_signal_connect(menu_quit, "activate", G_CALLBACK(quit_activated), app);
+
+        gtk_widget_show_all(menu);
+        gtk_menu_popup_at_pointer(GTK_MENU(menu), (GdkEvent *)event);
         return TRUE;
     }
     return FALSE;
-}
-
-static void create_context_menu(LASTAppWindow *win, GApplication *app)
-{
-    win->menu = gtk_menu_new();
-    GtkWidget *menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
-    GtkWidget *menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
-    GtkWidget *menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
-    GtkWidget *menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), atomic_load(&usingAutoSplitter));
-    GtkWidget *menu_reload = gtk_menu_item_new_with_label("Reload");
-    GtkWidget *menu_close = gtk_menu_item_new_with_label("Close");
-    GtkWidget *menu_quit = gtk_menu_item_new_with_label("Quit");
-
-    // Attach the callback functions to the menu items
-    g_signal_connect(menu_open_splits, "activate", G_CALLBACK(open_activated), app);
-    g_signal_connect(menu_save_splits, "activate", G_CALLBACK(save_activated), app);
-    g_signal_connect(menu_open_auto_splitter, "activate", G_CALLBACK(open_auto_splitter), app);
-    g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_auto_splitter), NULL);
-    g_signal_connect(menu_reload, "activate", G_CALLBACK(reload_activated), app);
-    g_signal_connect(menu_close, "activate", G_CALLBACK(close_activated), app);
-    g_signal_connect(menu_quit, "activate", G_CALLBACK(quit_activated), app);
-
-    // Add the menu items to the menu
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_open_splits);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_save_splits);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_open_auto_splitter);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_enable_auto_splitter);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_reload);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_close);
-    gtk_menu_shell_append(GTK_MENU_SHELL(win->menu), menu_quit);
-
-    // Attach the menu to the window
-    gtk_widget_add_events(win, GDK_BUTTON_PRESS_MASK);
-    g_signal_connect(win, "button_press_event", G_CALLBACK(button_right_click), win->menu);
 }
 
 static void last_app_activate(GApplication *app)
@@ -1083,24 +1073,50 @@ static void last_app_activate(GApplication *app)
     gtk_window_present(GTK_WINDOW(win));
     if (get_setting_value("LAST", "split_file") != NULL)
     {
-        last_app_window_open(win, json_string_value(get_setting_value("LAST", "split_file")));
-    }
-    if (get_setting_value("LAST", "auto_splitter_file") != NULL)
-    {
-        strcpy(autoSplitterFile, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
-    }
-    if (get_setting_value("LAST", "auto_splitter_enabled") != NULL)
-    {
-        if (json_is_true(get_setting_value("LAST", "auto_splitter_enabled")))
+        // Check if split file exists
+        struct stat st = {0};
+        char splits_path[256];
+        strcpy(splits_path, json_string_value(get_setting_value("LAST", "split_file")));
+        if (stat(splits_path, &st) == -1)
         {
-            atomic_store(&usingAutoSplitter, 1);
+            printf("%s does not exist\n", splits_path);
+            open_activated(NULL, NULL, app);
         }
         else
         {
-            atomic_store(&usingAutoSplitter, 0);
+            last_app_window_open(win, json_string_value(get_setting_value("LAST", "split_file")));
         }
     }
-    create_context_menu(win, app);
+    else
+    {
+        open_activated(NULL, NULL, app);
+    }
+    if (get_setting_value("LAST", "auto_splitter_file") != NULL)
+    {
+        struct stat st = {0};
+        char auto_splitters_path[256];
+        strcpy(auto_splitters_path, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
+        if (stat(auto_splitters_path, &st) == -1)
+        {
+            printf("%s does not exist\n", auto_splitters_path);
+        }
+        else
+        {
+            strcpy(auto_splitter_file, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
+        }
+    }
+    if (get_setting_value("LAST", "auto_splitter_enabled") != NULL)
+    {
+        if (json_is_false(get_setting_value("LAST", "auto_splitter_enabled")))
+        {
+            atomic_store(&auto_splitter_enabled, 0);
+        }
+        else
+        {
+            atomic_store(&auto_splitter_enabled, 1);
+        }
+    }
+    g_signal_connect(win, "button_press_event", G_CALLBACK(button_right_click), app);
 }
 
 static void last_app_init(LASTApp *app)
@@ -1133,7 +1149,7 @@ static void last_app_open(GApplication  *app,
 
 LASTApp *last_app_new(void)
 {
-    g_set_application_name("last");
+    g_set_application_name("LAST");
     return g_object_new(LAST_APP_TYPE,
                         "application-id", "wildmouse.last",
                         "flags", G_APPLICATION_HANDLES_OPEN,
@@ -1146,7 +1162,31 @@ static void last_app_class_init(LASTAppClass *class)
     G_APPLICATION_CLASS(class)->open = last_app_open;
 }
 
-int open_timer(int argc, char *argv[])
-{
-    return g_application_run(G_APPLICATION(last_app_new()), argc, argv);
+struct ThreadArgs {
+    int argc;
+    char** argv;
+};
+
+void* run_application(void* args) {
+    struct ThreadArgs* threadArgs = (struct ThreadArgs*)args;
+    int argc = threadArgs->argc;
+    char** argv = threadArgs->argv;
+    g_application_run(G_APPLICATION(last_app_new()), argc, argv);
+    return NULL;
+}
+
+int main(int argc, char *argv[]) {
+    check_directories();
+
+    pthread_t t1, t2;
+    struct ThreadArgs threadArgs;
+    threadArgs.argc = argc;
+    threadArgs.argv = argv;
+    pthread_create(&t1, NULL, &run_application, (void*)&threadArgs);
+    pthread_create(&t2, NULL, &last_auto_splitter, NULL);
+
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+
+    return 0;
 }

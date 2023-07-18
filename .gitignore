@@ -1,5 +1,6 @@
 # Compiled files
-bin/
-src/headers/last-css.h
+LAST
+obj/
+src/last-gtk.h
 
 .vscode/

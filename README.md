@@ -13,27 +13,29 @@ LAST brings auto splitting functionality to [urn](https://github.com/3snowp7im/u
 
 ## Dependencies
 
-LAST requires the following dependencies on your system to compile and install:
+LAST requires the following dependencies on your system to compile:
 
 - `libgtk+-3.0`
 - `x11`
 - `libjansson`
-- `curl`
 - `lua`
+
+And to install:
+
 - `imagemagick`
-- `rsync`
 
 ## Installation
 
-1. `git clone https://github.com/Wins1ey/LAST`
-2. `cd LAST`
-3. Build LAST: `make`
-4. Install LAST: `sudo make install`
+```bash
+git clone https://github.com/Wins1ey/LAST
+cd LAST
+make build install
+```
 
 ## Getting Started
 
-1. When first launched, LAST will create the `.last/` directory in your home directory. Auto splitters, splits and themes go in their respective folders inside.
-2. Launch LAST by executing the compiled binary. `./bin/LAST`
+1. Launch LAST by executing the compiled binary. `./LAST`
+2. When first launched, LAST will create the `.last/` directory in your home directory. Auto splitters, splits and themes go in their respective folders inside.
 3. The initial window is undecorated, but you can toggle window decorations by pressing the right Control key.
 4. Control the timer using the following key presses:
 
@@ -105,7 +107,7 @@ Times are strings in HH:MM:SS.mmmmmm format
 LAST supports customizable themes, allowing you to personalize the timer's appearance. To create a theme:
 
 1. Create a CSS stylesheet with your desired styles.
-2. Place the stylesheet in the `~/.urn/themes/<name>/<name>.css` directory.
+2. Place the stylesheet in the `~/.last/themes/<name>/<name>.css` directory.
 3. Set the global theme by modifying the `theme` value in `gsettings`.
 4. Theme variants should follow the pattern `<name>-<variant>.css`.
 5. Individual splits can apply their own themes by specifying a `theme` key in the main split object.

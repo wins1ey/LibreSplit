@@ -1,5 +1,5 @@
-#ifndef __last_h__
-#define __last_h__
+#ifndef __LAST_H__
+#define __LAST_H__
 
 #define LAST_INFO_BEHIND_TIME   (1)
 #define LAST_INFO_LOSING_TIME   (2)
@@ -91,4 +91,4 @@ int last_timer_reset(last_timer *timer);
 
 int last_timer_cancel(last_timer *timer);
 
-#endif
+#endif /* __LAST_H__ */

@@ -1,85 +1,73 @@
-BIN = $(BIN_DIR)/LAST
+TARGET := LAST
 
-INC = -I/usr/include/curl -I/usr/include/lua5.* `pkg-config --cflags gtk+-3.0 x11 jansson`
-CFLAGS = -O2 -pthread -Wall -Wno-unused-parameter
-LDFLAGS = -llua -lcurl -lstdc++fs `pkg-config --libs gtk+-3.0 x11 jansson`
+INC := -I/usr/include/lua5.* `pkg-config --cflags gtk+-3.0 x11 jansson`
+CFLAGS := -std=gnu99 -O2 -pthread -Wall -Wno-unused-parameter
+LDFLAGS := -llua `pkg-config --libs gtk+-3.0 x11 jansson`
 
-SRC_DIR = ./src
-BIN_DIR = ./bin
-OBJ_DIR = $(BIN_DIR)/objects
-HEADERS_DIR = $(SRC_DIR)/headers
+SRC_DIR := ./src
+OBJ_DIR := ./obj
+ASSETS_DIR := ./assets
 
 # Obtain list of source files and create list of object files
-CPP_SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
-C_SOURCES = $(wildcard $(SRC_DIR)/*.c)
-COMPONENTS = $(wildcard $(SRC_DIR)/components/*.c)
-OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(CPP_SOURCES)) \
-          $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(C_SOURCES)) \
+SOURCES := $(wildcard $(SRC_DIR)/*.c)
+COMPONENTS := $(wildcard $(SRC_DIR)/components/*.c)
+OBJECTS := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES)) \
           $(patsubst $(SRC_DIR)/components/%.c, $(OBJ_DIR)/%.o, $(COMPONENTS))
 
-USR_BIN_DIR = /usr/local/bin
-APP = last.desktop
-APP_DIR = /usr/share/applications
-ICON = last
-ICON_DIR = /usr/share/icons/hicolor
-SCHEMAS_DIR = /usr/share/glib-2.0/schemas
+BIN := last
+BIN_DIR := /usr/local/bin
+APP := last.desktop
+APP_DIR := /usr/share/applications
+ICON := last
+ICON_DIR := /usr/share/icons/hicolor
+SCHEMA := last.gschema.xml
+SCHEMAS_DIR := /usr/share/glib-2.0/schemas
 
-all: last-css.h $(BIN)
+build: last-gtk.h $(TARGET)
 
 # Rule to link object files to create executable
-$(BIN): $(OBJECTS) | $(BIN_DIR)
-	g++ -std=c++17 $(CFLAGS) $(LDFLAGS) -o $@ $^
-
-# Rule to compile C++ source files to object files
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	g++ -std=c++17 $(INC) $(CFLAGS) -c -o $@ $<
+$(TARGET): $(OBJECTS)
+	gcc $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 # Rule to compile C source files to object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	gcc -std=gnu99 $(INC) $(CFLAGS) -c -o $@ $<
+	gcc $(INC) $(CFLAGS) -c -o $@ $<
 
 # Rule to compile C component source files to object files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/components/%.c | $(OBJ_DIR)
-	gcc -std=gnu99 $(INC) $(CFLAGS) -c -o $@ $<
-
-# Rule to create the binary directory
-$(BIN_DIR):
-	mkdir -p $(BIN_DIR)
+	gcc $(INC) $(CFLAGS) -c -o $@ $<
 
 # Rule to create the object directory
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
-last-css.h: last.css
-	xxd --include last.css > $(HEADERS_DIR)/last-css.h || (rm $(HEADERS_DIR)/last-css.h; false)
+last-gtk.h: $(SRC_DIR)/last-gtk.css
+	xxd --include $(SRC_DIR)/last-gtk.css > $(SRC_DIR)/last-gtk.h || (rm $(SRC_DIR)/last-gtk.h; false)
 
 install:
-	cp $(BIN) $(USR_BIN_DIR)
-	cp $(APP) $(APP_DIR)
+	sudo cp $(TARGET) $(BIN_DIR)/$(BIN)
+	sudo cp $(ASSETS_DIR)/$(APP) $(APP_DIR)
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
-	  convert assets/$(ICON).png -resize "$$size"x"$$size" \
+	  sudo convert assets/$(ICON).png -resize "$$size"x"$$size" \
 	          $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
-	gtk-update-icon-cache -f -t $(ICON_DIR)
-	cp last.gschema.xml $(SCHEMAS_DIR)
-	glib-compile-schemas $(SCHEMAS_DIR)
-	mkdir -p /usr/share/last/themes
-	rsync -a --exclude=".*" themes /usr/share/last
+	sudo gtk-update-icon-cache -f -t $(ICON_DIR)
+	sudo cp $(SRC_DIR)/$(SCHEMA) $(SCHEMAS_DIR)
+	sudo glib-compile-schemas $(SCHEMAS_DIR)
 
 uninstall:
-	rm -f $(USR_BIN_DIR)/LAST
-	rm -f $(APP_DIR)/$(APP)
-	rm -rf /usr/share/last
+	sudo rm -f $(BIN_DIR)/$(BIN)
+	sudo rm -f $(APP_DIR)/$(APP)
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
-	  rm -f $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
+	  sudo rm -f $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
 
 remove-schema:
-	rm -f $(SCHEMAS_DIR)/last.gschema.xml
-	glib-compile-schemas $(SCHEMAS_DIR)
+	sudo rm $(SCHEMAS_DIR)/$(SCHEMA)
+	sudo glib-compile-schemas $(SCHEMAS_DIR)
 
 # Clean target to remove object files and LAS executable
 clean:
-	rm -rf $(BIN_DIR) $(HEADERS_DIR)/last-css.h
+	rm -rf $(TARGET) $(OBJ_DIR) $(SRC_DIR)/last-gtk.h
 
-.PHONY: all last-css.h install uninstall remove-schema clean
+.PHONY: build last-gtk.h install uninstall remove-schema clean
