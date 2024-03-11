@@ -28,11 +28,17 @@ void execute_command(const char* command, char* buffer, char* output)
     pclose(pipe);
 }
 
-uintptr_t find_base_address()
+/*
+Gets the base address of a module
+if `module` equals to a nullptr, the main process is used, else it will search for the base addr of the specified module
+*/
+uintptr_t find_base_address(const char* module)
 {
     char maps_command[256];
-    snprintf(maps_command, sizeof(maps_command), "cat /proc/%d/maps | grep \"%.*s\"",
-             process.pid, (int)strnlen(process.name, 15), process.name);
+    const char* module_to_grep = module == 0 ? process.name : module;
+
+    snprintf(maps_command, sizeof(maps_command), "cat /proc/%d/maps | grep \"%.*s\" | head -n 1",
+             process.pid, (int)strnlen(module_to_grep, 15), module_to_grep);
 
     char buffer[128];
     char maps_output[1024];
@@ -84,7 +90,7 @@ void stock_process_id(const char* processtarget)
         printf("\033[2J\033[1;1H"); // Clear the console
         printf("Process: %s\n", process.name);
         printf("PID: %u\n", process.pid);
-        process.base_address = find_base_address();
+        process.base_address = find_base_address(0);
         process.dll_address = process.base_address;
     }
 }
