@@ -97,9 +97,10 @@ int read_address(lua_State* L)
     }
     else
     {
-        if (strcmp(process.name, lua_tostring(L, 2)) != 0)
+        const char* module = lua_tostring(L,2);
+        if (strcmp(process.name, module) != 0)
         {
-            process.dll_address = find_base_address();
+            process.dll_address = find_base_address(module);
         }
         address = process.dll_address + lua_tointeger(L, 3);
         i = 4;

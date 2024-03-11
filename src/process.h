@@ -14,7 +14,7 @@ struct last_process
 };
 typedef struct last_process last_process;
 
-uintptr_t find_base_address();
+uintptr_t find_base_address(const char* module);
 int process_exists();
 int find_process_id(lua_State* L);
 
