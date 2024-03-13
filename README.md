@@ -29,7 +29,7 @@ And to install:
 ```bash
 git clone https://github.com/Wins1ey/LAST
 cd LAST
-make build install
+sudo make build install
 ```
 
 ## Getting Started

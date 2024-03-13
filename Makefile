@@ -45,26 +45,26 @@ last-gtk.h: $(SRC_DIR)/last-gtk.css
 	xxd --include $(SRC_DIR)/last-gtk.css > $(SRC_DIR)/last-gtk.h || (rm $(SRC_DIR)/last-gtk.h; false)
 
 install:
-	sudo cp $(TARGET) $(BIN_DIR)/$(BIN)
-	sudo cp $(ASSETS_DIR)/$(APP) $(APP_DIR)
+	cp $(TARGET) $(BIN_DIR)/$(BIN)
+	cp $(ASSETS_DIR)/$(APP) $(APP_DIR)
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
-	  sudo convert assets/$(ICON).png -resize "$$size"x"$$size" \
+	  convert assets/$(ICON).png -resize "$$size"x"$$size" \
 	          $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
-	sudo gtk-update-icon-cache -f -t $(ICON_DIR)
-	sudo cp $(SRC_DIR)/$(SCHEMA) $(SCHEMAS_DIR)
-	sudo glib-compile-schemas $(SCHEMAS_DIR)
+	gtk-update-icon-cache -f -t $(ICON_DIR)
+	cp $(SRC_DIR)/$(SCHEMA) $(SCHEMAS_DIR)
+	glib-compile-schemas $(SCHEMAS_DIR)
 
 uninstall:
-	sudo rm -f $(BIN_DIR)/$(BIN)
-	sudo rm -f $(APP_DIR)/$(APP)
+	rm -f $(BIN_DIR)/$(BIN)
+	rm -f $(APP_DIR)/$(APP)
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
-	  sudo rm -f $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
+	  rm -f $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
 
 remove-schema:
-	sudo rm $(SCHEMAS_DIR)/$(SCHEMA)
-	sudo glib-compile-schemas $(SCHEMAS_DIR)
+	rm $(SCHEMAS_DIR)/$(SCHEMA)
+	glib-compile-schemas $(SCHEMAS_DIR)
 
 # Clean target to remove object files and LAS executable
 clean:
