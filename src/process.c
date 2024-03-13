@@ -34,32 +34,35 @@ if `module` equals to a nullptr, the main process is used, else it will search f
 */
 uintptr_t find_base_address(const char* module)
 {
-    char maps_command[256];
     const char* module_to_grep = module == 0 ? process.name : module;
 
-    snprintf(maps_command, sizeof(maps_command), "cat /proc/%d/maps | grep \"%.*s\" | head -n 1",
-             process.pid, (int)strnlen(module_to_grep, 15), module_to_grep);
+    char path[22]; // 22 is the maximum length the path can be (strlen("/proc/4294967296/maps"))
 
-    char buffer[128];
-    char maps_output[1024];
-    maps_output[0] = '\0';
+    snprintf(path, sizeof(path), "/proc/%d/maps", process.pid);
 
-    execute_command(maps_command, buffer, maps_output);
+    FILE *f = fopen(path, "r");
 
-    size_t dash_pos = strcspn(maps_output, "-");
+    if (f) {
+        char current_line[1024];
+        while (fgets(current_line, sizeof(current_line), f) != NULL) {
+            if (strstr(current_line, module_to_grep) == NULL)
+                continue;
+            fclose(f);
+            size_t dash_pos = strcspn(current_line, "-");
 
-    if (dash_pos != strlen(maps_output))
-    {
-        char first_number[32];
-        strncpy(first_number, maps_output, dash_pos);
-        first_number[dash_pos] = '\0';
-        return strtoull(first_number, NULL, 16);
+            if (dash_pos != strlen(current_line)) {
+                char first_number[32];
+                strncpy(first_number, current_line, dash_pos);
+                first_number[dash_pos] = '\0';
+                uintptr_t addr = strtoull(first_number, NULL, 16);
+                return addr;
+                break;
+            }
+        }
+        fclose(f);
     }
-    else
-    {
-        printf("Couldn't find base address\n");
-        return 0;
-    }
+    printf("Couldn't find base address\n");
+    return 0;
 }
 
 void stock_process_id(const char* processtarget)
