@@ -1,8 +1,8 @@
 TARGET := LAST
 
-INC := -I/usr/include/lua5.* `pkg-config --cflags gtk+-3.0 x11 jansson`
+INC := -I/usr/include/lua5.* `pkg-config --cflags gtk+-3.0 x11 jansson lua`
 CFLAGS := -std=gnu99 -O2 -pthread -Wall -Wno-unused-parameter
-LDFLAGS := -llua `pkg-config --libs gtk+-3.0 x11 jansson`
+LDFLAGS := `pkg-config --libs gtk+-3.0 x11 jansson lua`
 
 SRC_DIR := ./src
 OBJ_DIR := ./obj
