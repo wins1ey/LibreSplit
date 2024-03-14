@@ -1,6 +1,6 @@
 TARGET := LAST
 
-INC := -I/usr/include/lua5.* `pkg-config --cflags gtk+-3.0 x11 jansson lua`
+INC := `pkg-config --cflags gtk+-3.0 x11 jansson lua`
 CFLAGS := -std=gnu99 -O2 -pthread -Wall -Wno-unused-parameter
 LDFLAGS := `pkg-config --libs gtk+-3.0 x11 jansson lua`
 
