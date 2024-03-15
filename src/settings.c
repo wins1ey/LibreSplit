@@ -1,3 +1,4 @@
+#include <linux/limits.h>
 #include <stdio.h>
 #include <pwd.h>
 #include <string.h>
@@ -9,23 +10,24 @@
 
 #include "settings.h"
 
-char *get_home_folder_path()
-{
-    uid_t uid = getuid();
-    struct passwd *pw = getpwuid(uid);
-    if (pw == NULL)
-    {
-        printf("Failed to get user information.\n");
-        return NULL;
+void get_LAST_folder_path(char* out_path) {
+    struct passwd * pw = getpwuid(getuid());
+    char* XDG_CONFIG_HOME = getenv("XDG_CONFIG_HOME");
+    char* base_dir = strcat(pw->pw_dir, "/.config/LAST");
+    if (XDG_CONFIG_HOME != NULL) {
+        char config_dir[PATH_MAX] = {0};
+        strcpy(config_dir, XDG_CONFIG_HOME);
+        strcat(config_dir, "/LAST");
+        strcpy(base_dir, config_dir);
     }
-
-    return pw->pw_dir;
+    strcpy(out_path, base_dir);
 }
 
 void last_update_setting(const char *setting, json_t *value)
 {
-    char *settings_path = get_home_folder_path();
-    strcat(settings_path, "/.last/settings.json");
+    char settings_path[PATH_MAX];
+    get_LAST_folder_path(settings_path);
+    strcat(settings_path, "/settings.json");
 
     // Load existing settings
     json_t *root = NULL;
@@ -73,8 +75,10 @@ void last_update_setting(const char *setting, json_t *value)
 
 json_t *load_settings()
 {
-    char *settings_path = get_home_folder_path();
-    strcat(settings_path, "/.last/settings.json");
+    char settings_path[PATH_MAX];
+    get_LAST_folder_path(settings_path);
+    strcat(settings_path, "/settings.json");
+
     FILE *file = fopen(settings_path, "r");
     if (file)
     {

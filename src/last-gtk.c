@@ -1,3 +1,4 @@
+#include <linux/limits.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -42,7 +43,7 @@ typedef struct
 struct _LASTAppWindow
 {
     GtkApplicationWindow parent;
-    char data_path[256];
+    char data_path[PATH_MAX];
     int decorated;
     last_game *game;
     last_timer *timer;
@@ -199,7 +200,7 @@ static int last_app_window_find_theme(LASTAppWindow *win,
                                       const char *theme_variant,
                                       char *str)
 {
-    char theme_path[256];
+    char theme_path[PATH_MAX];
     struct stat st = {0};
     if (!theme_name || !strlen(theme_name))
     {
@@ -236,7 +237,7 @@ static int last_app_window_find_theme(LASTAppWindow *win,
 static void last_app_window_show_game(LASTAppWindow *win)
 {
     GdkScreen *screen;
-    char str[256];
+    char str[PATH_MAX];
     GList *l;
 
     // set dimensions
@@ -610,8 +611,7 @@ static void last_app_window_init(LASTAppWindow *win)
 {
     GtkCssProvider *provider;
     GdkScreen *screen;
-    struct passwd *pw;
-    char str[256];
+    char str[PATH_MAX];
     const char *theme;
     const char *theme_variant;
     int i;
@@ -620,9 +620,8 @@ static void last_app_window_init(LASTAppWindow *win)
     win->style = NULL;
 
     // make data path
-    pw = getpwuid(getuid());
-    strcpy(win->data_path, pw->pw_dir);
-    strcat(win->data_path, "/.last");
+    win->data_path[0] = '\0';
+    get_LAST_folder_path(win->data_path);
 
     // load settings
     GSettings *settings = g_settings_new("wildmouse.last");
@@ -807,7 +806,7 @@ static void open_activated(GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       app)
 {
-    char splits_path[256];
+    char splits_path[PATH_MAX];
     GList *windows;
     LASTAppWindow *win;
     GtkWidget *dialog;
@@ -859,7 +858,7 @@ static void open_auto_splitter(GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       app)
 {
-    char auto_splitters_path[256];
+    char auto_splitters_path[PATH_MAX];
     GList *windows;
     LASTAppWindow *win;
     GtkWidget *dialog;
@@ -897,9 +896,8 @@ static void open_auto_splitter(GSimpleAction *action,
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     if (res == GTK_RESPONSE_ACCEPT)
     {
-        char *filename;
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
-        filename = gtk_file_chooser_get_filename(chooser);
+        char *filename = gtk_file_chooser_get_filename(chooser);
         strcpy(auto_splitter_file, filename);
         last_update_setting("auto_splitter_file", json_string(filename));
         g_free(filename);
@@ -1075,7 +1073,7 @@ static void last_app_activate(GApplication *app)
     {
         // Check if split file exists
         struct stat st = {0};
-        char splits_path[256];
+        char splits_path[PATH_MAX];
         strcpy(splits_path, json_string_value(get_setting_value("LAST", "split_file")));
         if (stat(splits_path, &st) == -1)
         {
@@ -1084,7 +1082,7 @@ static void last_app_activate(GApplication *app)
         }
         else
         {
-            last_app_window_open(win, json_string_value(get_setting_value("LAST", "split_file")));
+            last_app_window_open(win, splits_path);
         }
     }
     else
@@ -1094,7 +1092,7 @@ static void last_app_activate(GApplication *app)
     if (get_setting_value("LAST", "auto_splitter_file") != NULL)
     {
         struct stat st = {0};
-        char auto_splitters_path[256];
+        char auto_splitters_path[PATH_MAX];
         strcpy(auto_splitters_path, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
         if (stat(auto_splitters_path, &st) == -1)
         {
@@ -1102,7 +1100,7 @@ static void last_app_activate(GApplication *app)
         }
         else
         {
-            strcpy(auto_splitter_file, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
+            strcpy(auto_splitter_file, auto_splitters_path);
         }
     }
     if (get_setting_value("LAST", "auto_splitter_enabled") != NULL)

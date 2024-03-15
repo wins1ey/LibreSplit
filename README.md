@@ -35,7 +35,7 @@ sudo make build install
 ## Getting Started
 
 1. Launch LAST by executing the compiled binary. `./LAST`
-2. When first launched, LAST will create the `.last/` directory in your home directory. Auto splitters, splits and themes go in their respective folders inside.
+2. When first launched, LAST will create the `LAST` directory in your config directory. Auto splitters, splits and themes go in their respective folders inside.
 3. The initial window is undecorated, but you can toggle window decorations by pressing the right Control key.
 4. Control the timer using the following key presses:
 
@@ -107,7 +107,7 @@ Times are strings in HH:MM:SS.mmmmmm format
 LAST supports customizable themes, allowing you to personalize the timer's appearance. To create a theme:
 
 1. Create a CSS stylesheet with your desired styles.
-2. Place the stylesheet in the `~/.last/themes/<name>/<name>.css` directory.
+2. Place the stylesheet in the `~/.config/LAST/themes/<name>/<name>.css` directory. (If you have `XDG_CONFIG_HOME` env var pointing somewher else than .config it will be wherever it points to)
 3. Set the global theme by modifying the `theme` value in `gsettings`.
 4. Theme variants should follow the pattern `<name>-<variant>.css`.
 5. Individual splits can apply their own themes by specifying a `theme` key in the main split object.

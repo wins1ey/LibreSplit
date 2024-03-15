@@ -1,3 +1,4 @@
+#include <linux/limits.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -14,10 +15,9 @@
 #include "memory.h"
 #include "auto-splitter.h"
 #include "process.h"
+#include "settings.h"
 
-#define MAX_PATH_LENGTH 256
-
-char auto_splitter_file[MAX_PATH_LENGTH];
+char auto_splitter_file[PATH_MAX];
 int refresh_rate = 60;
 atomic_bool auto_splitter_enabled = true;
 atomic_bool call_start = false;
@@ -28,24 +28,46 @@ bool prev_is_loading;
 
 extern last_process process;
 
+// I have no idea how this works
+// https://stackoverflow.com/a/2336245
+static void mkdir_p(const char *dir, __mode_t permissions) {
+    char tmp[256] = {0};
+    char *p = NULL;
+    size_t len;
+
+    snprintf(tmp, sizeof(tmp),"%s",dir);
+    len = strlen(tmp);
+    if (tmp[len - 1] == '/')
+        tmp[len - 1] = 0;
+    for (p = tmp + 1; *p; p++)
+        if (*p == '/') {
+            *p = 0;
+            mkdir(tmp, permissions);
+            *p = '/';
+        }
+    mkdir(tmp, permissions);
+}
+
 void check_directories()
 {
-    // Get the path to the user's directory
-    struct passwd *pw = getpwuid(getuid());
-    const char *user_directory = pw->pw_dir;
-    char last_directory[241];
-    char auto_splitters_directory[MAX_PATH_LENGTH];
-    char themes_directory[MAX_PATH_LENGTH];
-    char splits_directory[MAX_PATH_LENGTH];
-    snprintf(last_directory, MAX_PATH_LENGTH, "%s/.last", user_directory);
-    snprintf(auto_splitters_directory, MAX_PATH_LENGTH, "%s/auto-splitters", last_directory);
-    snprintf(themes_directory, MAX_PATH_LENGTH, "%s/themes", last_directory);
-    snprintf(splits_directory, MAX_PATH_LENGTH, "%s/splits", last_directory);
+    char last_directory[PATH_MAX] = {0};
+    get_LAST_folder_path(last_directory);
+
+    char auto_splitters_directory[PATH_MAX];
+    char themes_directory[PATH_MAX];
+    char splits_directory[PATH_MAX];
+
+    strcpy(auto_splitters_directory, last_directory);
+    strcat(auto_splitters_directory, "/auto-splitters");
+
+    strcpy(themes_directory, last_directory);
+    strcat(themes_directory, "/themes");
+
+    strcpy(splits_directory, last_directory);
+    strcat(splits_directory, "/splits");
 
     // Make the LAST directory if it doesn't exist
-    if (mkdir(last_directory, 0755) == -1) {
-        // Directory already exists or there was an error
-    }
+    mkdir_p(last_directory, 0755);
 
     // Make the autosplitters directory if it doesn't exist
     if (mkdir(auto_splitters_directory, 0755) == -1) {
@@ -142,7 +164,7 @@ void run_auto_splitter()
     lua_pushcfunction(L, read_address);
     lua_setglobal(L, "readAddress");
 
-    char current_file[MAX_PATH_LENGTH];
+    char current_file[PATH_MAX];
     strcpy(current_file, auto_splitter_file);
 
     // Load the Lua file
