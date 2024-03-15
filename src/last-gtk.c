@@ -1162,31 +1162,26 @@ static void last_app_class_init(LASTAppClass *class)
     G_APPLICATION_CLASS(class)->open = last_app_open;
 }
 
-struct ThreadArgs {
-    int argc;
-    char** argv;
-};
-
-void* run_application(void* args) {
-    struct ThreadArgs* threadArgs = (struct ThreadArgs*)args;
-    int argc = threadArgs->argc;
-    char** argv = threadArgs->argv;
-    g_application_run(G_APPLICATION(last_app_new()), argc, argv);
+static void *last_auto_splitter()
+{
+    while (1) {
+        if (atomic_load(&auto_splitter_enabled) && auto_splitter_file[0] != '\0')
+        {
+            run_auto_splitter();
+        }
+        usleep(50000);
+    }
     return NULL;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     check_directories();
 
-    pthread_t t1, t2;
-    struct ThreadArgs threadArgs;
-    threadArgs.argc = argc;
-    threadArgs.argv = argv;
-    pthread_create(&t1, NULL, &run_application, (void*)&threadArgs);
-    pthread_create(&t2, NULL, &last_auto_splitter, NULL);
-
+    pthread_t t1;
+    pthread_create(&t1, NULL, &last_auto_splitter, NULL);
+    g_application_run(G_APPLICATION(last_app_new()), argc, argv);
     pthread_join(t1, NULL);
-    pthread_join(t2, NULL);
 
     return 0;
 }
