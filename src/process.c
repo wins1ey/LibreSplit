@@ -11,8 +11,9 @@
 
 struct last_process process;
 
-void execute_command(const char* command, char* buffer, char* output)
+void execute_command(const char* command, char* output)
 {
+    char buffer[4096];
     FILE* pipe = popen(command, "r");
     if (!pipe)
     {
@@ -65,37 +66,33 @@ uintptr_t find_base_address(const char* module)
     return 0;
 }
 
-void stock_process_id(const char* processtarget)
+void stock_process_id(const char* pid_command)
 {
-    char pid_command[128];
-    strcpy(pid_command, processtarget);
-
-    char buffer[128];
-    char pid_output[128];
+    char pid_output[4096];
     pid_output[0] = '\0';
 
-    while (process.pid == 0 && atomic_load(&auto_splitter_enabled))
+    while (atomic_load(&auto_splitter_enabled))
     {
-        execute_command(pid_command, buffer, pid_output);
-        size_t space_pos = strcspn(pid_output, " ");
-        if (space_pos != strlen(pid_output))
-        {
-            printf("Multiple PID's found for process: %s\n", process.name);
-        }
+        execute_command(pid_command, pid_output);
         process.pid = strtoul(pid_output, NULL, 10);
         printf("\033[2J\033[1;1H"); // Clear the console
-        usleep(100000);
-        printf("%s isn't running.\n", process.name);
+        if (process.pid) {
+            size_t newlinePos = strcspn(pid_output, "\n");
+            if (newlinePos != strlen(pid_output) - 1 && pid_output[0] != '\0')
+            {
+                printf("Multiple PID's found for process: %s\n", process.name);
+            }
+            break;
+        } else {
+            printf("%s isn't running.\n", process.name);
+            usleep(100000); // Sleep for 100ms
+        }
     }
-    
-    if (process.pid != 0)
-    {
-        printf("\033[2J\033[1;1H"); // Clear the console
-        printf("Process: %s\n", process.name);
-        printf("PID: %u\n", process.pid);
-        process.base_address = find_base_address(0);
-        process.dll_address = process.base_address;
-    }
+
+    printf("Process: %s\n", process.name);
+    printf("PID: %u\n", process.pid);
+    process.base_address = find_base_address(NULL);
+    process.dll_address = process.base_address;
 }
 
 int find_process_id(lua_State* L)
