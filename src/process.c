@@ -110,6 +110,11 @@ int find_process_id(lua_State* L)
     return 0;
 }
 
+int getPid(lua_State* L) {
+    lua_pushinteger(L, process.pid);
+    return 1;
+}
+
 int process_exists()
 {
     int result = kill(process.pid, 0);

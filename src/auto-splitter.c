@@ -163,6 +163,8 @@ void run_auto_splitter()
     lua_setglobal(L, "process");
     lua_pushcfunction(L, read_address);
     lua_setglobal(L, "readAddress");
+    lua_pushcfunction(L, getPid);
+    lua_setglobal(L, "getPID");
 
     char current_file[PATH_MAX];
     strcpy(current_file, auto_splitter_file);
