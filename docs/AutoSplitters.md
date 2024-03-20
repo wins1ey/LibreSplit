@@ -4,15 +4,14 @@
 
 # How do they work?
 
-* These work by reading into game's memory (dont worry, you can't directly write to it) and determining when the timer should do something, like a split
+* These work by reading into game's memory and determining when the timer should do something, like a split
 
-* Auto splitters work in a very similar way to LiveSplit's ASL. The main difference is that LAST's use lua instead of C#. There are also some key differences:
-    * Uses lua instead of named C# blocks
-        * This means you can have more functions than the one LAST runs, of course you would be the one to call these as LAST wont run them
-    * Incredibly modular
-        * Because the whole lua script gets executed, you have at your disposal the entire programming language, this includes third-party libraries either for logging, performance profiling, filesystem, automation, etc
+* LAST's autosplitting system works in a very similar way to LiveSplit's. The main difference is that LAST uses Lua instead of C#. There are also some key differences:
+    * Runs an entire Lua system instead of only supporting specifically named C# blocks
+        * This means you can run external functions outside of the ones LAST executes.
+    * Support for the entire Lua language, including the importing of libraries for tasks such as performance monitoring
 
-# I want one now, how do i make one?
+# How to make LAST Autosplitters
 
 * Its somewhat easy if you know what you are doing or are porting an already existing one
 
@@ -21,17 +20,13 @@
 ```lua
 process('GameBlaBlaBla.exe')
 ```
-* Just with this, LAST will try to find the game's process when the auto splitter is running, nothing after this statement will get executed until the process is found
+* With this line, LAST will repeatedly attempt to find this process and will not continue script execution until it is found.
 
-* Note: from now on we will append our stuff to this script and end up with a "working" script, it just doesnt belong to any game only does arbitrary stuff
-
-* Next we have to define the basic functions, not all are required and the ones required may depend by game or rules, like if loading screens are included or not
+* Next we have to define the basic functions, not all are required and the ones that are required may change depending on the game or end goal, like if loading screens are included or not
     * The order at which these run is the same as they are documented below
 
 ### `startup`
- This function main usage is to set the refresh rate at which the functions run, the default is 60Hz, and the maximum is determined by your PC's speed and the game, it gets used like this, and it will set a refresh rate of 120Hz
-* Runs once when the auto-splitter is enabled/loaded
-* May also be used to initialize other variables in the script
+ The purpose of this function is to specify how many times LAST checks memory values and executes functions each second, the default is 60Hz. Usually, 60Hz is fine and this function can remain undefined. However, it's there if you need it.
 ```lua
 process('GameBlaBlaBla.exe')
 
@@ -41,7 +36,7 @@ end
 ```
 
 ### `state`
- This function main usage is to update a variable with whatever memory region you want from the game, either being a loading indicator, level counter, etc. Of course, you can do more stuff than that, its lua after all and you can do anything anywhere as long as its feasible
+ The main purpose of this function is to assign memory values to Lua variables.
 * Runs every 1000 / `refreshRate` milliseconds and when the script is enabled/loaded
 
 ```lua
@@ -58,12 +53,10 @@ function state()
 end
 ```
 
-* First of all, you can see on the third line we have decalred a variable named `isLoading` and we have given it the value `false`
-* Then in the state function we are redefining it to the return value of `readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0)`, `readAddress` is a function that LAST defines to the lua script, it is used to read a value of memory in the game in a specified address, Read [here](#readaddress) for documentation of this function.
-* Great! now we have a script that check the value of a game's memory 120 times a second, but we arent doing anything with it yet...
+* You may have noticed that we're assigning this `isLoading` variable with the result of the function `readAddress`. This function is part of LAST's Lua context and its purpose is to read memory values. It's explained in detail at the bottom of this document.
 
 ### `update`
- This function main purpose is to update our own variables, we can keep track of how many times the game as entered a loading screen or do something completely else, really up to you
+ The purpose of this function is to update local variables.
 * Runs every 1000 / `refreshRate` milliseconds
 ```lua
 process('GameBlaBlaBla.exe')
@@ -88,11 +81,11 @@ function update()
     end
 end
 ```
-* A lot has changed, we now have 3 variables, one represents the current state while the other the old state of isLoading, we also loadCount which is where we will store the amounts we entered the loading screen
-* The update function was also added, we are incrementing the value in loadCount by 1 everytime we leave a loading screen. we are now sucesfully keeping track of the loading screens :D
+* We now have 3 variables, one represents the current state while the other the old state of isLoading, we also have loadCount getting updated in the `update` function which will store how many times we've entered the loading screen
 
 ### `start`
-In this function we tell the emulator when to start a run, this only really matters when the timer is not running (0 seconds). Whenever we return true the timer will start, once the timer is running its return value doesnt matter
+This tells LAST when to start the timer.\
+_Note: LAST will ignore any start calls if the timer is running._
 * Runs every 1000 / `refreshRate` milliseconds
 ```lua
 process('GameBlaBlaBla.exe')
@@ -121,10 +114,9 @@ function start()
     return current.isLoading
 end
 ```
-* Looks simple enough, however this is with many assumptions, like that the game has a loading screen when starting a new game so that the run will start the moment the loading screen appears
 
 ### `split`
-Whenever the split function returns true, we will do a split. In our case we will make a split on every loading screen
+Tells LAST to execute a split whenever it gets a true return.
     * Runs every 1000 / `refreshRate` milliseconds
 ```lua
 process('GameBlaBlaBla.exe')
@@ -164,10 +156,10 @@ function split()
 end
 ```
 * Whoa lots of code, why didnt we just return if we are currently in a loading screen like in start? Because if we do, we will do multiple splits a second, the function runs multiple times and it would do lots of unwanted splits.
-* To solve that, we only want to split when we enter a loading screen (old is false, current is true), But also we dont want to split on the first loading screen as we have done the assumption that the first loading screen is when the run starts, thats where our loadCount comes in handy, we can just check if we are on the first one and only split when we arent
+* To solve that, we only want to split when we enter a loading screen (old is false, current is true), But, we also don't want to split on the first loading screen as we have the assumption that the first loading screen is when the run starts, so that's where our loadCount comes in handy, we can just check if we are on the first one and only split when we aren't.
 
 ### `isLoading`
-As long as this function returns true, the timer will be paused, if the function doesnt exists the timer will never pause.
+Pauses the timer whenever true is being returned.
 * Runs every 1000 / `refreshRate` milliseconds
 ```lua
 process('GameBlaBlaBla.exe')
@@ -215,7 +207,7 @@ end
 * Pretty self explanatory, since we want to return whenever we are currently in a loading screen, we can just send our current isLoading status, same as start
 
 # `reset`
-It instantly resets the run, completly ignoring the attempt, use with caution to avoid unwanted reset, for example like going into the main menu
+Instantly resets the timer. Use with caution.
 * Runs every 1000 / `refreshRate` milliseconds
 ```lua
 process('GameBlaBlaBla.exe')
@@ -282,7 +274,7 @@ end
     9. `float`: 32 bit floating point number
     10. `double`: 64 bit floating point number
     11. `bool`: Boolean (true or false)
-    12. `stringX`, A string of characters, Its usage is special than the rest, you type "stringX" where the X is how long the string can be plus 1, this is to allocate the NULL terminator which defines when the string ends, for example, if the longest possible string to return is "cheese", you would define it as "string7". Setting X lower can result in the string terminating incorrectly and being the result you didnt want, setting it higher doesnt have any difference
+    12. `stringX`, A string of characters, Its usage is different compared the rest, you type "stringX" where the X is how long the string can be plus 1, this is to allocate the NULL terminator which defines when the string ends, for example, if the longest possible string to return is "cheese", you would define it as "string7". Setting X lower can result in the string terminating incorrectly and getting an incorrect result, setting it higher doesnt have any difference (aside from wasting memory).
 
 * The second argument can be 2 things, a string or a number
     * If its a number: The value in that memory address of the main process will be used
