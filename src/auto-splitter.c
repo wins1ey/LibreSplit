@@ -283,15 +283,3 @@ void run_auto_splitter()
 
     lua_close(L);
 }
-
-void *last_auto_splitter()
-{
-    while (true)
-    {
-        if (atomic_load(&auto_splitter_enabled) && auto_splitter_file[0] != '\0')
-        {
-            run_auto_splitter();
-        }
-        usleep(1000000); // Wait for 1 second before checking again
-    }
-}

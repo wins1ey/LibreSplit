@@ -12,6 +12,6 @@ extern atomic_bool call_reset;
 extern char auto_splitter_file[PATH_MAX];
 
 void check_directories();
-void *last_auto_splitter();
+void run_auto_splitter();
 
 #endif /* __AUTO_SPLITTER_H__ */
