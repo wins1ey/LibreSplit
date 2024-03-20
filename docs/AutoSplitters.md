@@ -11,7 +11,7 @@
         * This means you can run external functions outside of the ones LAST executes.
     * Support for the entire Lua language, including the importing of libraries for tasks such as performance monitoring
 
-# How to make LAST Autosplitters
+# How to make LAST auto splitters 
 
 * Its somewhat easy if you know what you are doing or are porting an already existing one
 
