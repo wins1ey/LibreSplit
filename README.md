@@ -74,7 +74,7 @@ Keybind strings should be parseable by
 
 ## Auto Splitters
 
-LAST supports auto splitters written in Lua to automate split timing based on in-game events. When running LAST in the terminal you will initally be greeted with an auto splitter downloader which grabs them from [here](https://github.com/Wins1ey/LuaAutoSplitters). Feel free to make your own, documentation will be made soon.
+LAST supports auto splitters written in Lua to automate split timing based on in-game events. When running LAST in the terminal you will initally be greeted with an auto splitter downloader which grabs them from [here](https://github.com/Wins1ey/LuaAutoSplitters). Feel free to make your own, Documentation can be found [here](./docs/AutoSplitters.md)
 
 ## Split Files
 
