@@ -24,7 +24,6 @@ atomic_bool call_start = false;
 atomic_bool call_split = false;
 atomic_bool toggle_loading = false;
 atomic_bool call_reset = false;
-atomic_bool exit_requested = false;
 bool prev_is_loading;
 
 extern last_process process;
@@ -240,7 +239,7 @@ void run_auto_splitter()
         struct timespec clock_start;
         clock_gettime(CLOCK_MONOTONIC, &clock_start);
 
-        if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0 || !process_exists() || process.pid == 0 || atomic_load(&exit_requested))
+        if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0 || !process_exists() || process.pid == 0)
         {
             break;
         }

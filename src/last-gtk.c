@@ -34,6 +34,8 @@ typedef struct _LASTAppWindowClass    LASTAppWindowClass;
 
 #define WINDOW_PAD (8)
 
+atomic_bool exit_requested = 0;
+
 typedef struct
 {
     guint key;
@@ -93,7 +95,8 @@ static void last_app_window_destroy(GtkWidget *widget, gpointer data)
     {
         last_game_release(win->game);
     }
-    atomic_store(&exit_requested, true);
+    atomic_store(&auto_splitter_enabled, 0);
+    atomic_store(&exit_requested, 1);
 }
 
 static gpointer save_game_thread(gpointer data)
