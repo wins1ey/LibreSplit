@@ -9,6 +9,7 @@ extern atomic_bool call_start;
 extern atomic_bool call_split;
 extern atomic_bool toggle_loading;
 extern atomic_bool call_reset;
+extern atomic_bool exit_requested;
 extern char auto_splitter_file[PATH_MAX];
 
 void check_directories();

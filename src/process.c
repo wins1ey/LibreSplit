@@ -1,3 +1,4 @@
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,7 +72,7 @@ void stock_process_id(const char* pid_command)
     char pid_output[4096];
     pid_output[0] = '\0';
 
-    while (atomic_load(&auto_splitter_enabled))
+    while (atomic_load(&auto_splitter_enabled) && !atomic_load(&exit_requested))
     {
         execute_command(pid_command, pid_output);
         process.pid = strtoul(pid_output, NULL, 10);

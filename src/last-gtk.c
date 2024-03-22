@@ -1,7 +1,7 @@
 #include <linux/limits.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -93,6 +93,7 @@ static void last_app_window_destroy(GtkWidget *widget, gpointer data)
     {
         last_game_release(win->game);
     }
+    atomic_store(&exit_requested, true);
 }
 
 static gpointer save_game_thread(gpointer data)
@@ -1167,6 +1168,8 @@ static void *last_auto_splitter()
         {
             run_auto_splitter();
         }
+        if(atomic_load(&exit_requested))
+            return 0;
         usleep(50000);
     }
     return NULL;
