@@ -6,7 +6,6 @@ LDFLAGS := `pkg-config --libs gtk+-3.0 x11 jansson lua`
 
 SRC_DIR := ./src
 OBJ_DIR := ./obj
-ASSETS_DIR := ./assets
 
 # Obtain list of source files and create list of object files
 SOURCES := $(wildcard $(SRC_DIR)/*.c)
@@ -46,9 +45,9 @@ last-gtk.h: $(SRC_DIR)/last-gtk.css
 
 install:
 	cp $(TARGET) $(BIN_DIR)/$(BIN)
-	cp $(ASSETS_DIR)/$(APP) $(APP_DIR)
+	cp $(APP) $(APP_DIR)
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
-	  convert assets/$(ICON).png -resize "$$size"x"$$size" \
+	  convert $(ICON).svg -resize "$$size"x"$$size" \
 	          $(ICON_DIR)/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
 	gtk-update-icon-cache -f -t $(ICON_DIR)

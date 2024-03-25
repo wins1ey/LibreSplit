@@ -1,8 +1,9 @@
-# LAST <img src="assets/last.png" width=32> Linux Auto Splitting Timer
+# LAST <img src="https://github.com/wins1ey/LAST/assets/34382191/e81414b0-38b5-495f-ac9f-7510edd70547" width=32> Linux Auto Splitting Timer
 
 LAST brings auto splitting functionality to [urn](https://github.com/3snowp7im/urn) with Lua-based auto splitters that are easy to port from asl.
 
-<img src="assets/theme-1.png" width=350> <img src="assets/theme-2.png" width=350>
+<img src="https://github.com/wins1ey/LAST/assets/34382191/2adfdae5-9a21-4bdf-a4c4-f1d5962a0b63" width=350>
+<img src="https://github.com/wins1ey/LAST/assets/34382191/4455f57a-3d34-4fa3-9dff-2b342b6c56da" width=350>
 
 ## Features
 
