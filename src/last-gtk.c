@@ -1,7 +1,7 @@
 #include <linux/limits.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -33,6 +33,8 @@ typedef struct _LASTAppWindow         LASTAppWindow;
 typedef struct _LASTAppWindowClass    LASTAppWindowClass;
 
 #define WINDOW_PAD (8)
+
+atomic_bool exit_requested = 0;
 
 typedef struct
 {
@@ -93,6 +95,8 @@ static void last_app_window_destroy(GtkWidget *widget, gpointer data)
     {
         last_game_release(win->game);
     }
+    atomic_store(&auto_splitter_enabled, 0);
+    atomic_store(&exit_requested, 1);
 }
 
 static gpointer save_game_thread(gpointer data)
@@ -1167,6 +1171,8 @@ static void *last_auto_splitter()
         {
             run_auto_splitter();
         }
+        if(atomic_load(&exit_requested))
+            return 0;
         usleep(50000);
     }
     return NULL;
