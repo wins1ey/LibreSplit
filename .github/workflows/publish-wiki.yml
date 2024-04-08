@@ -6,14 +6,11 @@ on:
       - .github/workflows/publish-wiki.yml
 
 jobs:
-  build:
+  publish-wiki:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v1
-      - name: Upload docs to wiki
-        uses: SwiftDocOrg/github-wiki-publish-action@v1
+      - uses: actions/checkout@v3
+      - uses: Andrew-Chen-Wang/github-wiki-action@v4.3.0
         with:
-          path: "docs"
-        env:
-          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          path: docs/
+          token: ${{ secrets.ACCESS_TOKEN }}
