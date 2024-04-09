@@ -1,4 +1,4 @@
-#include "last-component.h"
+#include "components.h"
 
 LASTComponent *last_component_title_new();
 LASTComponent *last_component_splits_new();

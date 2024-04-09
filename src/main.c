@@ -9,10 +9,10 @@
 
 #include <gtk/gtk.h>
 
-#include "last.h"
-#include "last-gtk.h"
+#include "timer.h"
+#include "libresplit.h"
 #include "bind.h"
-#include "components/last-component.h"
+#include "component/components.h"
 #include "auto-splitter.h"
 #include "settings.h"
 
@@ -227,11 +227,11 @@ static int last_app_window_find_theme(LASTAppWindow *win,
     strcat(str, theme_path);
     if (stat(str, &st) == -1)
     {
-        strcpy(str, "/usr/share/LAST/themes");
+        strcpy(str, "/usr/share/libresplit/themes");
         strcat(str, theme_path);
         if (stat(str, &st) == -1)
         {
-            strcpy(str, "/usr/local/share/LAST/themes");
+            strcpy(str, "/usr/local/share/libresplit/themes");
             strcat(str, theme_path);
             if (stat(str, &st) == -1)
             {
@@ -630,10 +630,10 @@ static void last_app_window_init(LASTAppWindow *win)
 
     // make data path
     win->data_path[0] = '\0';
-    get_LAST_folder_path(win->data_path);
+    get_libresplit_folder_path(win->data_path);
 
     // load settings
-    GSettings *settings = g_settings_new("wildmouse.last");
+    GSettings *settings = g_settings_new("com.github.wins1ey.libresplit");
     win->hide_cursor = g_settings_get_boolean(settings, "hide-cursor");
     win->global_hotkeys = g_settings_get_boolean(settings, "global-hotkeys");
     win->keybind_start_split = parse_keybind(
@@ -660,7 +660,7 @@ static void last_app_window_init(LASTAppWindow *win)
         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_css_provider_load_from_data(
         GTK_CSS_PROVIDER(provider),
-        (char *)__src_last_gtk_css, __src_last_gtk_css_len, NULL);
+        (char *)__src_libresplit_css, __src_libresplit_css_len, NULL);
     g_object_unref(provider);
 
     // Load theme
@@ -1078,12 +1078,12 @@ static void last_app_activate(GApplication *app)
     LASTAppWindow *win;
     win = last_app_window_new(LAST_APP(app));
     gtk_window_present(GTK_WINDOW(win));
-    if (get_setting_value("LAST", "split_file") != NULL)
+    if (get_setting_value("libresplit", "split_file") != NULL)
     {
         // Check if split file exists
         struct stat st = {0};
         char splits_path[PATH_MAX];
-        strcpy(splits_path, json_string_value(get_setting_value("LAST", "split_file")));
+        strcpy(splits_path, json_string_value(get_setting_value("libresplit", "split_file")));
         if (stat(splits_path, &st) == -1)
         {
             printf("%s does not exist\n", splits_path);
@@ -1098,11 +1098,11 @@ static void last_app_activate(GApplication *app)
     {
         open_activated(NULL, NULL, app);
     }
-    if (get_setting_value("LAST", "auto_splitter_file") != NULL)
+    if (get_setting_value("libresplit", "auto_splitter_file") != NULL)
     {
         struct stat st = {0};
         char auto_splitters_path[PATH_MAX];
-        strcpy(auto_splitters_path, json_string_value(get_setting_value("LAST", "auto_splitter_file")));
+        strcpy(auto_splitters_path, json_string_value(get_setting_value("libresplit", "auto_splitter_file")));
         if (stat(auto_splitters_path, &st) == -1)
         {
             printf("%s does not exist\n", auto_splitters_path);
@@ -1112,9 +1112,9 @@ static void last_app_activate(GApplication *app)
             strcpy(auto_splitter_file, auto_splitters_path);
         }
     }
-    if (get_setting_value("LAST", "auto_splitter_enabled") != NULL)
+    if (get_setting_value("libresplit", "auto_splitter_enabled") != NULL)
     {
-        if (json_is_false(get_setting_value("LAST", "auto_splitter_enabled")))
+        if (json_is_false(get_setting_value("libresplit", "auto_splitter_enabled")))
         {
             atomic_store(&auto_splitter_enabled, 0);
         }
@@ -1158,7 +1158,7 @@ LASTApp *last_app_new(void)
 {
     g_set_application_name("LAST");
     return g_object_new(LAST_APP_TYPE,
-                        "application-id", "wildmouse.last",
+                        "application-id", "com.github.wins1ey.libresplit",
                         "flags", G_APPLICATION_HANDLES_OPEN,
                         NULL);
 }

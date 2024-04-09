@@ -1,12 +1,12 @@
-#ifndef __LAST_COMPONENT_H__
-#define __LAST_COMPONENT_H__
+#ifndef __COMPONENTS_H__
+#define __COMPONENTS_H__
 
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <gtk/gtk.h>
 
-#include "../last.h"
+#include "../timer.h"
 
 typedef struct _LASTComponent LASTComponent;
 typedef struct _LASTComponentOps LASTComponentOps;
@@ -48,4 +48,4 @@ void add_class(GtkWidget *widget, const char *class);
 
 void remove_class(GtkWidget *widget, const char *class);
 
-#endif /* __LAST_COMPONENT_H__ */
+#endif /* __COMPONENTS_H__ */

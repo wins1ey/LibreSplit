@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=LAST
-Exec=LAST
-Icon=last
+Name=LibreSplit
+Exec=libresplit
+Icon=libresplit
 Type=Application
 Categories=GTK;GNOME;Utility;

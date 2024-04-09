@@ -69,7 +69,7 @@ static void mkdir_p(const char *dir, __mode_t permissions) {
 void check_directories()
 {
     char last_directory[PATH_MAX] = {0};
-    get_LAST_folder_path(last_directory);
+    get_libresplit_folder_path(last_directory);
 
     char auto_splitters_directory[PATH_MAX];
     char themes_directory[PATH_MAX];

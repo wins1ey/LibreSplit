@@ -3,7 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <jansson.h>
-#include "last.h"
+#include "timer.h"
 
 long long last_time_now(void)
 {

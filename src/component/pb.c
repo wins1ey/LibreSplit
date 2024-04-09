@@ -1,4 +1,4 @@
-#include "last-component.h"
+#include "components.h"
 
 typedef struct _LASTPb
 {

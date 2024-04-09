@@ -6,12 +6,12 @@
 
 * These work by reading into game's memory and determining when the timer should do something, like make a split.
 
-* LAST's autosplitting system works in a very similar way to LiveSplit's. The main difference is that LAST uses Lua instead of C#. There are also some key differences:
+* LibreSplit's autosplitting system works in a very similar way to LiveSplit's. The main difference is that LibreSplit uses Lua instead of C#. There are also some key differences:
     * Runs an entire Lua system instead of only supporting specifically named C# blocks.
-        * This means you can run external functions outside of the ones LAST executes.
+        * This means you can run external functions outside of the ones LibreSplit executes.
     * Support for the entire Lua language, including the importing of libraries for tasks such as performance monitoring.
 
-# How to make LAST auto splitters 
+# How to make LibreSplit auto splitters 
 
 * It's somewhat easy if you know what you are doing or are porting an already existing one.
 
@@ -20,13 +20,13 @@
 ```lua
 process('GameBlaBlaBla.exe')
 ```
-* With this line, LAST will repeatedly attempt to find this process and will not continue script execution until it is found.
+* With this line, LibreSplit will repeatedly attempt to find this process and will not continue script execution until it is found.
 
 * Next we have to define the basic functions. Not all are required and the ones that are required may change depending on the game or end goal, like if loading screens are included or not.
     * The order at which these run is the same as they are documented below.
 
 ### `startup`
- The purpose of this function is to specify how many times LAST checks memory values and executes functions each second, the default is 60Hz. Usually, 60Hz is fine and this function can remain undefined. However, it's there if you need it.
+ The purpose of this function is to specify how many times LibreSplit checks memory values and executes functions each second, the default is 60Hz. Usually, 60Hz is fine and this function can remain undefined. However, it's there if you need it.
 ```lua
 process('GameBlaBlaBla.exe')
 
@@ -53,7 +53,7 @@ function state()
 end
 ```
 
-* You may have noticed that we're assigning this `isLoading` variable with the result of the function `readAddress`. This function is part of LAST's Lua context and its purpose is to read memory values. It's explained in detail at the bottom of this document.
+* You may have noticed that we're assigning this `isLoading` variable with the result of the function `readAddress`. This function is part of LibreSplit's Lua context and its purpose is to read memory values. It's explained in detail at the bottom of this document.
 
 ### `update`
  The purpose of this function is to update local variables.
@@ -84,8 +84,8 @@ end
 * We now have 3 variables, one represents the current state while the other the old state of isLoading, we also have loadCount getting updated in the `update` function which will store how many times we've entered the loading screen
 
 ### `start`
-This tells LAST when to start the timer.\
-_Note: LAST will ignore any start calls if the timer is running._
+This tells LibreSplit when to start the timer.\
+_Note: LibreSplit will ignore any start calls if the timer is running._
 * Runs every 1000 / `refreshRate` milliseconds.
 ```lua
 process('GameBlaBlaBla.exe')
@@ -116,7 +116,7 @@ end
 ```
 
 ### `split`
-Tells LAST to execute a split whenever it gets a true return.
+Tells LibreSplit to execute a split whenever it gets a true return.
     * Runs every 1000 / `refreshRate` milliseconds.
 ```lua
 process('GameBlaBlaBla.exe')
@@ -261,7 +261,7 @@ end
 * In this example we are checking for the scene, of course, the address is completely arbitrary and doesnt mean anything for this example. Specifically we are checking if we are entering the MenuScene scene.
 
 ## readAddress
-* `readAddress` is the second function that LAST defines for us and its globally available, its job is to read the memory value of a specified address.
+* `readAddress` is the second function that LibreSplit defines for us and its globally available, its job is to read the memory value of a specified address.
 * The first value defines what kind of value we will read:
     1. `sbyte`: signed 8 bit integer
     2. `byte`: unsigned 8 bit integer

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
-  <schema path="/wildmouse/last/" id="wildmouse.last">
+    <schema path="/com/github/wins1ey/libresplit/" id="com.github.wins1ey.libresplit">
     <key name="start-decorated" type="b">
       <default>false</default>
       <summary>Start decorated</summary>

@@ -10,14 +10,14 @@
 
 #include "settings.h"
 
-void get_LAST_folder_path(char* out_path) {
+void get_libresplit_folder_path(char* out_path) {
     struct passwd * pw = getpwuid(getuid());
     char* XDG_CONFIG_HOME = getenv("XDG_CONFIG_HOME");
-    char* base_dir = strcat(pw->pw_dir, "/.config/LAST");
+    char* base_dir = strcat(pw->pw_dir, "/.config/libresplit");
     if (XDG_CONFIG_HOME != NULL) {
         char config_dir[PATH_MAX] = {0};
         strcpy(config_dir, XDG_CONFIG_HOME);
-        strcat(config_dir, "/LAST");
+        strcat(config_dir, "/libresplit");
         strcpy(base_dir, config_dir);
     }
     strcpy(out_path, base_dir);
@@ -26,7 +26,7 @@ void get_LAST_folder_path(char* out_path) {
 void last_update_setting(const char *setting, json_t *value)
 {
     char settings_path[PATH_MAX];
-    get_LAST_folder_path(settings_path);
+    get_libresplit_folder_path(settings_path);
     strcat(settings_path, "/settings.json");
 
     // Load existing settings
@@ -50,11 +50,11 @@ void last_update_setting(const char *setting, json_t *value)
     }
 
     // Update specific setting
-    json_t *last_obj = json_object_get(root, "LAST");
+    json_t *last_obj = json_object_get(root, "libresplit");
     if (!last_obj)
     {
         last_obj = json_object();
-        json_object_set(root, "LAST", last_obj);
+        json_object_set(root, "libresplit", last_obj);
     }
     json_object_set_new(last_obj, setting, value);
 
@@ -76,7 +76,7 @@ void last_update_setting(const char *setting, json_t *value)
 json_t *load_settings()
 {
     char settings_path[PATH_MAX];
-    get_LAST_folder_path(settings_path);
+    get_libresplit_folder_path(settings_path);
     strcat(settings_path, "/settings.json");
 
     FILE *file = fopen(settings_path, "r");
