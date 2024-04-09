@@ -24,14 +24,14 @@ LAST requires the following dependencies on your system to compile:
 ## Installation
 
 ```bash
-git clone https://github.com/wins1ey/LAST
+git clone --recurse-submodules https://github.com/wins1ey/LAST
 cd LAST
 make
 sudo make install
 ```
 or
 ```bash
-git clone https://github.com/wins1ey/LAST && cd LAST && make && sudo make install
+git clone --recurse-submodules https://github.com/wins1ey/LAST && cd LAST && make && sudo make install
 ```
 
 ## Getting Started
