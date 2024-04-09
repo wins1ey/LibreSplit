@@ -58,9 +58,11 @@ install: all
 	$(update_icon_cache)
 	install -Dm644 $(SRC_DIR)/$(SCHEMA) $(DESTDIR)$(PREFIX)/share/glib-2.0/schemas/$(SCHEMA)
 	$(compile_schemas)
+	install -Dm644 resources/themes/standard/standard.css $(DESTDIR)$(PREFIX)/share/LAST/themes/standard/standard.css
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/$(BIN)
 	rm -f $(DESTDIR)$(PREFIX)/share/applications/$(APP)
+	rm -rf $(DESTDIR)$(PREFIX)/share/LAST
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
 		rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
