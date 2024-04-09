@@ -227,12 +227,17 @@ static int last_app_window_find_theme(LASTAppWindow *win,
     strcat(str, theme_path);
     if (stat(str, &st) == -1)
     {
-        strcpy(str, "/usr/share/last/themes");
+        strcpy(str, "/usr/share/LAST/themes");
         strcat(str, theme_path);
         if (stat(str, &st) == -1)
         {
-            str[0] = '\0';
-            return 0;
+            strcpy(str, "/usr/local/share/LAST/themes");
+            strcat(str, theme_path);
+            if (stat(str, &st) == -1)
+            {
+                str[0] = '\0';
+                return 0;
+            }
         }
     }
     return 1;
