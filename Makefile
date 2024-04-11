@@ -41,7 +41,6 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/component/%.c | $(OBJ_DIR)
 	gcc $(INC) $(CFLAGS) -c -o $@ $<
 
-# Rule to create the object directory
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
@@ -71,7 +70,6 @@ remove-schema:
 	$(RM) $(DESTDIR)$(PREFIX)/share/glib-2.0/schemas/$(SCHEMA)
 	$(compile_schemas)
 
-# Clean target to remove object files and LAS executable
 clean:
 	$(RM) -r $(BIN) $(OBJ_DIR) $(SRC_DIR)/libresplit.h
 
