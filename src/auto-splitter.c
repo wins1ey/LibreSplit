@@ -26,7 +26,7 @@ atomic_bool toggle_loading = false;
 atomic_bool call_reset = false;
 bool prev_is_loading;
 
-static const char* functions[] = {
+static const char* disabled_functions[] = {
     "collectgarbage",
     "dofile",
     "getmetatable",
@@ -303,7 +303,7 @@ void run_auto_splitter()
 {
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
-    disable_functions(L, functions);
+    disable_functions(L, disabled_functions);
     lua_pushcfunction(L, find_process_id);
     lua_setglobal(L, "process");
     lua_pushcfunction(L, read_address);
