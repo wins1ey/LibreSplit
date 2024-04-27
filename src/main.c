@@ -10,7 +10,7 @@
 #include <gtk/gtk.h>
 
 #include "timer.h"
-#include "libresplit.h"
+#include "main.h"
 #include "bind.h"
 #include "component/components.h"
 #include "auto-splitter.h"
@@ -660,7 +660,7 @@ static void last_app_window_init(LASTAppWindow *win)
         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_css_provider_load_from_data(
         GTK_CSS_PROVIDER(provider),
-        (char *)__src_libresplit_css, __src_libresplit_css_len, NULL);
+        (char *)__src_main_css, __src_main_css_len, NULL);
     g_object_unref(provider);
 
     // Load theme

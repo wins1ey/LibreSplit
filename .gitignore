@@ -1,7 +1,7 @@
 # Compiled files
 libresplit
 obj/
-src/libresplit.h
+src/main.h
 
 .vscode/
 .cache/

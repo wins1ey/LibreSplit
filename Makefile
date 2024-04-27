@@ -27,7 +27,7 @@ else
 	compile_schemas := glib-compile-schemas $(PREFIX)/share/glib-2.0/schemas
 endif
 
-all: libresplit.h $(BIN)
+all: main.h $(BIN)
 
 # Rule to link object files to create executable
 $(BIN): $(OBJECTS)
@@ -44,8 +44,8 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/component/%.c | $(OBJ_DIR)
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
-libresplit.h: $(SRC_DIR)/libresplit.css
-	xxd --include $(SRC_DIR)/libresplit.css > $(SRC_DIR)/libresplit.h || ($(RM) $(SRC_DIR)/libresplit.h; false)
+main.h: $(SRC_DIR)/main.css
+	xxd --include $(SRC_DIR)/main.css > $(SRC_DIR)/main.h || ($(RM) $(SRC_DIR)/main.h; false)
 
 install: all
 	install -Dm755 $(BIN) $(DESTDIR)$(PREFIX)/bin/$(BIN)
@@ -71,6 +71,6 @@ remove-schema:
 	$(compile_schemas)
 
 clean:
-	$(RM) -r $(BIN) $(OBJ_DIR) $(SRC_DIR)/libresplit.h
+	$(RM) -r $(BIN) $(OBJ_DIR) $(SRC_DIR)/main.h
 
-.PHONY: all libresplit.h install uninstall remove-schema clean
+.PHONY: all main.h install uninstall remove-schema clean
