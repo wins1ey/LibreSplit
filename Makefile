@@ -55,7 +55,7 @@ install: all
 		rsvg-convert -w "$$size" -h "$$size" -f png -o $(DESTDIR)$(PREFIX)/share/icons/hicolor/"$$size"x"$$size"/apps/$(ICON).png $(ICON).svg ; \
 	done
 	$(update_icon_cache)
-	install -Dm644 $(SRC_DIR)/$(SCHEMA) $(DESTDIR)$(PREFIX)/share/glib-2.0/schemas/$(SCHEMA)
+	install -Dm644 $(SCHEMA) $(DESTDIR)$(PREFIX)/share/glib-2.0/schemas/$(SCHEMA)
 	$(compile_schemas)
 uninstall:
 	$(RM) $(DESTDIR)$(PREFIX)/bin/$(BIN)
