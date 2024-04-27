@@ -24,14 +24,14 @@ LibreSplit requires the following dependencies on your system to compile:
 ## Installation
 
 ```bash
-git clone --recurse-submodules https://github.com/wins1ey/LibreSplit
+git clone https://github.com/wins1ey/LibreSplit
 cd LibreSplit
 make
 sudo make install
 ```
 or
 ```bash
-git clone --recurse-submodules https://github.com/wins1ey/LibreSplit && cd LibreSplit && make && sudo make install
+git clone https://github.com/wins1ey/LibreSplit && cd LibreSplit && make && sudo make install
 ```
 
 ## Getting Started

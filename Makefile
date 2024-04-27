@@ -57,11 +57,9 @@ install: all
 	$(update_icon_cache)
 	install -Dm644 $(SRC_DIR)/$(SCHEMA) $(DESTDIR)$(PREFIX)/share/glib-2.0/schemas/$(SCHEMA)
 	$(compile_schemas)
-	install -Dm644 resources/themes/standard/standard.css $(DESTDIR)$(PREFIX)/share/libresplit/themes/standard/standard.css
 uninstall:
 	$(RM) $(DESTDIR)$(PREFIX)/bin/$(BIN)
 	$(RM) $(DESTDIR)$(PREFIX)/share/applications/$(APP)
-	$(RM) -r $(DESTDIR)$(PREFIX)/share/libresplit
 	for size in 16 22 24 32 36 48 64 72 96 128 256 512; do \
 		$(RM) $(DESTDIR)$(PREFIX)/share/icons/hicolor/"$$size"x"$$size"/apps/$(ICON).png ; \
 	done
