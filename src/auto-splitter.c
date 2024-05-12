@@ -371,11 +371,6 @@ void run_auto_splitter()
         startup(L);
     }
 
-    if (state_exists)
-    {
-        state(L);
-    }
-
     printf("Refresh rate: %d\n", refresh_rate);
     int rate = 1000000 / refresh_rate;
 
