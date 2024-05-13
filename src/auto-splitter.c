@@ -19,6 +19,8 @@
 
 char auto_splitter_file[PATH_MAX];
 int refresh_rate = 60;
+int maps_cache_cycles = 0; // 0=off, 1=current cycle, +1=multiple cycles
+int maps_cache_cycles_value = 0; // same as `maps_cache_cycles` but this one represents the current value rather than the reference from the script
 atomic_bool auto_splitter_enabled = true;
 atomic_bool call_start = false;
 atomic_bool call_split = false;
@@ -246,6 +248,14 @@ void startup(lua_State* L)
         refresh_rate = lua_tointeger(L, -1);
     }
     lua_pop(L, 1); // Remove 'refreshRate' from the stack
+
+    lua_getglobal(L, "mapsCacheCycles");
+    if (lua_isnumber(L, -1))
+    {
+        maps_cache_cycles = lua_tointeger(L, -1);
+        maps_cache_cycles_value = maps_cache_cycles;
+    }
+    lua_pop(L, 1); // Remove 'mapsCacheCycles' from the stack
 }
 
 void state(lua_State* L)
@@ -414,9 +424,18 @@ void run_auto_splitter()
             reset(L);
         }
 
+        // Clear the memory maps cache if needed
+        maps_cache_cycles_value--;
+        if (maps_cache_cycles_value < 1) {
+            p_maps_cache_size = 0; // We dont need to "empty" the list as the elements after index 0 are considered invalid
+            maps_cache_cycles_value = maps_cache_cycles;
+            // printf("Cleared maps cache\n");
+        }
+
         struct timespec clock_end;
         clock_gettime(CLOCK_MONOTONIC, &clock_end);
         long long duration = (clock_end.tv_sec - clock_start.tv_sec) * 1000000 + (clock_end.tv_nsec - clock_start.tv_nsec) / 1000;
+        // printf("duration: %llu\n", duration);
         if (duration < rate)
         {
             usleep(rate - duration);
