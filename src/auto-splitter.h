@@ -10,6 +10,7 @@ extern atomic_bool call_split;
 extern atomic_bool toggle_loading;
 extern atomic_bool call_reset;
 extern char auto_splitter_file[PATH_MAX];
+extern int maps_cache_cycles_value;
 
 void check_directories();
 void run_auto_splitter();

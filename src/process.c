@@ -1,3 +1,4 @@
+#include <linux/limits.h>
 #include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,9 @@
 #include "auto-splitter.h"
 
 struct last_process process;
+#define MAPS_CACHE_MAX_SIZE 32
+ProcessMap p_maps_cache[MAPS_CACHE_MAX_SIZE];
+uint32_t p_maps_cache_size = 0;
 
 void execute_command(const char* command, char* output)
 {
@@ -38,6 +42,13 @@ uintptr_t find_base_address(const char* module)
 {
     const char* module_to_grep = module == 0 ? process.name : module;
 
+    for (int32_t i = 0; i < p_maps_cache_size; i++) {
+        const char* name = p_maps_cache[i].name;
+        if (strstr(name, module_to_grep) == NULL) {
+            return p_maps_cache[i].start;
+        }
+    }
+
     char path[22]; // 22 is the maximum length the path can be (strlen("/proc/4294967296/maps"))
 
     snprintf(path, sizeof(path), "/proc/%d/maps", process.pid);
@@ -45,21 +56,20 @@ uintptr_t find_base_address(const char* module)
     FILE *f = fopen(path, "r");
 
     if (f) {
-        char current_line[1024];
+        char current_line[PATH_MAX + 100];
         while (fgets(current_line, sizeof(current_line), f) != NULL) {
             if (strstr(current_line, module_to_grep) == NULL)
                 continue;
             fclose(f);
-            size_t dash_pos = strcspn(current_line, "-");
-
-            if (dash_pos != strlen(current_line)) {
-                char first_number[32];
-                strncpy(first_number, current_line, dash_pos);
-                first_number[dash_pos] = '\0';
-                uintptr_t addr = strtoull(first_number, NULL, 16);
-                return addr;
-                break;
+            uintptr_t addr_start = strtoull(current_line, NULL, 16);
+            if (maps_cache_cycles_value != 0 && p_maps_cache_size < MAPS_CACHE_MAX_SIZE) {
+                ProcessMap map;
+                if (parseMapsLine(current_line, &map)) {
+                    p_maps_cache[p_maps_cache_size] = map;
+                    p_maps_cache_size++;                
+                }
             }
+            return addr_start;
         }
         fclose(f);
     }
@@ -69,7 +79,7 @@ uintptr_t find_base_address(const char* module)
 
 void stock_process_id(const char* pid_command)
 {
-    char pid_output[4096];
+    char pid_output[PATH_MAX + 100];
     pid_output[0] = '\0';
 
     while (atomic_load(&auto_splitter_enabled))
@@ -117,4 +127,20 @@ int process_exists()
 {
     int result = kill(process.pid, 0);
     return result == 0;
+}
+
+bool parseMapsLine(char* line,ProcessMap *map) {
+    size_t end;
+	char mode[8];
+	unsigned long offset;
+	unsigned int major_id, minor_id, node_id;
+
+    // Thank you kernel source code
+    int sscanf_res = sscanf(line, "%lx-%lx %7s %lx %u:%u %u %s", &map->start,
+					&end, mode, &offset, &major_id,
+					&minor_id, &node_id, map->name);
+    if (!sscanf_res)
+        return false;
+
+    return true;
 }
