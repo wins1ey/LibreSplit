@@ -46,7 +46,7 @@ static const char* disabled_functions[] = {
     "newproxy",
 };
 
-extern last_process process;
+extern game_process process;
 
 // I have no idea how this works
 // https://stackoverflow.com/a/2336245
@@ -70,24 +70,24 @@ static void mkdir_p(const char *dir, __mode_t permissions) {
 
 void check_directories()
 {
-    char last_directory[PATH_MAX] = {0};
-    get_libresplit_folder_path(last_directory);
+    char libresplit_directory[PATH_MAX] = {0};
+    get_libresplit_folder_path(libresplit_directory);
 
     char auto_splitters_directory[PATH_MAX];
     char themes_directory[PATH_MAX];
     char splits_directory[PATH_MAX];
 
-    strcpy(auto_splitters_directory, last_directory);
+    strcpy(auto_splitters_directory, libresplit_directory);
     strcat(auto_splitters_directory, "/auto-splitters");
 
-    strcpy(themes_directory, last_directory);
+    strcpy(themes_directory, libresplit_directory);
     strcat(themes_directory, "/themes");
 
-    strcpy(splits_directory, last_directory);
+    strcpy(splits_directory, libresplit_directory);
     strcat(splits_directory, "/splits");
 
-    // Make the LAST directory if it doesn't exist
-    mkdir_p(last_directory, 0755);
+    // Make the libresplit directory if it doesn't exist
+    mkdir_p(libresplit_directory, 0755);
 
     // Make the autosplitters directory if it doesn't exist
     if (mkdir(auto_splitters_directory, 0755) == -1) {
