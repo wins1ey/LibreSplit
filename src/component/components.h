@@ -8,40 +8,40 @@
 
 #include "../timer.h"
 
-typedef struct _LASTComponent LASTComponent;
-typedef struct _LASTComponentOps LASTComponentOps;
-typedef struct _LASTComponentAvailable LASTComponentAvailable;
+typedef struct _LSComponent LSComponent;
+typedef struct _LSComponentOps LSComponentOps;
+typedef struct _LSComponentAvailable LSComponentAvailable;
 
-struct _LASTComponent
+struct _LSComponent
 {
-    LASTComponentOps *ops;
+    LSComponentOps *ops;
 };
 
-struct _LASTComponentOps
+struct _LSComponentOps
 {
-    void (*delete)(LASTComponent *self);
-    GtkWidget *(*widget)(LASTComponent *self);
+    void (*delete)(LSComponent *self);
+    GtkWidget *(*widget)(LSComponent *self);
 
-    void (*resize)(LASTComponent *self, int win_width, int win_height);
-    void (*show_game)(LASTComponent *self, last_game *game, last_timer *timer);
-    void (*clear_game)(LASTComponent *self);
-    void (*draw)(LASTComponent *self, last_game *game, last_timer *timer);
+    void (*resize)(LSComponent *self, int win_width, int win_height);
+    void (*show_game)(LSComponent *self, ls_game *game, ls_timer *timer);
+    void (*clear_game)(LSComponent *self);
+    void (*draw)(LSComponent *self, ls_game *game, ls_timer *timer);
 
-    void (*start_split)(LASTComponent *self, last_timer *timer);
-    void (*skip)(LASTComponent *self, last_timer *timer);
-    void (*unsplit)(LASTComponent *self, last_timer *timer);
-    void (*stop_reset)(LASTComponent *self, last_timer *timer);
-    void (*cancel_run)(LASTComponent *self, last_timer *timer);
+    void (*start_split)(LSComponent *self, ls_timer *timer);
+    void (*skip)(LSComponent *self, ls_timer *timer);
+    void (*unsplit)(LSComponent *self, ls_timer *timer);
+    void (*stop_reset)(LSComponent *self, ls_timer *timer);
+    void (*cancel_run)(LSComponent *self, ls_timer *timer);
 };
 
-struct _LASTComponentAvailable
+struct _LSComponentAvailable
 {
     char *name;
-    LASTComponent *(*new)();
+    LSComponent *(*new)();
 };
 
 // A NULL-terminated array of all available components
-extern LASTComponentAvailable last_components[];
+extern LSComponentAvailable ls_components[];
 
 // Utility functions
 void add_class(GtkWidget *widget, const char *class);

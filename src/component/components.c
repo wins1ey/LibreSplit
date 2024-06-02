@@ -1,22 +1,22 @@
 #include "components.h"
 
-LASTComponent *last_component_title_new();
-LASTComponent *last_component_splits_new();
-LASTComponent *last_component_timer_new();
-LASTComponent *last_component_prev_segment_new();
-LASTComponent *last_component_best_sum_new();
-LASTComponent *last_component_pb_new();
-LASTComponent *last_component_wr_new();
+LSComponent *ls_component_title_new();
+LSComponent *ls_component_splits_new();
+LSComponent *ls_component_timer_new();
+LSComponent *ls_component_prev_segment_new();
+LSComponent *ls_component_best_sum_new();
+LSComponent *ls_component_pb_new();
+LSComponent *ls_component_wr_new();
 
-LASTComponentAvailable last_components[] =
+LSComponentAvailable ls_components[] =
 {
-    {"title",        last_component_title_new},
-    {"splits",       last_component_splits_new},
-    {"timer",        last_component_timer_new},
-    {"prev-segment", last_component_prev_segment_new},
-    {"best-sum",     last_component_best_sum_new},
-    {"pb",           last_component_pb_new},
-    {"wr",           last_component_wr_new},
+    {"title",        ls_component_title_new},
+    {"splits",       ls_component_splits_new},
+    {"timer",        ls_component_timer_new},
+    {"prev-segment", ls_component_prev_segment_new},
+    {"best-sum",     ls_component_best_sum_new},
+    {"pb",           ls_component_pb_new},
+    {"wr",           ls_component_wr_new},
     {NULL, NULL}
 };
 

@@ -1,26 +1,26 @@
 #include "components.h"
 
-typedef struct _LASTBestSum
+typedef struct _LSBestSum
 {
-    LASTComponent base;
+    LSComponent base;
     GtkWidget *container;
     GtkWidget *sum_of_bests;
-} LASTBestSum;
-extern LASTComponentOps last_best_sum_operations;
+} LSBestSum;
+extern LSComponentOps ls_best_sum_operations;
 
 #define SUM_OF_BEST_SEGMENTS "Sum of best segments"
 
-LASTComponent *last_component_best_sum_new()
+LSComponent *ls_component_best_sum_new()
 {
-    LASTBestSum *self;
+    LSBestSum *self;
     GtkWidget *label;
 
-    self = malloc(sizeof(LASTBestSum));
+    self = malloc(sizeof(LSBestSum));
     if (!self)
     {
         return NULL;
     }
-    self->base.ops = &last_best_sum_operations;
+    self->base.ops = &ls_best_sum_operations;
 
     self->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     add_class(self->container, "footer"); /* hack */
@@ -39,53 +39,53 @@ LASTComponent *last_component_best_sum_new()
     gtk_container_add(GTK_CONTAINER(self->container), self->sum_of_bests);
     gtk_widget_show(self->sum_of_bests);
 
-    return (LASTComponent *)self;
+    return (LSComponent *)self;
 }
 
-static void best_sum_delete(LASTComponent *self)
+static void best_sum_delete(LSComponent *self)
 {
     free(self);
 }
 
-static GtkWidget *best_sum_widget(LASTComponent *self)
+static GtkWidget *best_sum_widget(LSComponent *self)
 {
-    return ((LASTBestSum *)self)->container;
+    return ((LSBestSum *)self)->container;
 }
 
-static void best_sum_show_game(LASTComponent *self_,
-        last_game *game, last_timer *timer)
+static void best_sum_show_game(LSComponent *self_,
+        ls_game *game, ls_timer *timer)
 {
-    LASTBestSum *self = (LASTBestSum *)self_;
+    LSBestSum *self = (LSBestSum *)self_;
     char str[256];
     if (game->split_count && timer->sum_of_bests)
     {
-        last_time_string(str, timer->sum_of_bests);
+        ls_time_string(str, timer->sum_of_bests);
         gtk_label_set_text(GTK_LABEL(self->sum_of_bests), str);
     }
 }
 
-static void best_sum_clear_game(LASTComponent *self_)
+static void best_sum_clear_game(LSComponent *self_)
 {
-    LASTBestSum *self = (LASTBestSum *)self_;
+    LSBestSum *self = (LSBestSum *)self_;
     gtk_label_set_text(GTK_LABEL(self->sum_of_bests), "");
 }
 
-static void best_sum_draw(LASTComponent *self_, last_game *game,
-        last_timer *timer)
+static void best_sum_draw(LSComponent *self_, ls_game *game,
+        ls_timer *timer)
 {
-    LASTBestSum *self = (LASTBestSum *)self_;
+    LSBestSum *self = (LSBestSum *)self_;
     char str[256];
     remove_class(self->sum_of_bests, "time");
     gtk_label_set_text(GTK_LABEL(self->sum_of_bests), "-");
     if (timer->sum_of_bests)
     {
         add_class(self->sum_of_bests, "time");
-        last_time_string(str, timer->sum_of_bests);
+        ls_time_string(str, timer->sum_of_bests);
         gtk_label_set_text(GTK_LABEL(self->sum_of_bests), str);
     }
 }
 
-LASTComponentOps last_best_sum_operations =
+LSComponentOps ls_best_sum_operations =
 {
     .delete = best_sum_delete,
     .widget = best_sum_widget,

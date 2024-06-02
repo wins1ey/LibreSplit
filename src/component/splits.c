@@ -1,8 +1,8 @@
 #include "components.h"
 
-typedef struct _LASTSplits
+typedef struct _LSSplits
 {
-    LASTComponent base;
+    LSComponent base;
     int split_count;
     GtkWidget *container;
     GtkWidget *splits;
@@ -14,19 +14,19 @@ typedef struct _LASTSplits
     GtkWidget **split_titles;
     GtkWidget **split_deltas;
     GtkWidget **split_times;
-} LASTSplits;
-extern LASTComponentOps last_splits_operations;
+} LSSplits;
+extern LSComponentOps ls_splits_operations;
 
-LASTComponent *last_component_splits_new()
+LSComponent *ls_component_splits_new()
 {
-    LASTSplits *self;
+    LSSplits *self;
 
-    self = malloc(sizeof(LASTSplits));
+    self = malloc(sizeof(LSSplits));
     if (!self)
     {
         return NULL;
     }
-    self->base.ops = &last_splits_operations;
+    self->base.ops = &ls_splits_operations;
 
     self->split_adjust = gtk_adjustment_new(0., 0., 0., 0., 0., 0.);
 
@@ -56,22 +56,22 @@ LASTComponent *last_component_splits_new()
     gtk_container_add(GTK_CONTAINER(self->container), self->split_scroller);
     gtk_container_add(GTK_CONTAINER(self->container), self->split_last);
     gtk_widget_show(self->container);
-    return (LASTComponent *)self;
+    return (LSComponent *)self;
 }
 
-static void splits_delete(LASTComponent *self)
+static void splits_delete(LSComponent *self)
 {
     free(self);
 }
 
-static GtkWidget *splits_widget(LASTComponent *self)
+static GtkWidget *splits_widget(LSComponent *self)
 {
-    return ((LASTSplits *)self)->container;
+    return ((LSSplits *)self)->container;
 }
 
-static void splits_trailer(LASTComponent *self_)
+static void splits_trailer(LSComponent *self_)
 {
-    LASTSplits *self = (LASTSplits *)self_;
+    LSSplits *self = (LSSplits *)self_;
     int height, split_h, last = self->split_count - 1;
     double curr_scroll = gtk_adjustment_get_value(self->split_adjust);
     double scroll_max = gtk_adjustment_get_upper(self->split_adjust);
@@ -110,10 +110,10 @@ static void splits_trailer(LASTComponent *self_)
     g_object_unref(self->split_rows[last]);
 }
 
-static void splits_show_game(LASTComponent *self_, last_game *game,
-        last_timer *timer)
+static void splits_show_game(LSComponent *self_, ls_game *game,
+        ls_timer *timer)
 {
-    LASTSplits *self = (LASTSplits *)self_;
+    LSSplits *self = (LSSplits *)self_;
     char str[256];
     int i;
     self->split_count = game->split_count;
@@ -151,7 +151,7 @@ static void splits_show_game(LASTComponent *self_, last_game *game,
 
         if (game->split_times[i])
         {
-            last_split_string(str, game->split_times[i]);
+            ls_split_string(str, game->split_times[i]);
             gtk_label_set_text(GTK_LABEL(self->split_times[i]), str);
         }
 
@@ -185,9 +185,9 @@ static void splits_show_game(LASTComponent *self_, last_game *game,
     splits_trailer(self_);
 }
 
-static void splits_clear_game(LASTComponent *self_)
+static void splits_clear_game(LSComponent *self_)
 {
-    LASTSplits *self = (LASTSplits *)self_;
+    LSSplits *self = (LSSplits *)self_;
     int i;
     gtk_widget_hide(self->splits);
     gtk_widget_hide(self->split_last);
@@ -206,9 +206,9 @@ static void splits_clear_game(LASTComponent *self_)
 }
 
 #define SHOW_DELTA_THRESHOLD (-30 * 1000000LL)
-static void splits_draw(LASTComponent *self_, last_game *game, last_timer *timer)
+static void splits_draw(LSComponent *self_, ls_game *game, ls_timer *timer)
 {
-    LASTSplits *self = (LASTSplits *)self_;
+    LSSplits *self = (LSSplits *)self_;
     char str[256];
     int i;
     for (i = 0; i < self->split_count; ++i)
@@ -232,14 +232,14 @@ static void splits_draw(LASTComponent *self_, last_game *game, last_timer *timer
             if (timer->split_times[i])
             {
                 add_class(self->split_times[i], "time");
-                last_split_string(str, timer->split_times[i]);
+                ls_split_string(str, timer->split_times[i]);
                 gtk_label_set_text(GTK_LABEL(self->split_times[i]), str);
             }
         }
         else if (game->split_times[i])
         {
             add_class(self->split_times[i], "time");
-            last_split_string(str, game->split_times[i]);
+            ls_split_string(str, game->split_times[i]);
             gtk_label_set_text(GTK_LABEL(self->split_times[i]), str);
         }
         
@@ -252,19 +252,19 @@ static void splits_draw(LASTComponent *self_, last_game *game, last_timer *timer
         if (i < timer->curr_split
             || timer->split_deltas[i] >= SHOW_DELTA_THRESHOLD)
         {
-            if (timer->split_info[i] & LAST_INFO_BEST_SPLIT)
+            if (timer->split_info[i] & LS_INFO_BEST_SPLIT)
             {
                 add_class(self->split_deltas[i], "best-split");
             }
-            if (timer->split_info[i] & LAST_INFO_BEST_SEGMENT)
+            if (timer->split_info[i] & LS_INFO_BEST_SEGMENT)
             {
                 add_class(self->split_deltas[i], "best-segment");
             }
-            if (timer->split_info[i] & LAST_INFO_BEHIND_TIME)
+            if (timer->split_info[i] & LS_INFO_BEHIND_TIME)
             {
                 add_class(self->split_deltas[i], "behind");
                 if (timer->split_info[i]
-                    & LAST_INFO_LOSING_TIME)
+                    & LS_INFO_LOSING_TIME)
                 {
                     add_class(self->split_deltas[i], "losing");
                 }
@@ -273,7 +273,7 @@ static void splits_draw(LASTComponent *self_, last_game *game, last_timer *timer
             {
                 remove_class(self->split_deltas[i], "behind");
                 if (timer->split_info[i]
-                    & LAST_INFO_LOSING_TIME)
+                    & LS_INFO_LOSING_TIME)
                 {
                     add_class(self->split_deltas[i], "losing");
                 }
@@ -281,7 +281,7 @@ static void splits_draw(LASTComponent *self_, last_game *game, last_timer *timer
             if (timer->split_deltas[i])
             {
                 add_class(self->split_deltas[i], "delta");
-                last_delta_string(str, timer->split_deltas[i]);
+                ls_delta_string(str, timer->split_deltas[i]);
                 gtk_label_set_text(GTK_LABEL(self->split_deltas[i]), str);
             }
         }
@@ -325,9 +325,9 @@ static void splits_draw(LASTComponent *self_, last_game *game, last_timer *timer
     splits_trailer(self_);
 }
 
-static void splits_scroll_to_split(LASTComponent *self_, last_timer *timer)
+static void splits_scroll_to_split(LSComponent *self_, ls_timer *timer)
 {
-    LASTSplits *self = (LASTSplits *)self_;
+    LSSplits *self = (LSSplits *)self_;
     int split_x, split_y;
     int split_h;
     int scroller_h;
@@ -379,22 +379,22 @@ static void splits_scroll_to_split(LASTComponent *self_, last_timer *timer)
     }
 }
 
-void splits_start_split(LASTComponent *self, last_timer *timer)
+void splits_start_split(LSComponent *self, ls_timer *timer)
 {
     splits_scroll_to_split(self, timer);
 }
 
-void splits_skip(LASTComponent *self, last_timer *timer)
+void splits_skip(LSComponent *self, ls_timer *timer)
 {
     splits_scroll_to_split(self, timer);
 }
 
-void splits_unsplit(LASTComponent *self, last_timer *timer)
+void splits_unsplit(LSComponent *self, ls_timer *timer)
 {
     splits_scroll_to_split(self, timer);
 }
 
-LASTComponentOps last_splits_operations =
+LSComponentOps ls_splits_operations =
 {
     .delete = splits_delete,
     .widget = splits_widget,
