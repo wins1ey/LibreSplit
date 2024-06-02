@@ -12,7 +12,7 @@
 #include "process.h"
 
 bool memory_error;
-extern last_process process;
+extern game_process process;
 
 #define READ_MEMORY_FUNCTION(value_type) \
     value_type read_memory_##value_type(uint64_t mem_address, int32_t* err) \

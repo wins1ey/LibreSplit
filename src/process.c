@@ -11,7 +11,7 @@
 #include "process.h"
 #include "auto-splitter.h"
 
-struct last_process process;
+struct game_process process;
 #define MAPS_CACHE_MAX_SIZE 32
 ProcessMap p_maps_cache[MAPS_CACHE_MAX_SIZE];
 uint32_t p_maps_cache_size = 0;
