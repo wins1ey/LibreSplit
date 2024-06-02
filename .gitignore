@@ -1,7 +1,7 @@
 # Compiled files
-LAST
+libresplit
 obj/
-src/last-gtk.h
+src/main.h
 
 .vscode/
 .cache/

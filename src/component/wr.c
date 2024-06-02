@@ -1,26 +1,26 @@
-#include "last-component.h"
+#include "components.h"
 
-typedef struct _LASTWr
+typedef struct _LSWr
 {
-    LASTComponent base;
+    LSComponent base;
     GtkWidget *container;
     GtkWidget *world_record_label;
     GtkWidget *world_record;
-} LASTWr;
-extern LASTComponentOps last_wr_operations;
+} LSWr;
+extern LSComponentOps ls_wr_operations;
 
 #define WORLD_RECORD "World record"
 
-LASTComponent *last_component_wr_new()
+LSComponent *ls_component_wr_new()
 {
-    LASTWr *self;
+    LSWr *self;
 
-    self = malloc(sizeof(LASTWr));
+    self = malloc(sizeof(LSWr));
     if (!self)
     {
         return NULL;
     }
-    self->base.ops = &last_wr_operations;
+    self->base.ops = &ls_wr_operations;
 
     self->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     add_class(self->container, "footer"); /* hack */
@@ -36,46 +36,46 @@ LASTComponent *last_component_wr_new()
     gtk_widget_set_halign(self->world_record, GTK_ALIGN_END);
     gtk_container_add(GTK_CONTAINER(self->container), self->world_record);
 
-    return (LASTComponent *)self;
+    return (LSComponent *)self;
 }
 
-static void wr_delete(LASTComponent *self)
+static void wr_delete(LSComponent *self)
 {
     free(self);
 }
 
-static GtkWidget *wr_widget(LASTComponent *self)
+static GtkWidget *wr_widget(LSComponent *self)
 {
-    return ((LASTWr *)self)->container;
+    return ((LSWr *)self)->container;
 }
 
-static void wr_show_game(LASTComponent *self_,
-        last_game *game, last_timer *timer)
+static void wr_show_game(LSComponent *self_,
+        ls_game *game, ls_timer *timer)
 {
-    LASTWr *self = (LASTWr *)self_;
+    LSWr *self = (LSWr *)self_;
     gtk_widget_set_halign(self->world_record_label, GTK_ALIGN_START);
     gtk_widget_set_hexpand(self->world_record_label, TRUE);
     if (game->world_record)
     {
         char str[256];
-        last_time_string(str, game->world_record);
+        ls_time_string(str, game->world_record);
         gtk_label_set_text(GTK_LABEL(self->world_record), str);
         gtk_widget_show(self->world_record);
         gtk_widget_show(self->world_record_label);
     }
 }
 
-static void wr_clear_game(LASTComponent *self_)
+static void wr_clear_game(LSComponent *self_)
 {
-    LASTWr *self = (LASTWr *)self_;
+    LSWr *self = (LSWr *)self_;
     gtk_widget_hide(self->world_record_label);
     gtk_widget_hide(self->world_record);
 }
 
-static void wr_draw(LASTComponent *self_, last_game *game,
-        last_timer *timer)
+static void wr_draw(LSComponent *self_, ls_game *game,
+        ls_timer *timer)
 {
-    LASTWr *self = (LASTWr *)self_;
+    LSWr *self = (LSWr *)self_;
     char str[256];
     if (timer->curr_split == game->split_count
         && game->world_record)
@@ -84,18 +84,18 @@ static void wr_draw(LASTComponent *self_, last_game *game,
             && timer->split_times[game->split_count - 1]
             < game->world_record)
         {
-            last_time_string(str, timer->split_times[
+            ls_time_string(str, timer->split_times[
                                 game->split_count - 1]);
         }
         else
         {
-            last_time_string(str, game->world_record);
+            ls_time_string(str, game->world_record);
         }
         gtk_label_set_text(GTK_LABEL(self->world_record), str);
     }
 }
 
-LASTComponentOps last_wr_operations =
+LSComponentOps ls_wr_operations =
 {
     .delete = wr_delete,
     .widget = wr_widget,

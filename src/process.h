@@ -7,14 +7,14 @@
 
 #include <luajit.h>
 
-struct last_process
+struct game_process
 {
     const char *name;
     int pid;
     uintptr_t base_address;
     uintptr_t dll_address;
 };
-typedef struct last_process last_process;
+typedef struct game_process game_process;
 
 typedef struct ProcessMap {
     uint64_t start;

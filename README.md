@@ -1,9 +1,9 @@
-# LAST <img src="https://github.com/wins1ey/LAST/assets/34382191/e81414b0-38b5-495f-ac9f-7510edd70547" width=32> Linux Auto Splitting Timer
+# <img src="libresplit.svg" width=43 align=top> LibreSplit
 
-LAST brings auto splitting functionality to [urn](https://github.com/3snowp7im/urn) with Lua-based auto splitters that are easy to port from asl.
+LibreSplit brings auto splitting functionality to [urn](https://github.com/3snowp7im/urn) with Lua-based auto splitters that are easy to port from asl.
 
-<img src="https://github.com/wins1ey/LAST/assets/34382191/2adfdae5-9a21-4bdf-a4c4-f1d5962a0b63" width=350>
-<img src="https://github.com/wins1ey/LAST/assets/34382191/4455f57a-3d34-4fa3-9dff-2b342b6c56da" width=350>
+<img src="https://github.com/wins1ey/LibreSplit/assets/34382191/2adfdae5-9a21-4bdf-a4c4-f1d5962a0b63" width=350>
+<img src="https://github.com/wins1ey/LibreSplit/assets/34382191/4455f57a-3d34-4fa3-9dff-2b342b6c56da" width=350>
 
 ## Features
 
@@ -14,7 +14,7 @@ LAST brings auto splitting functionality to [urn](https://github.com/3snowp7im/u
 
 ## Dependencies
 
-LAST requires the following dependencies on your system to compile:
+LibreSplit requires the following dependencies on your system to compile:
 
 - `libgtk+-3.0`
 - `x11`
@@ -24,20 +24,20 @@ LAST requires the following dependencies on your system to compile:
 ## Installation
 
 ```bash
-git clone --recurse-submodules https://github.com/wins1ey/LAST
-cd LAST
+git clone https://github.com/wins1ey/LibreSplit
+cd LibreSplit
 make
 sudo make install
 ```
 or
 ```bash
-git clone --recurse-submodules https://github.com/wins1ey/LAST && cd LAST && make && sudo make install
+git clone https://github.com/wins1ey/LibreSplit && cd LibreSplit && make && sudo make install
 ```
 
 ## Getting Started
 
-1. Launch LAST by executing the compiled binary. `./LAST`
-2. When first launched, LAST will create the `LAST` directory in your config directory. Auto splitters, splits and themes go in their respective folders inside.
+1. Launch LibreSplit by executing the compiled binary. `./libresplit`
+2. When first launched, LibreSplit will create the `libresplit` directory in your config directory. Auto splitters, splits and themes go in their respective folders inside.
 3. The initial window is undecorated, but you can toggle window decorations by pressing the right Control key.
 4. Control the timer using the following key presses:
 
@@ -55,7 +55,7 @@ git clone --recurse-submodules https://github.com/wins1ey/LAST && cd LAST && mak
    | Page Up     | Unsplit       |
    | Page Down   | Skip split    |
 
-4. Customize keybindings by setting the values in `wildmouse.last` path with `gsettings`.
+4. Customize keybindings by setting the values in `com.github.wins1ey.libresplit` path with `gsettings`.
 
    | Key                        | Type    | Description                       |
    |----------------------------|---------|-----------------------------------|
@@ -76,11 +76,11 @@ Keybind strings should be parseable by
 
 ## Auto Splitters
 
-LAST supports auto splitters written in Lua to automate split timing based on in-game events. When running LAST in the terminal you will initally be greeted with an auto splitter downloader which grabs them from [here](https://github.com/Wins1ey/LuaAutoSplitters). Feel free to make your own, Documentation can be found [here](./docs/AutoSplitters.md)
+LibreSplit supports auto splitters written in Lua to automate split timing based on in-game events. Feel free to make your own, Documentation can be found [here](docs/auto-splitters.md)
 
 ## Split Files
 
-Split files in LAST are stored as well-formed JSON. The split file must contain a main object. The following keys are optional:
+Split files in LibreSplit are stored as well-formed JSON. The split file must contain a main object. The following keys are optional:
 
 | Key           | Value                                 |
 |---------------|---------------------------------------|
@@ -106,10 +106,10 @@ Times are strings in HH:MM:SS.mmmmmm format
 
 ## Themes
 
-LAST supports customizable themes, allowing you to personalize the timer's appearance. To create a theme:
+LibreSplit supports customizable themes, allowing you to personalize the timer's appearance. To create a theme:
 
 1. Create a CSS stylesheet with your desired styles.
-2. Place the stylesheet in the `~/.config/LAST/themes/<name>/<name>.css` directory. (If you have `XDG_CONFIG_HOME` env var pointing somewher else than .config it will be wherever it points to)
+2. Place the stylesheet in the `~/.config/libresplit/themes/<name>/<name>.css` directory. (If you have `XDG_CONFIG_HOME` env var pointing somewher else than .config it will be wherever it points to)
 3. Set the global theme by modifying the `theme` value in `gsettings`.
 4. Theme variants should follow the pattern `<name>-<variant>.css`.
 5. Individual splits can apply their own themes by specifying a `theme` key in the main split object.
@@ -118,7 +118,7 @@ For a list of supported CSS properties, refer to the [GtkCssProvider](https://de
 
 ## CSS Classes
 
-The following CSS classes can be used to style the elements of the LAST interface:
+The following CSS classes can be used to style the elements of the LibreSplit interface:
 
 ```css
 .window

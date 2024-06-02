@@ -3,16 +3,16 @@
 #include <string.h>
 #include <time.h>
 #include <jansson.h>
-#include "last.h"
+#include "timer.h"
 
-long long last_time_now(void)
+long long ls_time_now(void)
 {
     struct timespec timespec;
     clock_gettime(CLOCK_MONOTONIC, &timespec);
     return timespec.tv_sec * 1000000LL + timespec.tv_nsec / 1000;
 }
 
-long long last_time_value(const char *string)
+long long ls_time_value(const char *string)
 {
     char seconds_part[256];
     double subseconds_part = 0.;
@@ -50,7 +50,7 @@ long long last_time_value(const char *string)
                     + (int)(subseconds_part * 1000000.));
 }
 
-static void last_time_string_format(char *string,
+static void ls_time_string_format(char *string,
                                     char *millis,
                                     long long time,
                                     int serialized,
@@ -113,33 +113,33 @@ static void last_time_string_format(char *string,
     }
 }
 
-static void last_time_string_serialized(char *string,
+static void ls_time_string_serialized(char *string,
                                         long long time)
 {
-    last_time_string_format(string, NULL, time, 1, 0, 0);
+    ls_time_string_format(string, NULL, time, 1, 0, 0);
 }
 
-void last_time_string(char *string, long long time)
+void ls_time_string(char *string, long long time)
 {
-    last_time_string_format(string, NULL, time, 0, 0, 0);
+    ls_time_string_format(string, NULL, time, 0, 0, 0);
 }
 
-void last_time_millis_string(char *seconds, char *millis, long long time)
+void ls_time_millis_string(char *seconds, char *millis, long long time)
 {
-    last_time_string_format(seconds, millis, time, 0, 0, 0);
+    ls_time_string_format(seconds, millis, time, 0, 0, 0);
 }
 
-void last_split_string(char *string, long long time)
+void ls_split_string(char *string, long long time)
 {
-    last_time_string_format(string, NULL, time, 0, 0, 1);
+    ls_time_string_format(string, NULL, time, 0, 0, 1);
 }
 
-void last_delta_string(char *string, long long time)
+void ls_delta_string(char *string, long long time)
 {
-    last_time_string_format(string, NULL, time, 0, 1, 1);
+    ls_time_string_format(string, NULL, time, 0, 1, 1);
 }
 
-void last_game_release(last_game *game)
+void ls_game_release(ls_game *game)
 {
     int i;
     if (game->path)
@@ -187,16 +187,16 @@ void last_game_release(last_game *game)
     }
 }
 
-int last_game_create(last_game **game_ptr, const char *path)
+int ls_game_create(ls_game **game_ptr, const char *path)
 {
     int error = 0;
-    last_game *game;
+    ls_game *game;
     int i;
     json_t *json = 0;
     json_t *ref;
     json_error_t json_error;
     // allocate game
-    game = calloc(1, sizeof(last_game));
+    game = calloc(1, sizeof(ls_game));
     if (!game)
     {
         error = 1;
@@ -271,14 +271,14 @@ int last_game_create(last_game **game_ptr, const char *path)
     ref = json_object_get(json, "start_delay");
     if (ref)
     {
-        game->start_delay = last_time_value(
+        game->start_delay = ls_time_value(
             json_string_value(ref));
     }
     // get wr
     ref = json_object_get(json, "world_record");
     if (ref)
     {
-        game->world_record = last_time_value(
+        game->world_record = ls_time_value(
             json_string_value(ref));
     }
     // get splits
@@ -343,7 +343,7 @@ int last_game_create(last_game **game_ptr, const char *path)
             split_ref = json_object_get(split, "time");
             if (split_ref)
             {
-                game->split_times[i] = last_time_value(
+                game->split_times[i] = ls_time_value(
                     json_string_value(split_ref));
             }
             if (i && game->split_times[i] && game->split_times[i-1])
@@ -357,7 +357,7 @@ int last_game_create(last_game **game_ptr, const char *path)
             split_ref = json_object_get(split, "best_time");
             if (split_ref)
             {
-                game->best_splits[i] = last_time_value(
+                game->best_splits[i] = ls_time_value(
                     json_string_value(split_ref));
             }
             else if (game->split_times[i])
@@ -367,7 +367,7 @@ int last_game_create(last_game **game_ptr, const char *path)
             split_ref = json_object_get(split, "best_segment");
             if (split_ref)
             {
-                game->best_segments[i] = last_time_value(
+                game->best_segments[i] = ls_time_value(
                     json_string_value(split_ref));
             }
             else if (game->segment_times[i])
@@ -383,7 +383,7 @@ int last_game_create(last_game **game_ptr, const char *path)
     }
     else if (game)
     {
-        last_game_release(game);
+        ls_game_release(game);
     }
     if (json)
     {
@@ -392,8 +392,8 @@ int last_game_create(last_game **game_ptr, const char *path)
     return error;
 }
 
-void last_game_update_splits(last_game *game,
-                             const last_timer *timer)
+void ls_game_update_splits(ls_game *game,
+                             const ls_timer *timer)
 {
     if (timer->curr_split)
     {
@@ -425,8 +425,8 @@ void last_game_update_splits(last_game *game,
     }
 }
 
-void last_game_update_bests(last_game *game,
-                            const last_timer *timer)
+void ls_game_update_bests(ls_game *game,
+                            const ls_timer *timer)
 {
     if (timer->curr_split)
     {
@@ -437,7 +437,7 @@ void last_game_update_bests(last_game *game,
     }
 }
 
-int last_game_save(const last_game *game)
+int ls_game_save(const ls_game *game)
 {
     int error = 0;
     char str[256];
@@ -455,12 +455,12 @@ int last_game_save(const last_game *game)
     }
     if (game->world_record)
     {
-        last_time_string_serialized(str, game->world_record);
+        ls_time_string_serialized(str, game->world_record);
         json_object_set_new(json, "world_record", json_string(str));
     }
     if (game->start_delay)
     {
-        last_time_string_serialized(str, game->start_delay);
+        ls_time_string_serialized(str, game->start_delay);
         json_object_set_new(json, "start_delay", json_string(str));
     }
     for (i = 0; i < game->split_count; ++i)
@@ -468,11 +468,11 @@ int last_game_save(const last_game *game)
         json_t *split = json_object();
         json_object_set_new(split, "title",
                             json_string(game->split_titles[i]));
-        last_time_string_serialized(str, game->split_times[i]);
+        ls_time_string_serialized(str, game->split_times[i]);
         json_object_set_new(split, "time", json_string(str));
-        last_time_string_serialized(str, game->best_splits[i]);
+        ls_time_string_serialized(str, game->best_splits[i]);
         json_object_set_new(split, "best_time", json_string(str));
-        last_time_string_serialized(str, game->best_segments[i]);
+        ls_time_string_serialized(str, game->best_segments[i]);
         json_object_set_new(split, "best_segment", json_string(str));
         json_array_append_new(splits, split);
     }
@@ -503,7 +503,7 @@ int last_game_save(const last_game *game)
     return error;
 }
 
-void last_timer_release(last_timer *timer)
+void ls_timer_release(ls_timer *timer)
 {
     if (timer->split_times)
     {
@@ -535,7 +535,7 @@ void last_timer_release(last_timer *timer)
     }
 }
 
-static void reset_timer(last_timer *timer)
+static void reset_timer(ls_timer *timer)
 {
     int i;
     int size;
@@ -571,12 +571,12 @@ static void reset_timer(last_timer *timer)
     }
 }
 
-int last_timer_create(last_timer **timer_ptr, last_game *game)
+int ls_timer_create(ls_timer **timer_ptr, ls_game *game)
 {
     int error = 0;
-    last_timer *timer;
+    ls_timer *timer;
     // allocate timer
-    timer = calloc(1, sizeof(last_timer));
+    timer = calloc(1, sizeof(ls_timer));
     if (!timer)
     {
         error = 1;
@@ -642,12 +642,12 @@ int last_timer_create(last_timer **timer_ptr, last_game *game)
     }
     else if (timer)
     {
-        last_timer_release(timer);
+        ls_timer_release(timer);
     }
     return error;
 }
 
-void last_timer_step(last_timer *timer, long long now)
+void ls_timer_step(ls_timer *timer, long long now)
 {
     timer->now = now;
     if (timer->running)
@@ -667,11 +667,11 @@ void last_timer_step(last_timer *timer, long long now)
             // check for behind time
             if (timer->split_deltas[timer->curr_split] > 0)
             {
-                timer->split_info[timer->curr_split] |= LAST_INFO_BEHIND_TIME;
+                timer->split_info[timer->curr_split] |= LS_INFO_BEHIND_TIME;
             }
             else
             {
-                timer->split_info[timer->curr_split] &= ~LAST_INFO_BEHIND_TIME;
+                timer->split_info[timer->curr_split] &= ~LS_INFO_BEHIND_TIME;
             }
             if (!timer->curr_split || timer->split_times[timer->curr_split - 1])
             {
@@ -697,30 +697,30 @@ void last_timer_step(last_timer *timer, long long now)
                     > timer->split_deltas[timer->curr_split - 1])
                 {
                     timer->split_info[timer->curr_split]
-                        |= LAST_INFO_LOSING_TIME;
+                        |= LS_INFO_LOSING_TIME;
                 }
                 else
                 {
                     timer->split_info[timer->curr_split]
-                        &= ~LAST_INFO_LOSING_TIME;
+                        &= ~LS_INFO_LOSING_TIME;
                 }
             }
             else if (timer->split_deltas[timer->curr_split] > 0)
             {
                 timer->split_info[timer->curr_split]
-                    |= LAST_INFO_LOSING_TIME;
+                    |= LS_INFO_LOSING_TIME;
             }
             else
             {
                 timer->split_info[timer->curr_split]
-                    &= ~LAST_INFO_LOSING_TIME;
+                    &= ~LS_INFO_LOSING_TIME;
             }
         }
     }
     timer->start_time = now;  // Update the start time for the next iteration
 }
 
-int last_timer_start(last_timer *timer)
+int ls_timer_start(ls_timer *timer)
 {
     if (timer->curr_split < timer->game->split_count)
     {
@@ -734,7 +734,7 @@ int last_timer_start(last_timer *timer)
     return timer->running;
 }
 
-int last_timer_split(last_timer *timer)
+int ls_timer_split(ls_timer *timer)
 {
     if (timer->running && timer->time > 0)
     {
@@ -749,7 +749,7 @@ int last_timer_split(last_timer *timer)
                 timer->best_splits[timer->curr_split] =
                     timer->split_times[timer->curr_split];
                 timer->split_info[timer->curr_split]
-                    |= LAST_INFO_BEST_SPLIT;
+                    |= LS_INFO_BEST_SPLIT;
             }
             if (!timer->best_segments[timer->curr_split]
                 || timer->segment_times[timer->curr_split]
@@ -758,7 +758,7 @@ int last_timer_split(last_timer *timer)
                 timer->best_segments[timer->curr_split] =
                     timer->segment_times[timer->curr_split];
                 timer->split_info[timer->curr_split]
-                    |= LAST_INFO_BEST_SEGMENT;
+                    |= LS_INFO_BEST_SEGMENT;
             }
             // update sum of bests
             timer->sum_of_bests = 0;
@@ -782,8 +782,8 @@ int last_timer_split(last_timer *timer)
             // stop timer if last split
             if (timer->curr_split == timer->game->split_count)
             {
-                last_timer_stop(timer);
-                last_game_update_splits((last_game *)timer->game, timer);
+                ls_timer_stop(timer);
+                ls_game_update_splits((ls_game *)timer->game, timer);
             }
             return timer->curr_split;
         }
@@ -791,7 +791,7 @@ int last_timer_split(last_timer *timer)
     return 0;
 }
 
-int last_timer_skip(last_timer *timer)
+int ls_timer_skip(ls_timer *timer)
 {
     if (timer->running && timer->time > 0)
     {
@@ -808,7 +808,7 @@ int last_timer_skip(last_timer *timer)
     return 0;
 }
 
-int last_timer_unsplit(last_timer *timer)
+int ls_timer_unsplit(ls_timer *timer)
 {
     if (timer->curr_split)
     {
@@ -831,18 +831,18 @@ int last_timer_unsplit(last_timer *timer)
     return 0;
 }
 
-void last_timer_stop(last_timer *timer)
+void ls_timer_stop(ls_timer *timer)
 {
     timer->running = 0;
 }
 
-int last_timer_reset(last_timer *timer)
+int ls_timer_reset(ls_timer *timer)
 {
     if (!timer->running)
     {
         if (timer->started && timer->time <= 0)
         {
-            return last_timer_cancel(timer);
+            return ls_timer_cancel(timer);
         }
         reset_timer(timer);
         return 1;
@@ -850,7 +850,7 @@ int last_timer_reset(last_timer *timer)
     return 0;
 }
 
-int last_timer_cancel(last_timer *timer)
+int ls_timer_cancel(ls_timer *timer)
 {
     if (!timer->running)
     {
