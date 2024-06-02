@@ -285,3 +285,45 @@ end
     * A Pointer Path is a list of Offsets + a Base Address. The auto splitter reads the value at the base address and interprets the value as yet another address. It adds the first offset to this address and reads the value of the calculated address. It does this over and over until there are no more offsets. At that point, it has found the value it was searching for. This resembles the way objects are stored in memory. Every object has a clearly defined layout where each variable has a consistent offset within the object, so you basically follow these variables from object to object.
 
         * Cheat Engine is a tool that allows you to easily find Addresses and Pointer Paths for those Addresses, so you don't need to debug the game to figure out the structure of the memory.
+
+## getPID
+* Returns the current PID
+
+# Experimental stuff
+## `mapsCacheCycles`
+* When a readAddress that uses a memory map the biggest bottleneck is reading every line of `/proc/pid/maps` and checking if that line is the corresponding module. This option allows you to set for how many cycles the cache of that file should be used. The cache is global so it gets reset every x number of cycles.
+    * `0` (default): Disabled completely
+    * `1`: Enabled for the current cycle
+    * `2`: Enabled for the current cycle and the next one
+    * `3`: Enabled for the current cycle and the 2 next ones
+    * You get the idea
+  
+### Performance
+* Every uncached map finding takes around 1ms (depends a lot on your ram and cpu)
+* Every cached map finding takes around 100us
+
+* Mainly useful for lots of readAddresses and the game has uncapped game state update rate, where literally every millisecond matters
+
+### Example
+```lua
+function startup()
+    refreshRate = 60;
+    mapsCacheCycles = 1;
+end
+
+-- Assume all this readAddresses are different, 
+-- Instead of taking near 10ms it will instead take 1-2ms, because only this cycle is cached and the first readAddress is a cache miss, if the mapsCacheCycles were higher than 1 then a cycle could take less than half a millisecond
+function state()
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+end
+
+```

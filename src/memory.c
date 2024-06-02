@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/uio.h>
+#include <errno.h>
 
 #include <luajit.h>
 
@@ -14,7 +15,7 @@ bool memory_error;
 extern last_process process;
 
 #define READ_MEMORY_FUNCTION(value_type) \
-    value_type read_memory_##value_type(uint64_t mem_address) \
+    value_type read_memory_##value_type(uint64_t mem_address, int32_t* err) \
     { \
         value_type value; \
         \
@@ -29,6 +30,7 @@ extern last_process process;
         ssize_t mem_n_read = process_vm_readv(process.pid, &mem_local, 1, &mem_remote, 1, 0); \
         if (mem_n_read == -1) \
         { \
+            *err = (int32_t)errno; \
             memory_error = true; \
         } \
         else if (mem_n_read != (ssize_t)mem_remote.iov_len) \
@@ -83,6 +85,23 @@ char* read_memory_string(uint64_t mem_address, int buffer_size)
     return buffer;
 }
 
+/*
+    Prints the according error to stdout
+    True if the error was printed
+    False if the error is unknown
+*/
+bool handle_memory_error(uint32_t err) {
+    if (err == 0) return false;
+    switch (err) {
+        case EFAULT: printf("EFAULT: Invalid memory space/address\n"); break;
+        case EINVAL: printf("EINVAL: An error ocurred while reading memory\n"); break;
+        case ENOMEM: printf("ENOMEM: Please get more memory\n"); break;
+        case EPERM: printf("EPERM: Permission denied\n"); break;
+        case ESRCH: printf("ESRCH: No process with specified PID exists\n"); break;
+    }
+    return true;
+}
+
 int read_address(lua_State* L)
 {
     memory_error = false;
@@ -106,15 +125,19 @@ int read_address(lua_State* L)
         i = 4;
     }
 
+    int error = 0;
+
     for (; i <= lua_gettop(L); i++)
     {
         if (address <= UINT32_MAX)
         {
-            address = read_memory_uint32_t((uint64_t)address);
+            address = read_memory_uint32_t((uint64_t)address, &error);
+            if (memory_error) break;
         }
         else
         {
-            address = read_memory_uint64_t(address);
+            address = read_memory_uint64_t(address, &error);
+            if (memory_error) break;
         }
         address += lua_tointeger(L, i);
     }
@@ -122,62 +145,66 @@ int read_address(lua_State* L)
 
     if (strcmp(value_type, "sbyte") == 0)
     {
-        int8_t value = read_memory_int8_t(address);
+        int8_t value = read_memory_int8_t(address, &error);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "byte") == 0)
     {
-        uint8_t value = read_memory_uint8_t(address);
+        uint8_t value = read_memory_uint8_t(address, &error);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "short") == 0)
     {
-        short value = read_memory_int16_t(address);
+        short value = read_memory_int16_t(address, &error);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "ushort") == 0)
     {
-        unsigned short value = read_memory_uint16_t(address);
+        unsigned short value = read_memory_uint16_t(address, &error);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "int") == 0)
     {
-        int value = read_memory_int32_t(address);
+        int value = read_memory_int32_t(address, &error);
         lua_pushinteger(L, value);
     }
     else if (strcmp(value_type, "uint") == 0)
     {
-        unsigned int value = read_memory_uint32_t(address);
+        unsigned int value = read_memory_uint32_t(address, &error);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "long") == 0)
     {
-        long value = read_memory_int64_t(address);
+        long value = read_memory_int64_t(address, &error);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "ulong") == 0)
     {
-        unsigned long value = read_memory_uint64_t(address);
+        unsigned long value = read_memory_uint64_t(address, &error);
         lua_pushinteger(L, (int)value);
     }
     else if (strcmp(value_type, "float") == 0)
     {
-        float value = read_memory_float(address);
+        float value = read_memory_float(address, &error);
         lua_pushnumber(L, (double)value);
     }
     else if (strcmp(value_type, "double") == 0)
     {
-        double value = read_memory_double(address);
+        double value = read_memory_double(address, &error);
         lua_pushnumber(L, value);
     }
     else if (strcmp(value_type, "bool") == 0)
     {
-        bool value = read_memory_bool(address);
+        bool value = read_memory_bool(address, &error);
         lua_pushboolean(L, value ? 1 : 0);
     }
     else if (strstr(value_type, "string") != NULL)
     {
         int buffer_size = atoi(value_type + 6);
+        if (buffer_size < 2) {
+            printf("Invalid string size, please read documentation");
+            exit(1);
+        }
         char* value = read_memory_string(address, buffer_size);
         lua_pushstring(L, value != NULL ? value : "");
         free(value);
@@ -192,6 +219,7 @@ int read_address(lua_State* L)
     if (memory_error)
     {
         lua_pushinteger(L, -1);
+        handle_memory_error(error);
     }
 
     return 1;
