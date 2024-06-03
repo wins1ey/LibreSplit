@@ -1,21 +1,19 @@
 #include "components.h"
 
-typedef struct _LSTitle
-{
+typedef struct _LSTitle {
     LSComponent base;
-    GtkWidget *header;
-    GtkWidget *title;
-    GtkWidget *attempt_count;
+    GtkWidget* header;
+    GtkWidget* title;
+    GtkWidget* attempt_count;
 } LSTitle;
 extern LSComponentOps ls_title_operations; // defined at the end of the file
 
-LSComponent *ls_component_title_new()
+LSComponent* ls_component_title_new()
 {
-    LSTitle *self;
+    LSTitle* self;
 
     self = malloc(sizeof(LSTitle));
-    if (!self)
-    {
+    if (!self) {
         return NULL;
     }
     self->base.ops = &ls_title_operations;
@@ -38,25 +36,25 @@ LSComponent *ls_component_title_new()
     gtk_container_add(GTK_CONTAINER(self->header), self->attempt_count);
     gtk_widget_show(self->attempt_count);
 
-    return (LSComponent *)self;
+    return (LSComponent*)self;
 }
 
-static void title_delete(LSComponent *self)
+static void title_delete(LSComponent* self)
 {
     free(self);
 }
 
-static GtkWidget *title_widget(LSComponent *self)
+static GtkWidget* title_widget(LSComponent* self)
 {
-    return ((LSTitle *)self)->header;
+    return ((LSTitle*)self)->header;
 }
 
-static void title_resize(LSComponent *self_, int win_width, int win_height)
+static void title_resize(LSComponent* self_, int win_width, int win_height)
 {
     GdkRectangle rect;
     int attempt_count_width;
     int title_width;
-    LSTitle *self = (LSTitle *)self_;
+    LSTitle* self = (LSTitle*)self_;
 
     gtk_widget_hide(self->title);
     gtk_widget_get_allocation(self->attempt_count, &rect);
@@ -67,26 +65,25 @@ static void title_resize(LSComponent *self_, int win_width, int win_height)
     gtk_widget_set_allocation(self->title, &rect);
 }
 
-static void title_show_game(LSComponent *self_, ls_game *game,
-        ls_timer *timer)
+static void title_show_game(LSComponent* self_, ls_game* game,
+    ls_timer* timer)
 {
     char str[64];
-    LSTitle *self = (LSTitle *)self_;
+    LSTitle* self = (LSTitle*)self_;
     gtk_label_set_text(GTK_LABEL(self->title), game->title);
     sprintf(str, "#%d", game->attempt_count);
     gtk_label_set_text(GTK_LABEL(self->attempt_count), str);
 }
 
-static void title_draw(LSComponent *self_, ls_game *game, ls_timer *timer)
+static void title_draw(LSComponent* self_, ls_game* game, ls_timer* timer)
 {
     char str[64];
-    LSTitle *self = (LSTitle *)self_;
+    LSTitle* self = (LSTitle*)self_;
     sprintf(str, "#%d", game->attempt_count);
     gtk_label_set_text(GTK_LABEL(self->attempt_count), str);
 }
 
-LSComponentOps ls_title_operations =
-{
+LSComponentOps ls_title_operations = {
     .delete = title_delete,
     .widget = title_widget,
     .resize = title_resize,

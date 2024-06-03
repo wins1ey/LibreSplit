@@ -1,15 +1,15 @@
 #include <linux/limits.h>
+#include <signal.h>
 #include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
 
 #include <luajit.h>
 
-#include "process.h"
 #include "auto-splitter.h"
+#include "process.h"
 
 struct game_process process;
 #define MAPS_CACHE_MAX_SIZE 32
@@ -20,14 +20,12 @@ void execute_command(const char* command, char* output)
 {
     char buffer[4096];
     FILE* pipe = popen(command, "r");
-    if (!pipe)
-    {
+    if (!pipe) {
         fprintf(stderr, "Error executing command: %s\n", command);
         exit(1);
     }
 
-    while (fgets(buffer, 128, pipe) != NULL)
-    {
+    while (fgets(buffer, 128, pipe) != NULL) {
         strcat(output, buffer);
     }
 
@@ -53,7 +51,7 @@ uintptr_t find_base_address(const char* module)
 
     snprintf(path, sizeof(path), "/proc/%d/maps", process.pid);
 
-    FILE *f = fopen(path, "r");
+    FILE* f = fopen(path, "r");
 
     if (f) {
         char current_line[PATH_MAX + 100];
@@ -66,7 +64,7 @@ uintptr_t find_base_address(const char* module)
                 ProcessMap map;
                 if (parseMapsLine(current_line, &map)) {
                     p_maps_cache[p_maps_cache_size] = map;
-                    p_maps_cache_size++;                
+                    p_maps_cache_size++;
                 }
             }
             return addr_start;
@@ -82,15 +80,13 @@ void stock_process_id(const char* pid_command)
     char pid_output[PATH_MAX + 100];
     pid_output[0] = '\0';
 
-    while (atomic_load(&auto_splitter_enabled))
-    {
+    while (atomic_load(&auto_splitter_enabled)) {
         execute_command(pid_command, pid_output);
         process.pid = strtoul(pid_output, NULL, 10);
         printf("\033[2J\033[1;1H"); // Clear the console
         if (process.pid) {
             size_t newlinePos = strcspn(pid_output, "\n");
-            if (newlinePos != strlen(pid_output) - 1 && pid_output[0] != '\0')
-            {
+            if (newlinePos != strlen(pid_output) - 1 && pid_output[0] != '\0') {
                 printf("Multiple PID's found for process: %s\n", process.name);
             }
             break;
@@ -118,7 +114,8 @@ int find_process_id(lua_State* L)
     return 0;
 }
 
-int getPid(lua_State* L) {
+int getPid(lua_State* L)
+{
     lua_pushinteger(L, process.pid);
     return 1;
 }
@@ -129,16 +126,17 @@ int process_exists()
     return result == 0;
 }
 
-bool parseMapsLine(char* line,ProcessMap *map) {
+bool parseMapsLine(char* line, ProcessMap* map)
+{
     size_t end;
-	char mode[8];
-	unsigned long offset;
-	unsigned int major_id, minor_id, node_id;
+    char mode[8];
+    unsigned long offset;
+    unsigned int major_id, minor_id, node_id;
 
     // Thank you kernel source code
     int sscanf_res = sscanf(line, "%lx-%lx %7s %lx %u:%u %u %s", &map->start,
-					&end, mode, &offset, &major_id,
-					&minor_id, &node_id, map->name);
+        &end, mode, &offset, &major_id,
+        &minor_id, &node_id, map->name);
     if (!sscanf_res)
         return false;
 
