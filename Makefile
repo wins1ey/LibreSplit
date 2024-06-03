@@ -71,4 +71,7 @@ remove-schema:
 clean:
 	$(RM) -r $(BIN) $(OBJ_DIR) $(SRC_DIR)/main.h
 
+format:
+	clang-format -i $(SOURCES) $(COMPONENTS) $(SRC_DIR)/*.h $(SRC_DIR)/component/*.h
+
 .PHONY: all main.h install uninstall remove-schema clean

@@ -1,23 +1,21 @@
 #include "components.h"
 
-typedef struct _LSPb
-{
+typedef struct _LSPb {
     LSComponent base;
-    GtkWidget *container;
-    GtkWidget *personal_best;
+    GtkWidget* container;
+    GtkWidget* personal_best;
 } LSPb;
 extern LSComponentOps ls_pb_operations;
 
 #define PERSONAL_BEST "Personal best"
 
-LSComponent *ls_component_pb_new()
+LSComponent* ls_component_pb_new()
 {
-    LSPb *self;
-    GtkWidget *label;
+    LSPb* self;
+    GtkWidget* label;
 
     self = malloc(sizeof(LSPb));
-    if (!self)
-    {
+    if (!self) {
         return NULL;
     }
     self->base.ops = &ls_pb_operations;
@@ -39,46 +37,43 @@ LSComponent *ls_component_pb_new()
     gtk_container_add(GTK_CONTAINER(self->container), self->personal_best);
     gtk_widget_show(self->personal_best);
 
-    return (LSComponent *)self;
+    return (LSComponent*)self;
 }
 
-static void pb_delete(LSComponent *self)
+static void pb_delete(LSComponent* self)
 {
     free(self);
 }
 
-static GtkWidget *pb_widget(LSComponent *self)
+static GtkWidget* pb_widget(LSComponent* self)
 {
-    return ((LSPb *)self)->container;
+    return ((LSPb*)self)->container;
 }
 
-static void pb_show_game(LSComponent *self_,
-        ls_game *game, ls_timer *timer)
+static void pb_show_game(LSComponent* self_,
+    ls_game* game, ls_timer* timer)
 {
-    LSPb *self = (LSPb *)self_;
+    LSPb* self = (LSPb*)self_;
     char str[256];
-    if (game->split_count && game->split_times[game->split_count - 1])
-    {
-        if (game->split_times[game->split_count - 1])
-        {
+    if (game->split_count && game->split_times[game->split_count - 1]) {
+        if (game->split_times[game->split_count - 1]) {
             ls_time_string(
                 str, game->split_times[game->split_count - 1]);
             gtk_label_set_text(GTK_LABEL(self->personal_best), str);
         }
     }
-
 }
 
-static void pb_clear_game(LSComponent *self_)
+static void pb_clear_game(LSComponent* self_)
 {
-    LSPb *self = (LSPb *)self_;
+    LSPb* self = (LSPb*)self_;
     gtk_label_set_text(GTK_LABEL(self->personal_best), "");
 }
 
-static void pb_draw(LSComponent *self_, ls_game *game,
-        ls_timer *timer)
+static void pb_draw(LSComponent* self_, ls_game* game,
+    ls_timer* timer)
 {
-    LSPb *self = (LSPb *)self_;
+    LSPb* self = (LSPb*)self_;
     char str[256];
     remove_class(self->personal_best, "time");
     gtk_label_set_text(GTK_LABEL(self->personal_best), "-");
@@ -86,15 +81,12 @@ static void pb_draw(LSComponent *self_, ls_game *game,
         && timer->split_times[game->split_count - 1]
         && (!game->split_times[game->split_count - 1]
             || (timer->split_times[game->split_count - 1]
-                < game->split_times[game->split_count - 1])))
-    {
+                < game->split_times[game->split_count - 1]))) {
         add_class(self->personal_best, "time");
         ls_time_string(
             str, timer->split_times[game->split_count - 1]);
         gtk_label_set_text(GTK_LABEL(self->personal_best), str);
-    }
-    else if (game->split_times[game->split_count - 1])
-    {
+    } else if (game->split_times[game->split_count - 1]) {
         add_class(self->personal_best, "time");
         ls_time_string(
             str, game->split_times[game->split_count - 1]);
@@ -102,8 +94,7 @@ static void pb_draw(LSComponent *self_, ls_game *game,
     }
 }
 
-LSComponentOps ls_pb_operations =
-{
+LSComponentOps ls_pb_operations = {
     .delete = pb_delete,
     .widget = pb_widget,
     .show_game = pb_show_game,

@@ -1,22 +1,20 @@
 #include "components.h"
 
-typedef struct _LSTimer
-{
+typedef struct _LSTimer {
     LSComponent base;
-    GtkWidget *time;
-    GtkWidget *time_seconds;
-    GtkWidget *time_millis;
+    GtkWidget* time;
+    GtkWidget* time_seconds;
+    GtkWidget* time_millis;
 } LSTimer;
 extern LSComponentOps ls_timer_operations;
 
-LSComponent *ls_component_timer_new()
+LSComponent* ls_component_timer_new()
 {
-    LSTimer *self;
-    GtkWidget *spacer;
+    LSTimer* self;
+    GtkWidget* spacer;
 
     self = malloc(sizeof(LSTimer));
-    if (!self)
-    {
+    if (!self) {
         return NULL;
     }
     self->base.ops = &ls_timer_operations;
@@ -48,40 +46,37 @@ LSComponent *ls_component_timer_new()
     gtk_container_add(GTK_CONTAINER(spacer), self->time_millis);
     gtk_widget_show(self->time_millis);
 
-
-    return (LSComponent *)self;
+    return (LSComponent*)self;
 }
 
 // Avoid collision with timer_delete of time.h
-static void ls_timer_delete(LSComponent *self)
+static void ls_timer_delete(LSComponent* self)
 {
     free(self);
 }
 
-static GtkWidget *timer_widget(LSComponent *self)
+static GtkWidget* timer_widget(LSComponent* self)
 {
-    return ((LSTimer *)self)->time;
+    return ((LSTimer*)self)->time;
 }
 
-static void timer_clear_game(LSComponent *self_)
+static void timer_clear_game(LSComponent* self_)
 {
-    LSTimer *self = (LSTimer *)self_;
+    LSTimer* self = (LSTimer*)self_;
     gtk_label_set_text(GTK_LABEL(self->time_seconds), "");
     gtk_label_set_text(GTK_LABEL(self->time_millis), "");
     remove_class(self->time, "behind");
     remove_class(self->time, "losing");
-
 }
 
-static void timer_draw(LSComponent *self_, ls_game *game, ls_timer *timer)
+static void timer_draw(LSComponent* self_, ls_game* game, ls_timer* timer)
 {
-    LSTimer *self = (LSTimer *)self_;
+    LSTimer* self = (LSTimer*)self_;
     char str[256], millis[256];
     int curr;
 
     curr = timer->curr_split;
-    if (curr == game->split_count)
-    {
+    if (curr == game->split_count) {
         --curr;
     }
 
@@ -90,32 +85,23 @@ static void timer_draw(LSComponent *self_, ls_game *game, ls_timer *timer)
     remove_class(self->time, "losing");
     remove_class(self->time, "best-split");
 
-    if (curr == game->split_count)
-    {
+    if (curr == game->split_count) {
         curr = game->split_count - 1;
     }
-    if (timer->time <= 0)
-    {
+    if (timer->time <= 0) {
         add_class(self->time, "delay");
-    }
-    else
-    {
+    } else {
         if (timer->curr_split == game->split_count
             && timer->split_info[curr]
-               & LS_INFO_BEST_SPLIT)
-        {
+                & LS_INFO_BEST_SPLIT) {
             add_class(self->time, "best-split");
-        }
-        else
-        {
+        } else {
             if (timer->split_info[curr]
-                & LS_INFO_BEHIND_TIME)
-            {
+                & LS_INFO_BEHIND_TIME) {
                 add_class(self->time, "behind");
             }
             if (timer->split_info[curr]
-                & LS_INFO_LOSING_TIME)
-            {
+                & LS_INFO_LOSING_TIME) {
                 add_class(self->time, "losing");
             }
         }
@@ -126,8 +112,7 @@ static void timer_draw(LSComponent *self_, ls_game *game, ls_timer *timer)
     gtk_label_set_text(GTK_LABEL(self->time_millis), millis);
 }
 
-LSComponentOps ls_timer_operations =
-{
+LSComponentOps ls_timer_operations = {
     .delete = ls_timer_delete,
     .widget = timer_widget,
     .clear_game = timer_clear_game,
