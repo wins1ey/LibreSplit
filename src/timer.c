@@ -154,7 +154,7 @@ void ls_game_release(ls_game* game)
     }
 }
 
-int ls_game_create(ls_game** game_ptr, const char* path)
+int ls_game_create(ls_game** game_ptr, const char* path, char** error_msg)
 {
     int error = 0;
     ls_game* game;
@@ -178,6 +178,7 @@ int ls_game_create(ls_game** game_ptr, const char* path)
     json = json_load_file(game->path, 0, &json_error);
     if (!json) {
         error = 1;
+        *error_msg = strdup(json_error.text);
         goto game_create_done;
     }
     // copy title

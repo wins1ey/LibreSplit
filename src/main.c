@@ -664,6 +664,9 @@ static LSAppWindow* ls_app_window_new(LSApp* app)
 
 static void ls_app_window_open(LSAppWindow* win, const char* file)
 {
+	char* error_msg = NULL;
+	GtkWidget* error_popup;
+	
     if (win->timer) {
         ls_app_window_clear_game(win);
         ls_timer_release(win->timer);
@@ -673,8 +676,22 @@ static void ls_app_window_open(LSAppWindow* win, const char* file)
         ls_game_release(win->game);
         win->game = 0;
     }
-    if (ls_game_create(&win->game, file)) {
+    if (ls_game_create(&win->game, file, &error_msg)) {
         win->game = 0;
+        if (error_msg) {
+			error_popup = gtk_message_dialog_new(
+				GTK_WINDOW(win),
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_INFO,
+				GTK_BUTTONS_OK,
+				"JSON parse error: %s",
+				error_msg
+			);
+			gtk_dialog_run(GTK_DIALOG(error_popup));
+			
+        	free(error_msg);
+        	gtk_widget_destroy(error_popup);
+        }
     } else if (ls_timer_create(&win->timer, win->game)) {
         win->timer = 0;
     } else {
