@@ -195,45 +195,51 @@ bool call_va(lua_State* L, const char* func, const char* sig, ...)
 
     /* retrieve results */
     nres = -nres; /* stack index of first result */
-    while (*sig) { /* get results */
-        switch (*sig++) {
-            case 'd': /* double result */
-                if (!lua_isnumber(L, nres)) {
-                    printf("function '%s' wrong result type, expected double\n", func);
-                    return false;
-                }
-                *va_arg(vl, double*) = lua_tonumber(L, nres);
-                break;
+    /* check if there's a return value */
+    if (!lua_isnil(L, nres)) {
+        while (*sig) { /* get results */
+            switch (*sig++) {
+                case 'd': /* double result */
+                    if (!lua_isnumber(L, nres)) {
+                        printf("function '%s' wrong result type, expected double\n", func);
+                        return false;
+                    }
+                    *va_arg(vl, double*) = lua_tonumber(L, nres);
+                    break;
 
-            case 'i': /* int result */
-                if (!lua_isnumber(L, nres)) {
-                    printf("function '%s' wrong result type, expected int\n", func);
-                    return false;
-                }
-                *va_arg(vl, int*) = (int)lua_tonumber(L, nres);
-                break;
+                case 'i': /* int result */
+                    if (!lua_isnumber(L, nres)) {
+                        printf("function '%s' wrong result type, expected int\n", func);
+                        return false;
+                    }
+                    *va_arg(vl, int*) = (int)lua_tonumber(L, nres);
+                    break;
 
-            case 's': /* string result */
-                if (!lua_isstring(L, nres)) {
-                    printf("function '%s' wrong result type, expected string\n", func);
-                    return false;
-                }
-                *va_arg(vl, const char**) = lua_tostring(L, nres);
-                break;
+                case 's': /* string result */
+                    if (!lua_isstring(L, nres)) {
+                        printf("function '%s' wrong result type, expected string\n", func);
+                        return false;
+                    }
+                    *va_arg(vl, const char**) = lua_tostring(L, nres);
+                    break;
 
-            case 'b':
-                if (!lua_isboolean(L, nres)) {
-                    printf("function '%s' wrong result type, expected boolean\n", func);
-                    return false;
-                }
-                *va_arg(vl, bool*) = lua_toboolean(L, nres);
-                break;
+                case 'b':
+                    if (!lua_isboolean(L, nres)) {
+                        printf("function '%s' wrong result type, expected boolean\n", func);
+                        return false;
+                    }
+                    *va_arg(vl, bool*) = lua_toboolean(L, nres);
+                    break;
 
-            default:
-                printf("invalid option (%c)\n", *(sig - 1));
-                return false;
+                default:
+                    printf("invalid option (%c)\n", *(sig - 1));
+                    return false;
+            }
+            nres++;
         }
-        nres++;
+    } else {
+        va_end(vl);
+        return false;
     }
     va_end(vl);
     return true;
