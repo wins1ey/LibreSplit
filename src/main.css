@@ -2,7 +2,7 @@
 	background: #222;
 	padding: 0;
 	margin: 0;
-	font: Roboto, Droid Sans, Open Sans, Ubuntu, Cantarell, Arial, FreeSans, Liberation Sans;
+	font-family: Roboto, Droid Sans, Open Sans, Ubuntu, Cantarell, Arial, FreeSans, Liberation Sans;
 }
 .header {
 	background: linear-gradient(#555,#222);
