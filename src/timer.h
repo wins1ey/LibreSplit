@@ -59,7 +59,7 @@ void ls_split_string(char* string, long long time);
 
 void ls_delta_string(char* string, long long time);
 
-int ls_game_create(ls_game** game_ptr, const char* path);
+int ls_game_create(ls_game** game_ptr, const char* path, char** error_msg);
 
 void ls_game_update_splits(ls_game* game, const ls_timer* timer);
 

@@ -154,7 +154,7 @@ void ls_game_release(ls_game* game)
     }
 }
 
-int ls_game_create(ls_game** game_ptr, const char* path)
+int ls_game_create(ls_game** game_ptr, const char* path, char** error_msg)
 {
     int error = 0;
     ls_game* game;
@@ -178,6 +178,9 @@ int ls_game_create(ls_game** game_ptr, const char* path)
     json = json_load_file(game->path, 0, &json_error);
     if (!json) {
         error = 1;
+        size_t msg_len = snprintf(NULL, 0, "%s (%d:%d)", json_error.text, json_error.line, json_error.column);
+        *error_msg = calloc(msg_len + 1, sizeof(char));
+        sprintf(*error_msg, "%s (%d:%d)", json_error.text, json_error.line, json_error.column);
         goto game_create_done;
     }
     // copy title
