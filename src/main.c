@@ -1003,7 +1003,7 @@ static void ls_app_open(GApplication* app,
 
 LSApp* ls_app_new(void)
 {
-    g_set_application_name("LS");
+    g_set_application_name("LibreSplit");
     return g_object_new(LS_APP_TYPE,
         "application-id", "com.github.wins1ey.libresplit",
         "flags", G_APPLICATION_HANDLES_OPEN,
