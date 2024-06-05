@@ -248,8 +248,7 @@ bool call_va(lua_State* L, const char* func, const char* sig, ...)
 
 void startup(lua_State* L)
 {
-    lua_getglobal(L, "startup");
-    lua_pcall(L, 0, 0, 0);
+    call_va(L, "startup", "");
 
     lua_getglobal(L, "refreshRate");
     if (lua_isnumber(L, -1)) {
@@ -265,11 +264,6 @@ void startup(lua_State* L)
     lua_pop(L, 1); // Remove 'mapsCacheCycles' from the stack
 }
 
-void state(lua_State* L)
-{
-    call_va(L, "state", "");
-}
-
 bool update(lua_State* L)
 {
     bool ret;
@@ -281,33 +275,39 @@ bool update(lua_State* L)
     return true;
 }
 
-void start(lua_State* L)
+bool start(lua_State* L)
 {
     bool ret;
     if (call_va(L, "start", ">b", &ret) && ret) {
         atomic_store(&call_start, true);
         printf("start: true\n");
+        lua_pop(L, 1);
+        return true;
     }
     lua_pop(L, 1); // Remove the return value from the stack
+    return false;
 }
 
-void split(lua_State* L)
+bool split(lua_State* L)
 {
     bool ret;
     if (call_va(L, "split", ">b", &ret) && ret) {
         atomic_store(&call_split, true);
         printf("split: true\n");
+        lua_pop(L, 1);
+        return true;
     }
     lua_pop(L, 1); // Remove the return value from the stack
+    return false;
 }
 
 void is_loading(lua_State* L)
 {
-    bool loading;
-    if (call_va(L, "isLoading", ">b", &loading)) {
-        if (loading != prev_is_loading) {
+    bool ret;
+    if (call_va(L, "isLoading", ">b", &ret)) {
+        if (ret != prev_is_loading) {
             atomic_store(&toggle_loading, true);
-            printf("isLoading: %s\n", loading ? "true" : "false");
+            printf("isLoading: %s\n", ret ? "true" : "false");
             prev_is_loading = !prev_is_loading;
         }
     }
@@ -316,8 +316,8 @@ void is_loading(lua_State* L)
 
 bool reset(lua_State* L)
 {
-    bool should_reset;
-    if (call_va(L, "reset", ">b", &should_reset) && should_reset) {
+    bool ret;
+    if (call_va(L, "reset", ">b", &ret) && ret) {
         atomic_store(&call_reset, true);
         printf("reset: true\n");
         lua_pop(L, 1);
@@ -339,13 +339,16 @@ void run_auto_splitter_cycle(
     lua_State* L,
     bool state_exists,
     bool start_exists,
+    bool on_start_exists,
     bool split_exists,
+    bool on_split_exists,
     bool is_loading_exists,
     bool reset_exists,
+    bool on_reset_exists,
     bool update_exists)
 {
     if (state_exists) {
-        state(L);
+        call_va(L, "state", "");
     }
 
     if (update_exists && !update(L)) {
@@ -357,14 +360,18 @@ void run_auto_splitter_cycle(
     }
 
     if (!atomic_load(&timer_started)) {
-        if (start_exists) {
-            start(L);
-        }
-    } else {
-        if (!reset_exists || !reset(L)) {
-            if (split_exists) {
-                split(L);
+        if (start_exists && start(L)) {
+            if (on_start_exists) {
+                call_va(L, "onStart", "");
             }
+        }
+    } else if (reset_exists && reset(L)) {
+        if (on_reset_exists) {
+            call_va(L, "onReset", "");
+        }
+    } else if (split_exists && split(L)) {
+        if (on_split_exists) {
+            call_va(L, "onSplit", "");
         }
     }
 }
@@ -408,10 +415,13 @@ void run_auto_splitter()
 
     bool state_exists = lua_function_exists(L, "state");
     bool start_exists = lua_function_exists(L, "start");
+    bool on_start_exists = lua_function_exists(L, "onStart");
     bool split_exists = lua_function_exists(L, "split");
+    bool on_split_exists = lua_function_exists(L, "onSplit");
     bool is_loading_exists = lua_function_exists(L, "isLoading");
     bool startup_exists = lua_function_exists(L, "startup");
     bool reset_exists = lua_function_exists(L, "reset");
+    bool on_reset_exists = lua_function_exists(L, "onReset");
     bool update_exists = lua_function_exists(L, "update");
 
     if (startup_exists) {
@@ -429,7 +439,17 @@ void run_auto_splitter()
             break;
         }
 
-        run_auto_splitter_cycle(L, state_exists, start_exists, split_exists, is_loading_exists, reset_exists, update_exists);
+        run_auto_splitter_cycle(
+            L,
+            state_exists,
+            start_exists,
+            on_start_exists,
+            split_exists,
+            on_split_exists,
+            is_loading_exists,
+            reset_exists,
+            on_reset_exists,
+            update_exists);
 
         // Clear the memory maps cache if needed
         maps_cache_cycles_value--;
