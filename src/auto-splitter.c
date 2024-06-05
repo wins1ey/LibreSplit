@@ -262,6 +262,16 @@ void startup(lua_State* L)
         maps_cache_cycles_value = maps_cache_cycles;
     }
     lua_pop(L, 1); // Remove 'mapsCacheCycles' from the stack
+
+    lua_getglobal(L, "process");
+    if (lua_isstring(L, -1)) {
+        process.name = lua_tostring(L, -1);
+        lua_pop(L, 1);
+        if (process.name != NULL) {
+            find_process_id(L);
+        }
+    }
+    lua_pop(L, 1); // Remove 'process' from the stack
 }
 
 bool update(lua_State* L)
@@ -381,8 +391,6 @@ void run_auto_splitter()
     lua_State* L = luaL_newstate();
     luaL_openlibs(L);
     disable_functions(L, disabled_functions);
-    lua_pushcfunction(L, find_process_id);
-    lua_setglobal(L, "process");
     lua_pushcfunction(L, read_address);
     lua_setglobal(L, "readAddress");
     lua_pushcfunction(L, getPid);
@@ -423,6 +431,7 @@ void run_auto_splitter()
     bool reset_exists = lua_function_exists(L, "reset");
     bool on_reset_exists = lua_function_exists(L, "onReset");
     bool update_exists = lua_function_exists(L, "update");
+    bool init_exists = lua_function_exists(L, "init");
 
     if (startup_exists) {
         startup(L);
@@ -435,8 +444,13 @@ void run_auto_splitter()
         struct timespec clock_start;
         clock_gettime(CLOCK_MONOTONIC, &clock_start);
 
-        if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0 || !process_exists() || process.pid == 0) {
+        if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0) {
             break;
+        } else if (!process_exists() || process.pid == 0) {
+            find_process_id(L);
+            if (init_exists) {
+                call_va(L, "init", "");
+            }
         }
 
         run_auto_splitter_cycle(

@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include <luajit.h>
+#include <lualib.h>
 
 #include "auto-splitter.h"
 #include "process.h"
@@ -104,7 +105,6 @@ void stock_process_id(const char* pid_command)
 
 int find_process_id(lua_State* L)
 {
-    process.name = lua_tostring(L, 1);
     char command[256];
     printf("\033[2J\033[1;1H"); // Clear the console
     snprintf(command, sizeof(command), "pgrep \"%.*s\"", (int)strnlen(process.name, 15), process.name);

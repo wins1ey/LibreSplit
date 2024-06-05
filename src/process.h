@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <luajit.h>
+#include <lualib.h>
 
 struct game_process {
     const char* name;
