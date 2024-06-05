@@ -76,7 +76,7 @@ uintptr_t find_base_address(const char* module)
     return 0;
 }
 
-void stock_process_id(const char* pid_command)
+int stock_process_id(const char* pid_command)
 {
     char pid_output[PATH_MAX + 100];
     pid_output[0] = '\0';
@@ -84,7 +84,6 @@ void stock_process_id(const char* pid_command)
     while (atomic_load(&auto_splitter_enabled)) {
         execute_command(pid_command, pid_output);
         process.pid = strtoul(pid_output, NULL, 10);
-        printf("\033[2J\033[1;1H"); // Clear the console
         if (process.pid) {
             size_t newlinePos = strcspn(pid_output, "\n");
             if (newlinePos != strlen(pid_output) - 1 && pid_output[0] != '\0') {
@@ -92,26 +91,29 @@ void stock_process_id(const char* pid_command)
             }
             break;
         } else {
-            printf("%s isn't running.\n", process.name);
+            printf("%s isn't running.\r", process.name);
+            fflush(stdout);
             usleep(100000); // Sleep for 100ms
         }
     }
 
-    printf("Process: %s\n", process.name);
-    printf("PID: %u\n", process.pid);
-    process.base_address = find_base_address(NULL);
-    process.dll_address = process.base_address;
+    if (process.pid) {
+        printf("\r\033[KProcess: %s\n", process.name);
+        printf("PID: %u\n", process.pid);
+        process.base_address = find_base_address(NULL);
+        process.dll_address = process.base_address;
+        return 1;
+    }
+    printf("\nCouldn't find process: %s\n", process.name);
+    return 0;
 }
 
 int find_process_id(lua_State* L)
 {
     char command[256];
-    printf("\033[2J\033[1;1H"); // Clear the console
     snprintf(command, sizeof(command), "pgrep \"%.*s\"", (int)strnlen(process.name, 15), process.name);
 
-    stock_process_id(command);
-
-    return 0;
+    return stock_process_id(command);
 }
 
 int getPid(lua_State* L)

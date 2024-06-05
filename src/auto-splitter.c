@@ -444,13 +444,10 @@ void run_auto_splitter()
         struct timespec clock_start;
         clock_gettime(CLOCK_MONOTONIC, &clock_start);
 
-        if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0) {
+        if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0 || (!process_exists() && !find_process_id(L))) {
             break;
-        } else if (!process_exists() || process.pid == 0) {
-            find_process_id(L);
-            if (init_exists) {
-                call_va(L, "init", "");
-            }
+        } else if (init_exists) {
+            call_va(L, "init", "");
         }
 
         run_auto_splitter_cycle(
