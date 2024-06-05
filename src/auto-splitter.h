@@ -4,6 +4,7 @@
 #include <linux/limits.h>
 #include <stdatomic.h>
 
+extern atomic_bool timer_started;
 extern atomic_bool auto_splitter_enabled;
 extern atomic_bool call_start;
 extern atomic_bool call_split;

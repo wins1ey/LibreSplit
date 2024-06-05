@@ -21,6 +21,7 @@ char auto_splitter_file[PATH_MAX];
 int refresh_rate = 60;
 int maps_cache_cycles = 0; // 0=off, 1=current cycle, +1=multiple cycles
 int maps_cache_cycles_value = 0; // same as `maps_cache_cycles` but this one represents the current value rather than the reference from the script
+atomic_bool timer_started = false;
 atomic_bool auto_splitter_enabled = true;
 atomic_bool call_start = false;
 atomic_bool call_split = false;
@@ -411,13 +412,13 @@ void run_auto_splitter()
         }
 
         if (!update_exists || update(L)) {
+            if (!atomic_load(&timer_started) && start_exists) {
+                start(L);
+            }
             if (is_loading_exists) {
                 is_loading(L);
             }
-            if (start_exists) {
-                start(L);
-            }
-            if (!reset_exists || !reset(L)) {
+            if (atomic_load(&timer_started) && (!reset_exists || !reset(L))) {
                 if (split_exists) {
                     split(L);
                 }
