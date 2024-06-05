@@ -389,6 +389,23 @@ void run_auto_splitter_cycle(
 void run_auto_splitter()
 {
     lua_State* L = luaL_newstate();
+
+    // Load the Lua file
+    if (luaL_loadfile(L, auto_splitter_file) != LUA_OK) {
+        fprintf(stderr, "Lua syntax error: %s\n", lua_tostring(L, -1));
+        lua_close(L);
+        atomic_store(&auto_splitter_enabled, false);
+        return;
+    }
+
+    // Execute the Lua file
+    if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
+        fprintf(stderr, "Lua runtime error: %s\n", lua_tostring(L, -1));
+        lua_close(L);
+        atomic_store(&auto_splitter_enabled, false);
+        return;
+    }
+
     luaL_openlibs(L);
     disable_functions(L, disabled_functions);
     lua_pushcfunction(L, read_address);
@@ -398,28 +415,6 @@ void run_auto_splitter()
 
     char current_file[PATH_MAX];
     strcpy(current_file, auto_splitter_file);
-
-    // Load the Lua file
-    if (luaL_loadfile(L, auto_splitter_file) != LUA_OK) {
-        // Error loading the file
-        const char* error_msg = lua_tostring(L, -1);
-        lua_pop(L, 1); // Remove the error message from the stack
-        fprintf(stderr, "Lua syntax error: %s\n", error_msg);
-        lua_close(L);
-        atomic_store(&auto_splitter_enabled, false);
-        return;
-    }
-
-    // Execute the Lua file
-    if (lua_pcall(L, 0, LUA_MULTRET, 0) != LUA_OK) {
-        // Error executing the file
-        const char* error_msg = lua_tostring(L, -1);
-        lua_pop(L, 1); // Remove the error message from the stack
-        fprintf(stderr, "Lua runtime error: %s\n", error_msg);
-        lua_close(L);
-        atomic_store(&auto_splitter_enabled, false);
-        return;
-    }
 
     bool state_exists = lua_function_exists(L, "state");
     bool start_exists = lua_function_exists(L, "start");
