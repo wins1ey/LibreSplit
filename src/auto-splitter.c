@@ -269,16 +269,23 @@ void state(lua_State* L)
     call_va(L, "state", "");
 }
 
-void update(lua_State* L)
+bool update(lua_State* L)
 {
-    call_va(L, "update", "");
+    bool ret;
+    if (call_va(L, "update", ">b", &ret)) {
+        lua_pop(L, 1);
+        return ret;
+    }
+    lua_pop(L, 1);
+    return true;
 }
 
 void start(lua_State* L)
 {
     bool ret;
-    if (call_va(L, "start", ">b", &ret)) {
-        atomic_store(&call_start, ret);
+    if (call_va(L, "start", ">b", &ret) && ret) {
+        atomic_store(&call_start, true);
+        printf("start: true\n");
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -286,8 +293,9 @@ void start(lua_State* L)
 void split(lua_State* L)
 {
     bool ret;
-    if (call_va(L, "split", ">b", &ret)) {
-        atomic_store(&call_split, ret);
+    if (call_va(L, "split", ">b", &ret) && ret) {
+        atomic_store(&call_split, true);
+        printf("split: true\n");
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -298,20 +306,24 @@ void is_loading(lua_State* L)
     if (call_va(L, "isLoading", ">b", &loading)) {
         if (loading != prev_is_loading) {
             atomic_store(&toggle_loading, true);
+            printf("isLoading: %s\n", loading ? "true" : "false");
             prev_is_loading = !prev_is_loading;
         }
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
 
-void reset(lua_State* L)
+bool reset(lua_State* L)
 {
-    bool shouldReset;
-    if (call_va(L, "reset", ">b", &shouldReset)) {
-        if (shouldReset)
-            atomic_store(&call_reset, true);
+    bool should_reset;
+    if (call_va(L, "reset", ">b", &should_reset) && should_reset) {
+        atomic_store(&call_reset, true);
+        printf("reset: true\n");
+        lua_pop(L, 1);
+        return true;
     }
-    lua_pop(L, 1); // Remove the return value from the stack
+    lua_pop(L, 1);
+    return false;
 }
 
 void run_auto_splitter()
@@ -398,24 +410,18 @@ void run_auto_splitter()
             state(L);
         }
 
-        if (update_exists) {
-            update(L);
-        }
-
-        if (start_exists) {
-            start(L);
-        }
-
-        if (split_exists) {
-            split(L);
-        }
-
-        if (is_loading_exists) {
-            is_loading(L);
-        }
-
-        if (reset_exists) {
-            reset(L);
+        if (!update_exists || update(L)) {
+            if (is_loading_exists) {
+                is_loading(L);
+            }
+            if (start_exists) {
+                start(L);
+            }
+            if (!reset_exists || !reset(L)) {
+                if (split_exists) {
+                    split(L);
+                }
+            }
         }
 
         // Clear the memory maps cache if needed
