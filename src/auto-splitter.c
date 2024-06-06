@@ -441,6 +441,8 @@ void run_auto_splitter()
     disable_functions(L, disabled_functions);
     lua_pushcfunction(L, getPid);
     lua_setglobal(L, "getPID");
+    lua_newtable(L);
+    lua_setglobal(L, "vars");
 
     char current_file[PATH_MAX];
     strcpy(current_file, auto_splitter_file);
