@@ -246,7 +246,7 @@ bool call_va(lua_State* L, const char* func, const char* sig, ...)
     return true;
 }
 
-void startup(lua_State* L)
+bool startup(lua_State* L)
 {
     call_va(L, "startup", "");
 
@@ -266,12 +266,13 @@ void startup(lua_State* L)
     lua_getglobal(L, "process");
     if (lua_isstring(L, -1)) {
         process.name = lua_tostring(L, -1);
-        lua_pop(L, 1);
-        if (process.name != NULL) {
-            find_process_id(L);
+        if (process.name != NULL && find_process_id(L)) {
+            lua_pop(L, 1);
+            return true;
         }
     }
     lua_pop(L, 1); // Remove 'process' from the stack
+    return false;
 }
 
 bool update(lua_State* L)
@@ -428,8 +429,10 @@ void run_auto_splitter()
     bool update_exists = lua_function_exists(L, "update");
     bool init_exists = lua_function_exists(L, "init");
 
-    if (startup_exists) {
-        startup(L);
+    if (startup_exists && startup(L)) {
+        if (init_exists) {
+            call_va(L, "init", "");
+        }
     }
 
     printf("Refresh rate: %d\n", refresh_rate);
@@ -439,10 +442,10 @@ void run_auto_splitter()
         struct timespec clock_start;
         clock_gettime(CLOCK_MONOTONIC, &clock_start);
 
-        if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0 || (!process_exists() && !find_process_id(L))) {
-            break;
-        } else if (init_exists) {
+        if (!process_exists() && find_process_id(L) && init_exists) {
             call_va(L, "init", "");
+        } else if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0) {
+            break;
         }
 
         run_auto_splitter_cycle(
