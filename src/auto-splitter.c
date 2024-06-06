@@ -275,6 +275,28 @@ bool startup(lua_State* L)
     return false;
 }
 
+bool state(lua_State* L)
+{
+    lua_newtable(L);
+    lua_setglobal(L, "memory");
+    call_va(L, "state", "");
+    lua_getglobal(L, "process");
+    if (lua_isstring(L, -1)) {
+        process.name = lua_tostring(L, -1);
+        if (process.name != NULL && find_process_id(L)) {
+            lua_pop(L, 1);
+            lua_newtable(L);
+            lua_setglobal(L, "old");
+            lua_newtable(L);
+            lua_setglobal(L, "current");
+            store_memory_tables(L);
+            return true;
+        }
+    }
+    lua_pop(L, 1); // Remove 'process' from the stack
+    return false;
+}
+
 bool update(lua_State* L)
 {
     bool ret;
@@ -358,12 +380,12 @@ void run_auto_splitter_cycle(
     bool on_reset_exists,
     bool update_exists)
 {
-    if (state_exists) {
-        call_va(L, "state", "");
-    }
-
     if (update_exists && !update(L)) {
         return;
+    }
+
+    if (state_exists) {
+        read_address(L);
     }
 
     if (is_loading_exists) {
@@ -384,6 +406,14 @@ void run_auto_splitter_cycle(
         if (on_split_exists) {
             call_va(L, "onSplit", "");
         }
+    }
+
+    // Clear the memory maps cache if needed
+    maps_cache_cycles_value--;
+    if (maps_cache_cycles_value < 1) {
+        p_maps_cache_size = 0; // We dont need to "empty" the list as the elements after index 0 are considered invalid
+        maps_cache_cycles_value = maps_cache_cycles;
+        // printf("Cleared maps cache\n");
     }
 }
 
@@ -409,8 +439,6 @@ void run_auto_splitter()
 
     luaL_openlibs(L);
     disable_functions(L, disabled_functions);
-    lua_pushcfunction(L, read_address);
-    lua_setglobal(L, "readAddress");
     lua_pushcfunction(L, getPid);
     lua_setglobal(L, "getPID");
 
@@ -438,6 +466,10 @@ void run_auto_splitter()
     printf("Refresh rate: %d\n", refresh_rate);
     int rate = 1000000 / refresh_rate;
 
+    if (state_exists && !state(L)) {
+        state_exists = false;
+    }
+
     while (1) {
         struct timespec clock_start;
         clock_gettime(CLOCK_MONOTONIC, &clock_start);
@@ -459,14 +491,6 @@ void run_auto_splitter()
             reset_exists,
             on_reset_exists,
             update_exists);
-
-        // Clear the memory maps cache if needed
-        maps_cache_cycles_value--;
-        if (maps_cache_cycles_value < 1) {
-            p_maps_cache_size = 0; // We dont need to "empty" the list as the elements after index 0 are considered invalid
-            maps_cache_cycles_value = maps_cache_cycles;
-            // printf("Cleared maps cache\n");
-        }
 
         struct timespec clock_end;
         clock_gettime(CLOCK_MONOTONIC, &clock_end);
