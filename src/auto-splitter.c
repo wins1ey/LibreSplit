@@ -246,7 +246,26 @@ bool call_va(lua_State* L, const char* func, const char* sig, ...)
     return true;
 }
 
-bool startup(lua_State* L)
+int get_process_names(lua_State* L, char process_names[100][256], int* num_process_names)
+{
+    lua_getglobal(L, "state");
+    if (lua_istable(L, -1)) {
+        lua_pushnil(L);
+        while (lua_next(L, -2) != 0) {
+            if (lua_istable(L, -1)) {
+                const char* process_name = lua_tostring(L, -2);
+
+                strncpy(process_names[*num_process_names], process_name, 255);
+                process_names[*num_process_names][255] = '\0';
+                (*num_process_names)++;
+            }
+            lua_pop(L, 1);
+        }
+    }
+    return *num_process_names;
+}
+
+void startup(lua_State* L)
 {
     call_va(L, "startup", "");
 
@@ -262,39 +281,6 @@ bool startup(lua_State* L)
         maps_cache_cycles_value = maps_cache_cycles;
     }
     lua_pop(L, 1); // Remove 'mapsCacheCycles' from the stack
-
-    lua_getglobal(L, "process");
-    if (lua_isstring(L, -1)) {
-        process.name = lua_tostring(L, -1);
-        if (process.name != NULL && find_process_id(L)) {
-            lua_pop(L, 1);
-            return true;
-        }
-    }
-    lua_pop(L, 1); // Remove 'process' from the stack
-    return false;
-}
-
-bool state(lua_State* L)
-{
-    lua_newtable(L);
-    lua_setglobal(L, "memory");
-    call_va(L, "state", "");
-    lua_getglobal(L, "process");
-    if (lua_isstring(L, -1)) {
-        process.name = lua_tostring(L, -1);
-        if (process.name != NULL && find_process_id(L)) {
-            lua_pop(L, 1);
-            lua_newtable(L);
-            lua_setglobal(L, "old");
-            lua_newtable(L);
-            lua_setglobal(L, "current");
-            store_memory_tables(L);
-            return true;
-        }
-    }
-    lua_pop(L, 1); // Remove 'process' from the stack
-    return false;
 }
 
 bool update(lua_State* L)
@@ -360,6 +346,15 @@ bool reset(lua_State* L)
     return false;
 }
 
+const char* version(lua_State* L)
+{
+    lua_getglobal(L, "version");
+    if (lua_isstring(L, -1)) {
+        return lua_tostring(L, -1);
+    }
+    return NULL;
+}
+
 bool lua_function_exists(lua_State* L, const char* func_name)
 {
     lua_getglobal(L, func_name);
@@ -370,7 +365,7 @@ bool lua_function_exists(lua_State* L, const char* func_name)
 
 void run_auto_splitter_cycle(
     lua_State* L,
-    bool state_exists,
+    bool memory_map_exists,
     bool start_exists,
     bool on_start_exists,
     bool split_exists,
@@ -380,13 +375,11 @@ void run_auto_splitter_cycle(
     bool on_reset_exists,
     bool update_exists)
 {
-    if (update_exists && !update(L)) {
+    if ((update_exists && !update(L)) || !memory_map_exists) {
         return;
     }
 
-    if (state_exists) {
-        read_address(L);
-    }
+    read_address(L);
 
     if (is_loading_exists) {
         is_loading(L);
@@ -447,7 +440,6 @@ void run_auto_splitter()
     char current_file[PATH_MAX];
     strcpy(current_file, auto_splitter_file);
 
-    bool state_exists = lua_function_exists(L, "state");
     bool start_exists = lua_function_exists(L, "start");
     bool on_start_exists = lua_function_exists(L, "onStart");
     bool split_exists = lua_function_exists(L, "split");
@@ -458,25 +450,40 @@ void run_auto_splitter()
     bool on_reset_exists = lua_function_exists(L, "onReset");
     bool update_exists = lua_function_exists(L, "update");
     bool init_exists = lua_function_exists(L, "init");
+    bool memory_map_exists = false;
 
-    if (startup_exists && startup(L)) {
-        if (init_exists) {
-            call_va(L, "init", "");
-        }
+    if (startup_exists) {
+        startup(L);
     }
 
     printf("Refresh rate: %d\n", refresh_rate);
     int rate = 1000000 / refresh_rate;
 
-    if (state_exists && !state(L)) {
-        state_exists = false;
+    char process_names[100][256];
+    int num_process_names = 0;
+    const char* version_str;
+    if (get_process_names(L, process_names, &num_process_names)) {
+        if (find_process_id(process_names, num_process_names)) {
+            if (init_exists) {
+                call_va(L, "init", "");
+            }
+            lua_newtable(L);
+            lua_setglobal(L, "old");
+            lua_newtable(L);
+            lua_setglobal(L, "current");
+            version_str = version(L);
+            if (version_str) {
+                printf("Version: %s\n", version_str);
+            }
+            memory_map_exists = store_memory_tables(L, version_str);
+        }
     }
 
     while (1) {
         struct timespec clock_start;
         clock_gettime(CLOCK_MONOTONIC, &clock_start);
 
-        if (!process_exists() && find_process_id(L) && init_exists) {
+        if (!process_exists() && find_process_id(process_names, num_process_names) && init_exists) {
             call_va(L, "init", "");
         } else if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0) {
             break;
@@ -484,7 +491,7 @@ void run_auto_splitter()
 
         run_auto_splitter_cycle(
             L,
-            state_exists,
+            memory_map_exists,
             start_exists,
             on_start_exists,
             split_exists,

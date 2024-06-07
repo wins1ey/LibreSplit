@@ -84,10 +84,11 @@ char* read_memory_string(uint64_t mem_address, int buffer_size, int32_t* err)
     True if the error was printed
     False if the error is unknown
 */
-bool handle_memory_error(uint32_t err)
+bool handle_memory_error(uint32_t err, const char* table_name)
 {
     if (err == 0)
         return false;
+    printf("%s\t", table_name);
     switch (err) {
         case EFAULT:
             printf("EFAULT: Invalid memory space/address\n");
@@ -202,7 +203,7 @@ void read_address(lua_State* L)
         }
 
         if (error) {
-            handle_memory_error(error);
+            handle_memory_error(error, table_name);
             continue;
         }
 
@@ -211,95 +212,89 @@ void read_address(lua_State* L)
     }
 }
 
-void store_memory_tables(lua_State* L)
+int store_memory_tables(lua_State* L, const char* version)
 {
     memory_table_count = 0;
 
-    lua_getglobal(L, "memory");
+    lua_getglobal(L, "state");
+    lua_getfield(L, -1, process.name);
 
-    if (!lua_istable(L, -1)) {
-        lua_pop(L, 1);
-        return;
+    if (version != NULL) {
+        lua_getfield(L, -1, version);
+        if (!lua_istable(L, -1)) {
+            lua_pop(L, 3); // Pop the non-tables
+            printf("Could not find version table %s for process %s\n", version, process.name);
+            return 0;
+        }
     }
 
-    // Iterate over each entry in the memory table
-    lua_pushnil(L); // Push nil to start iteration
+    lua_pushnil(L);
     while (lua_next(L, -2) != 0) {
         if (lua_istable(L, -1)) {
-            // Get the name of the memory table (key)
             const char* table_name;
             if (lua_isstring(L, -2)) {
                 table_name = lua_tostring(L, -2);
             } else {
-                // Invalid table name, skip this entry
                 lua_pop(L, 1);
                 continue;
             }
 
             MemoryTable* table = &memory_tables[memory_table_count++];
             table->name = strdup(table_name);
+            table->type = NULL;
             table->module = NULL;
-
-            if (lua_istable(L, -1)) {
-                // Type
-                lua_pushinteger(L, 1);
-                lua_gettable(L, -2);
-                const char* type = lua_tostring(L, -1);
-                lua_pop(L, 1);
-
-                // Address/Module
-                lua_pushinteger(L, 2);
-                lua_gettable(L, -2);
-                if (lua_isnumber(L, -1)) { // Address
-                    table->type = strdup(type);
-                    table->address = lua_tointeger(L, -1);
-                } else if (lua_isstring(L, -1)) { // Module
-                    table->module = strdup(lua_tostring(L, -1));
-
-                    // Check if there's an address following the module
-                    lua_pushinteger(L, 3);
-                    lua_gettable(L, -3);
-                    if (lua_isnumber(L, -1)) {
-                        table->type = strdup(type);
-                        table->address = lua_tointeger(L, -1);
-                    } else {
-                        table->type = NULL;
-                        table->address = 0;
-                    }
-                    lua_pop(L, 1); // address/module value
-                } else {
-                    // Invalid address/module
-                    free(table->name);
-                    memory_table_count--;
-                    lua_pop(L, 1);
-                    continue;
-                }
-                lua_pop(L, 1); // address/module value
-            } else {
-                // Invalid memory table
-                free(table->name);
-                memory_table_count--;
-                lua_pop(L, 1);
-                continue;
-            }
-
-            // Offsets
+            table->address = 0;
             table->offset_count = 0;
-            int i = 3;
-            if (table->module) {
-                i = 4;
-            }
-            for (; i <= MAX_OFFSETS + 2; i++) {
-                lua_pushinteger(L, i);
-                lua_gettable(L, -2);
-                if (!lua_isnil(L, -1)) {
-                    table->offsets[table->offset_count++] = lua_tointeger(L, -1);
+
+            lua_pushnil(L);
+            while (lua_next(L, -2) != 0) {
+                if (lua_istable(L, -1)) {
+                    printf("No version defined in auto splitter\n");
+                    return 0;
                 }
-                lua_pop(L, 1); // offset value
+                if (lua_isnumber(L, -2)) {
+                    int key = lua_tointeger(L, -2);
+                    if (key == 1) { // Type
+                        table->type = strdup(lua_tostring(L, -1));
+                    } else if (key == 2) { // Module or Address
+                        if (lua_isnumber(L, -1)) { // Address
+                            table->address = lua_tointeger(L, -1);
+                        } else if (lua_isstring(L, -1)) { // Module
+                            table->module = strdup(lua_tostring(L, -1));
+                        }
+                    } else if (key == 3 && table->module != NULL) { // Address when module exists
+                        if (lua_isnumber(L, -1)) {
+                            table->address = lua_tointeger(L, -1);
+                        }
+                    } else if ((key > 2 && key <= MAX_OFFSETS + 2 && table->module == NULL) || (key > 3 && key <= MAX_OFFSETS + 3 && table->module != NULL)) { // Offsets
+                        if (lua_isnumber(L, -1)) {
+                            table->offsets[table->offset_count++] = lua_tointeger(L, -1);
+                        }
+                    }
+                }
+                lua_pop(L, 1);
             }
         }
         lua_pop(L, 1);
     }
 
-    lua_pop(L, 1);
+    if (version != NULL) {
+        lua_pop(L, 3); // version, process, and state tables
+    } else {
+        lua_pop(L, 2); // process and state tables
+    }
+
+    for (int i = 0; i < memory_table_count; i++) {
+        MemoryTable* table = &memory_tables[i];
+        printf("Name: %s, ", table->name);
+        printf("Type: %s, ", table->type);
+        printf("Module: %s, ", table->module);
+        printf("Address: %ld, ", table->address);
+        printf("Offsets: ");
+        for (int j = 0; j < table->offset_count; j++) {
+            printf("%d ", table->offsets[j]);
+        }
+        printf("\n");
+    }
+    return memory_table_count;
 }

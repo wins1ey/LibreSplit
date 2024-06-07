@@ -19,7 +19,7 @@ typedef struct {
 } MemoryTable;
 
 ssize_t process_vm_readv(int pid, struct iovec* mem_local, int liovcnt, struct iovec* mem_remote, int riovcnt, int flags);
-void store_memory_tables(lua_State* L);
+int store_memory_tables(lua_State* L, const char* version);
 void read_address(lua_State* L);
 
 #endif /* __MEMORY_H__ */
