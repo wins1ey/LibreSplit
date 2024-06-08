@@ -294,13 +294,16 @@ int store_memory_tables(lua_State* L, const char* version)
 
     for (int i = 0; i < memory_table_count; i++) {
         MemoryTable* table = &memory_tables[i];
-        printf("Name: %s, ", table->name);
-        printf("Type: %s, ", table->type);
-        printf("Module: %s, ", table->module);
-        printf("Address: %ld, ", table->address);
-        printf("Offsets: ");
-        for (int j = 0; j < table->offset_count; j++) {
-            printf("%d ", table->offsets[j]);
+        printf("%s ", table->name);
+        printf("%s ", table->type);
+        if (table->module) {
+            printf("%s ", table->module);
+        }
+        printf("0x%lX ", table->address);
+        if (table->offset_count) {
+            for (int i = 0; i < table->offset_count; i++) {
+                printf("0x%X ", table->offsets[i]);
+            }
         }
         printf("\n");
     }
