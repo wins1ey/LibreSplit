@@ -230,7 +230,20 @@ int store_memory_tables(lua_State* L, const char* version)
 
     lua_pushnil(L);
     while (lua_next(L, -2) != 0) {
+        int has_nested_table = 0;
         if (lua_istable(L, -1)) {
+            lua_pushnil(L);
+            while (lua_next(L, -2) != 0) {
+                if (lua_istable(L, -1)) {
+                    has_nested_table = 1;
+                    lua_pop(L, 2); // Nested table and its key
+                    break;
+                }
+                lua_pop(L, 1);
+            }
+        }
+
+        if (!has_nested_table) {
             const char* table_name;
             if (lua_isstring(L, -2)) {
                 table_name = lua_tostring(L, -2);
@@ -238,7 +251,6 @@ int store_memory_tables(lua_State* L, const char* version)
                 lua_pop(L, 1);
                 continue;
             }
-
             MemoryTable* table = &memory_tables[memory_table_count++];
             table->name = strdup(table_name);
             table->type = NULL;
@@ -248,10 +260,6 @@ int store_memory_tables(lua_State* L, const char* version)
 
             lua_pushnil(L);
             while (lua_next(L, -2) != 0) {
-                if (lua_istable(L, -1)) {
-                    printf("No version defined in auto splitter\n");
-                    return 0;
-                }
                 if (lua_isnumber(L, -2)) {
                     int key = lua_tointeger(L, -2);
                     if (key == 1) { // Type
