@@ -262,6 +262,7 @@ int get_process_names(lua_State* L, char process_names[100][256], int* num_proce
             lua_pop(L, 1);
         }
     }
+    lua_pop(L, 1);
     return *num_process_names;
 }
 
@@ -350,8 +351,11 @@ const char* version(lua_State* L)
 {
     lua_getglobal(L, "version");
     if (lua_isstring(L, -1)) {
-        return lua_tostring(L, -1);
+        const char* version = lua_tostring(L, -1);
+        lua_pop(L, 1);
+        return version;
     }
+    lua_pop(L, 1);
     return NULL;
 }
 
