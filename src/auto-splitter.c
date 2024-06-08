@@ -248,7 +248,7 @@ bool call_va(lua_State* L, const char* func, const char* sig, ...)
 
 int get_process_names(lua_State* L, char process_names[100][256], int* num_process_names)
 {
-    lua_getglobal(L, "state");
+    lua_getglobal(L, "State");
     if (lua_istable(L, -1)) {
         lua_pushnil(L);
         while (lua_next(L, -2) != 0) {
@@ -268,15 +268,15 @@ int get_process_names(lua_State* L, char process_names[100][256], int* num_proce
 
 void startup(lua_State* L)
 {
-    call_va(L, "startup", "");
+    call_va(L, "Startup", "");
 
-    lua_getglobal(L, "refreshRate");
+    lua_getglobal(L, "RefreshRate");
     if (lua_isnumber(L, -1)) {
         refresh_rate = lua_tointeger(L, -1);
     }
     lua_pop(L, 1); // Remove 'refreshRate' from the stack
 
-    lua_getglobal(L, "mapsCacheCycles");
+    lua_getglobal(L, "MapsCacheCycles");
     if (lua_isnumber(L, -1)) {
         maps_cache_cycles = lua_tointeger(L, -1);
         maps_cache_cycles_value = maps_cache_cycles;
@@ -287,7 +287,7 @@ void startup(lua_State* L)
 bool update(lua_State* L)
 {
     bool ret;
-    if (call_va(L, "update", ">b", &ret)) {
+    if (call_va(L, "Update", ">b", &ret)) {
         lua_pop(L, 1);
         return ret;
     }
@@ -298,9 +298,9 @@ bool update(lua_State* L)
 bool start(lua_State* L)
 {
     bool ret;
-    if (call_va(L, "start", ">b", &ret) && ret) {
+    if (call_va(L, "Start", ">b", &ret) && ret) {
         atomic_store(&call_start, true);
-        printf("start: true\n");
+        printf("Start: true\n");
         lua_pop(L, 1);
         return true;
     }
@@ -311,9 +311,9 @@ bool start(lua_State* L)
 bool split(lua_State* L)
 {
     bool ret;
-    if (call_va(L, "split", ">b", &ret) && ret) {
+    if (call_va(L, "Split", ">b", &ret) && ret) {
         atomic_store(&call_split, true);
-        printf("split: true\n");
+        printf("Split: true\n");
         lua_pop(L, 1);
         return true;
     }
@@ -324,10 +324,10 @@ bool split(lua_State* L)
 void is_loading(lua_State* L)
 {
     bool ret;
-    if (call_va(L, "isLoading", ">b", &ret)) {
+    if (call_va(L, "IsLoading", ">b", &ret)) {
         if (ret != prev_is_loading) {
             atomic_store(&toggle_loading, true);
-            printf("isLoading: %s\n", ret ? "true" : "false");
+            printf("IsLoading: %s\n", ret ? "true" : "false");
             prev_is_loading = !prev_is_loading;
         }
     }
@@ -337,9 +337,9 @@ void is_loading(lua_State* L)
 bool reset(lua_State* L)
 {
     bool ret;
-    if (call_va(L, "reset", ">b", &ret) && ret) {
+    if (call_va(L, "Reset", ">b", &ret) && ret) {
         atomic_store(&call_reset, true);
-        printf("reset: true\n");
+        printf("Reset: true\n");
         lua_pop(L, 1);
         return true;
     }
@@ -349,10 +349,11 @@ bool reset(lua_State* L)
 
 const char* version(lua_State* L)
 {
-    lua_getglobal(L, "version");
+    lua_getglobal(L, "Version");
     if (lua_isstring(L, -1)) {
         const char* version = lua_tostring(L, -1);
         lua_pop(L, 1);
+        printf("Version: %s\n", version);
         return version;
     }
     lua_pop(L, 1);
@@ -392,16 +393,16 @@ void run_auto_splitter_cycle(
     if (!atomic_load(&timer_started)) {
         if (start_exists && start(L)) {
             if (on_start_exists) {
-                call_va(L, "onStart", "");
+                call_va(L, "OnStart", "");
             }
         }
     } else if (reset_exists && reset(L)) {
         if (on_reset_exists) {
-            call_va(L, "onReset", "");
+            call_va(L, "OnReset", "");
         }
     } else if (split_exists && split(L)) {
         if (on_split_exists) {
-            call_va(L, "onSplit", "");
+            call_va(L, "OnSplit", "");
         }
     }
 
@@ -444,16 +445,16 @@ void run_auto_splitter()
     char current_file[PATH_MAX];
     strcpy(current_file, auto_splitter_file);
 
-    bool start_exists = lua_function_exists(L, "start");
-    bool on_start_exists = lua_function_exists(L, "onStart");
-    bool split_exists = lua_function_exists(L, "split");
-    bool on_split_exists = lua_function_exists(L, "onSplit");
-    bool is_loading_exists = lua_function_exists(L, "isLoading");
-    bool startup_exists = lua_function_exists(L, "startup");
-    bool reset_exists = lua_function_exists(L, "reset");
-    bool on_reset_exists = lua_function_exists(L, "onReset");
-    bool update_exists = lua_function_exists(L, "update");
-    bool init_exists = lua_function_exists(L, "init");
+    bool start_exists = lua_function_exists(L, "Start");
+    bool on_start_exists = lua_function_exists(L, "OnStart");
+    bool split_exists = lua_function_exists(L, "Split");
+    bool on_split_exists = lua_function_exists(L, "OnSplit");
+    bool is_loading_exists = lua_function_exists(L, "IsLoading");
+    bool startup_exists = lua_function_exists(L, "Startup");
+    bool reset_exists = lua_function_exists(L, "Reset");
+    bool on_reset_exists = lua_function_exists(L, "OnReset");
+    bool update_exists = lua_function_exists(L, "Update");
+    bool init_exists = lua_function_exists(L, "Init");
     bool memory_map_exists = false;
 
     if (startup_exists) {
@@ -469,16 +470,13 @@ void run_auto_splitter()
     if (get_process_names(L, process_names, &num_process_names)) {
         if (find_process_id(process_names, num_process_names)) {
             if (init_exists) {
-                call_va(L, "init", "");
+                call_va(L, "Init", "");
             }
             lua_newtable(L);
             lua_setglobal(L, "old");
             lua_newtable(L);
             lua_setglobal(L, "current");
             version_str = version(L);
-            if (version_str) {
-                printf("Version: %s\n", version_str);
-            }
             memory_map_exists = store_memory_tables(L, version_str);
         }
     }
@@ -488,7 +486,7 @@ void run_auto_splitter()
         clock_gettime(CLOCK_MONOTONIC, &clock_start);
 
         if (!process_exists() && find_process_id(process_names, num_process_names) && init_exists) {
-            call_va(L, "init", "");
+            call_va(L, "Init", "");
         } else if (!atomic_load(&auto_splitter_enabled) || strcmp(current_file, auto_splitter_file) != 0) {
             break;
         }

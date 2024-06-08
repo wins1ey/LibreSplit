@@ -216,7 +216,7 @@ int store_memory_tables(lua_State* L, const char* version)
 {
     memory_table_count = 0;
 
-    lua_getglobal(L, "state");
+    lua_getglobal(L, "State");
     lua_getfield(L, -1, process.name);
 
     if (version != NULL) {
