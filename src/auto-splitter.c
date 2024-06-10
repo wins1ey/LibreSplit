@@ -24,9 +24,12 @@ int maps_cache_cycles_value = 0; // same as `maps_cache_cycles` but this one rep
 atomic_bool timer_started = false;
 atomic_bool auto_splitter_enabled = true;
 atomic_bool call_start = false;
+atomic_bool call_on_start = false;
 atomic_bool call_split = false;
+atomic_bool call_on_split = false;
 atomic_bool toggle_loading = false;
 atomic_bool call_reset = false;
+atomic_bool call_on_reset = false;
 bool prev_is_loading;
 
 static const char* disabled_functions[] = {
@@ -391,19 +394,28 @@ void run_auto_splitter_cycle(
     }
 
     if (!atomic_load(&timer_started)) {
-        if (start_exists && start(L)) {
-            if (on_start_exists) {
-                call_va(L, "OnStart", "");
-            }
+        if (start_exists) {
+            start(L);
         }
-    } else if (reset_exists && reset(L)) {
-        if (on_reset_exists) {
-            call_va(L, "OnReset", "");
-        }
-    } else if (split_exists && split(L)) {
-        if (on_split_exists) {
-            call_va(L, "OnSplit", "");
-        }
+    } else if (reset_exists) {
+        reset(L);
+    } else if (split_exists) {
+        split(L);
+    }
+
+    if (on_start_exists && atomic_load(&call_on_start)) {
+        call_va(L, "OnStart", "");
+        atomic_store(&call_on_start, false);
+    }
+
+    if (on_split_exists && atomic_load(&call_on_split)) {
+        call_va(L, "OnSplit", "");
+        atomic_store(&call_on_split, false);
+    }
+
+    if (on_reset_exists && atomic_load(&call_on_reset)) {
+        call_va(L, "OnReset", "");
+        atomic_store(&call_on_reset, false);
     }
 
     // Clear the memory maps cache if needed
@@ -456,6 +468,9 @@ void run_auto_splitter()
     bool update_exists = lua_function_exists(L, "Update");
     bool init_exists = lua_function_exists(L, "Init");
     bool memory_map_exists = false;
+    atomic_store(&call_on_start, false);
+    atomic_store(&call_on_split, false);
+    atomic_store(&call_on_reset, false);
 
     if (startup_exists) {
         startup(L);
