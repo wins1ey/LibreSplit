@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -118,25 +119,13 @@ int find_signature(lua_State* L)
 {
     pid_t p_pid = process.pid;
     const char* signature = lua_tostring(L, 1);
-    const char* offset_str = lua_tostring(L, 2);
-
-    int offset = 0; // Default offset value
-    if (offset_str != NULL) {
-        offset = strtol(offset_str, NULL, 0);
-    }
+    int offset = lua_tointeger(L, 2); // Get the offset as an integer directly
 
     size_t pattern_length;
-
     int* pattern = convert_signature(signature, &pattern_length);
     if (!pattern) {
         lua_pushinteger(L, 0);
         return 1;
-    }
-
-    // Apply the offset to the first two bytes of the pattern
-    if (pattern_length >= 2 && pattern[0] != -1 && pattern[1] != -1) {
-        uint16_t* master_address = (uint16_t*)pattern;
-        *master_address += offset;
     }
 
     int regions_count = 0;
@@ -159,18 +148,22 @@ int find_signature(lua_State* L)
         }
 
         if (!validate_process_memory(p_pid, region.start, buffer, region_size)) {
-            printf("Failed to read memory region: %lx-%lx\n", region.start, region.end);
+            // printf("Failed to read memory region: %lx-%lx\n", region.start, region.end);
             free(buffer);
             continue; // Continue to next region
         }
 
         for (size_t j = 0; j <= region_size - pattern_length; ++j) {
             if (match_pattern(buffer + j, pattern, pattern_length)) {
-                uintptr_t result = region.start + j;
+                uintptr_t result = region.start + j + offset; // Apply the offset here
+                char hex_str[20]; // Buffer to hold the hexadecimal string representation
+                sprintf(hex_str, "%lx", result); // Convert result to hexadecimal string
+
                 free(buffer);
                 free(pattern);
                 free(regions);
-                lua_pushinteger(L, result); // Ensure this pushes the correct address
+
+                lua_pushstring(L, hex_str); // Push the hexadecimal string onto the Lua stack
                 return 1; // Return the number of values pushed onto the stack
             }
         }
