@@ -118,12 +118,25 @@ int find_signature(lua_State* L)
 {
     pid_t pid = process.pid;
     const char* signature = lua_tostring(L, 1);
+    const char* offset_str = lua_tostring(L, 2);
+
+    int offset = 0; // Default offset value
+    if (offset_str != NULL) {
+        offset = strtol(offset_str, NULL, 0);
+    }
+
     size_t pattern_length;
 
     int* pattern = convert_signature(signature, &pattern_length);
     if (!pattern) {
         lua_pushinteger(L, 0);
         return 1;
+    }
+
+    // Apply the offset to the first two bytes of the pattern
+    if (pattern_length >= 2 && pattern[0] != -1 && pattern[1] != -1) {
+        uint16_t* master_address = (uint16_t*)pattern;
+        *master_address += offset;
     }
 
     int regions_count = 0;
@@ -146,6 +159,7 @@ int find_signature(lua_State* L)
         }
 
         if (!validate_process_memory(pid, region.start, buffer, region_size)) {
+            printf("Failed to read memory region: %lx-%lx\n", region.start, region.end);
             free(buffer);
             continue; // Continue to next region
         }
