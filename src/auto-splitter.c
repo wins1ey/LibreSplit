@@ -15,8 +15,8 @@
 #include "auto-splitter.h"
 #include "memory.h"
 #include "process.h"
-#include "signature.h"
 #include "settings.h"
+#include "signature.h"
 
 char auto_splitter_file[PATH_MAX];
 int refresh_rate = 60;
@@ -324,10 +324,10 @@ void run_auto_splitter()
     lua_setglobal(L, "process");
     lua_pushcfunction(L, read_address);
     lua_setglobal(L, "readAddress");
+    lua_pushcfunction(L, find_signature);
+    lua_setglobal(L, "sig_scan");
     lua_pushcfunction(L, getPid);
     lua_setglobal(L, "getPID");
-    lua_pushcfunction(L, find_signature);
-    lua_setglobal(L, "signatureScan");
 
     char current_file[PATH_MAX];
     strcpy(current_file, auto_splitter_file);

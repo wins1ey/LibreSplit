@@ -1,17 +1,16 @@
+#include <errno.h>
+#include <fcntl.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
 #include <sys/uio.h>
-#include <stdint.h>
-#include <stdbool.h>
+#include <unistd.h>
 
-// Include your headers
-#include "signature.h"
 #include "memory.h"
 #include "process.h"
+#include "signature.h"
 
 #include <luajit.h>
 
@@ -32,10 +31,8 @@ MemoryRegion* get_memory_regions(pid_t pid, int* count)
     *count = 0;
 
     char line[256];
-    while (fgets(line, sizeof(line), maps_file))
-    {
-        if (*count >= capacity)
-        {
+    while (fgets(line, sizeof(line), maps_file)) {
+        if (*count >= capacity) {
             capacity = capacity == 0 ? 10 : capacity * 2;
             regions = (MemoryRegion*)realloc(regions, capacity * sizeof(MemoryRegion));
             if (!regions) {
@@ -60,8 +57,7 @@ MemoryRegion* get_memory_regions(pid_t pid, int* count)
 
 bool match_pattern(const uint8_t* data, const int* pattern, size_t pattern_size)
 {
-    for (size_t i = 0; i < pattern_size; ++i)
-    {
+    for (size_t i = 0; i < pattern_size; ++i) {
         if (pattern[i] != -1 && data[i] != pattern[i])
             return false;
     }
@@ -84,10 +80,8 @@ int* convert_signature(const char* signature, size_t* pattern_size)
         return NULL;
     }
 
-    while (token != NULL)
-    {
-        if (size >= capacity)
-        {
+    while (token != NULL) {
+        if (size >= capacity) {
             capacity *= 2;
             int* temp = (int*)realloc(pattern, capacity * sizeof(int));
             if (!temp) {
@@ -128,51 +122,42 @@ int find_signature(lua_State* L)
 
     int* pattern = convert_signature(signature, &pattern_length);
     if (!pattern) {
-        printf("Failed to convert signature\n");
-        return -1; // Return an error code
+        lua_pushinteger(L, 0);
+        return 1;
     }
 
     int regions_count = 0;
     MemoryRegion* regions = get_memory_regions(process.pid, &regions_count);
     if (!regions) {
-        printf("Failed to get memory regions\n");
         free(pattern);
-        return -1; // Return an error code
+        lua_pushinteger(L, 0);
+        return 1;
     }
 
-    for (int i = 0; i < regions_count; i++)
-    {
+    for (int i = 0; i < regions_count; i++) {
         MemoryRegion region = regions[i];
         ssize_t region_size = region.end - region.start;
         uint8_t* buffer = (uint8_t*)malloc(region_size);
-        if (!buffer)
-        {
-            printf("Failed to allocate memory for buffer\n");
+        if (!buffer) {
             free(pattern);
             free(regions);
-            return -1; // Return an error code
+            lua_pushinteger(L, 0);
+            return 1;
         }
 
-        if (!validate_process_memory(pid, region.start, buffer, region_size))
-        {
-            printf("Failed to read memory\n");
-            free(pattern);
-            free(regions);
+        if (!validate_process_memory(pid, region.start, buffer, region_size)) {
             free(buffer);
-            return -1; // Return an error code
+            continue; // Continue to next region
         }
-        else
-        {
-            for (size_t i = 0; i <= region_size - pattern_length; ++i)
-            {
-                if (match_pattern(buffer + i, pattern, pattern_length))
-                {
-                    uintptr_t result = region.start + i;
-                    free(pattern);
-                    free(regions);
-                    free(buffer);
-                    return result;
-                }
+
+        for (size_t j = 0; j <= region_size - pattern_length; ++j) {
+            if (match_pattern(buffer + j, pattern, pattern_length)) {
+                uintptr_t result = region.start + j;
+                free(buffer);
+                free(pattern);
+                free(regions);
+                lua_pushinteger(L, result); // Ensure this pushes the correct address
+                return 1; // Return the number of values pushed onto the stack
             }
         }
 
@@ -181,5 +166,7 @@ int find_signature(lua_State* L)
 
     free(pattern);
     free(regions);
-    return -1; // Return an error code if no match is found
+
+    lua_pushinteger(L, 0); // Push 0 if no match is found in any region
+    return 1; // Return the number of values pushed onto the stack
 }

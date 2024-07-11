@@ -1,11 +1,11 @@
 #ifndef __SIGNATURE_H__
 #define __SIGNATURE_H__
 
-#include <sys/types.h>
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
 #include <luajit.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 typedef struct {
     uintptr_t start;
