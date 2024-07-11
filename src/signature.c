@@ -116,7 +116,7 @@ bool validate_process_memory(pid_t pid, uintptr_t address, void* buffer, size_t 
 
 int find_signature(lua_State* L)
 {
-    pid_t pid = process.pid;
+    pid_t p_pid = process.pid;
     const char* signature = lua_tostring(L, 1);
     const char* offset_str = lua_tostring(L, 2);
 
@@ -140,7 +140,7 @@ int find_signature(lua_State* L)
     }
 
     int regions_count = 0;
-    MemoryRegion* regions = get_memory_regions(process.pid, &regions_count);
+    MemoryRegion* regions = get_memory_regions(p_pid, &regions_count);
     if (!regions) {
         free(pattern);
         lua_pushinteger(L, 0);
@@ -158,7 +158,7 @@ int find_signature(lua_State* L)
             return 1;
         }
 
-        if (!validate_process_memory(pid, region.start, buffer, region_size)) {
+        if (!validate_process_memory(p_pid, region.start, buffer, region_size)) {
             printf("Failed to read memory region: %lx-%lx\n", region.start, region.end);
             free(buffer);
             continue; // Continue to next region
