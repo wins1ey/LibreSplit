@@ -584,6 +584,7 @@ Returns:
 `14123ce19`
 
 * Note: Until the address is found, sig_scan returns a 0.
+* Note: Signature scanning is an expensive action. So, once an address has been found, it's recommended to reassign the sig_scan variable with the result of the sig_scan function to stop the scanning.
 
   
 
