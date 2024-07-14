@@ -1,7 +1,6 @@
+#include "signature.h"
 #include <errno.h>
 #include <fcntl.h>
-#include <stdbool.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,14 +9,12 @@
 
 #include "memory.h"
 #include "process.h"
-#include "signature.h"
 
 #include <luajit.h>
 
 extern game_process process;
 
-MemoryRegion* get_memory_regions(pid_t pid, int* count)
-{
+MemoryRegion* get_memory_regions(pid_t pid, int* count) {
     char maps_path[256];
     sprintf(maps_path, "/proc/%d/maps", pid);
     FILE* maps_file = fopen(maps_path, "r");
@@ -55,17 +52,18 @@ MemoryRegion* get_memory_regions(pid_t pid, int* count)
     return regions;
 }
 
-bool match_pattern(const uint8_t* data, const int* pattern, size_t pattern_size)
-{
+bool match_pattern(const uint8_t* data, const uint16_t* pattern, size_t pattern_size) {
     for (size_t i = 0; i < pattern_size; ++i) {
-        if (pattern[i] != -1 && data[i] != pattern[i])
+        uint8_t byte = pattern[i] & 0xFF;
+        bool ignore = (pattern[i] >> 8) & 0x1;
+        if (!ignore && data[i] != byte) {
             return false;
+        }
     }
     return true;
 }
 
-int* convert_signature(const char* signature, size_t* pattern_size)
-{
+uint16_t* convert_signature(const char* signature, size_t* pattern_size) {
     char* signature_copy = strdup(signature);
     if (!signature_copy) {
         return NULL;
@@ -74,7 +72,7 @@ int* convert_signature(const char* signature, size_t* pattern_size)
     char* token = strtok(signature_copy, " ");
     size_t size = 0;
     size_t capacity = 10;
-    int* pattern = (int*)malloc(capacity * sizeof(int));
+    uint16_t* pattern = (uint16_t*)malloc(capacity * sizeof(uint16_t));
     if (!pattern) {
         free(signature_copy);
         return NULL;
@@ -83,7 +81,7 @@ int* convert_signature(const char* signature, size_t* pattern_size)
     while (token != NULL) {
         if (size >= capacity) {
             capacity *= 2;
-            int* temp = (int*)realloc(pattern, capacity * sizeof(int));
+            uint16_t* temp = (uint16_t*)realloc(pattern, capacity * sizeof(uint16_t));
             if (!temp) {
                 free(pattern);
                 free(signature_copy);
@@ -92,10 +90,11 @@ int* convert_signature(const char* signature, size_t* pattern_size)
             pattern = temp;
         }
 
-        if (strcmp(token, "??") == 0)
-            pattern[size] = -1;
-        else
+        if (strcmp(token, "??") == 0) {
+            pattern[size] = 0xFF00; // Set the upper byte to 1 to indicate ignoring this byte
+        } else {
             pattern[size] = strtol(token, NULL, 16);
+        }
         size++;
         token = strtok(NULL, " ");
     }
@@ -105,8 +104,7 @@ int* convert_signature(const char* signature, size_t* pattern_size)
     return pattern;
 }
 
-bool validate_process_memory(pid_t pid, uintptr_t address, void* buffer, size_t size)
-{
+bool validate_process_memory(pid_t pid, uintptr_t address, void* buffer, size_t size) {
     struct iovec local_iov = { buffer, size };
     struct iovec remote_iov = { (void*)address, size };
     ssize_t nread = process_vm_readv(pid, &local_iov, 1, &remote_iov, 1, 0);
@@ -114,14 +112,13 @@ bool validate_process_memory(pid_t pid, uintptr_t address, void* buffer, size_t 
     return nread == size;
 }
 
-int find_signature(lua_State* L)
-{
+int find_signature(lua_State* L) {
     pid_t p_pid = process.pid;
     const char* signature = lua_tostring(L, 1);
     int offset = lua_tointeger(L, 2); // Get the offset as an integer directly
 
     size_t pattern_length;
-    int* pattern = convert_signature(signature, &pattern_length);
+    uint16_t* pattern = convert_signature(signature, &pattern_length);
     if (!pattern) {
         lua_pushinteger(L, 0);
         return 1;
@@ -147,7 +144,6 @@ int find_signature(lua_State* L)
         }
 
         if (!validate_process_memory(p_pid, region.start, buffer, region_size)) {
-            // printf("Failed to read memory region: %lx-%lx\n", region.start, region.end);
             free(buffer);
             continue; // Continue to next region
         }
