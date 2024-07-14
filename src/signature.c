@@ -14,7 +14,8 @@
 
 extern game_process process;
 
-MemoryRegion* get_memory_regions(pid_t pid, int* count) {
+MemoryRegion* get_memory_regions(pid_t pid, int* count)
+{
     char maps_path[256];
     sprintf(maps_path, "/proc/%d/maps", pid);
     FILE* maps_file = fopen(maps_path, "r");
@@ -52,7 +53,8 @@ MemoryRegion* get_memory_regions(pid_t pid, int* count) {
     return regions;
 }
 
-bool match_pattern(const uint8_t* data, const uint16_t* pattern, size_t pattern_size) {
+bool match_pattern(const uint8_t* data, const uint16_t* pattern, size_t pattern_size)
+{
     for (size_t i = 0; i < pattern_size; ++i) {
         uint8_t byte = pattern[i] & 0xFF;
         bool ignore = (pattern[i] >> 8) & 0x1;
@@ -63,7 +65,8 @@ bool match_pattern(const uint8_t* data, const uint16_t* pattern, size_t pattern_
     return true;
 }
 
-uint16_t* convert_signature(const char* signature, size_t* pattern_size) {
+uint16_t* convert_signature(const char* signature, size_t* pattern_size)
+{
     char* signature_copy = strdup(signature);
     if (!signature_copy) {
         return NULL;
@@ -104,7 +107,8 @@ uint16_t* convert_signature(const char* signature, size_t* pattern_size) {
     return pattern;
 }
 
-bool validate_process_memory(pid_t pid, uintptr_t address, void* buffer, size_t size) {
+bool validate_process_memory(pid_t pid, uintptr_t address, void* buffer, size_t size)
+{
     struct iovec local_iov = { buffer, size };
     struct iovec remote_iov = { (void*)address, size };
     ssize_t nread = process_vm_readv(pid, &local_iov, 1, &remote_iov, 1, 0);
@@ -112,7 +116,8 @@ bool validate_process_memory(pid_t pid, uintptr_t address, void* buffer, size_t 
     return nread == size;
 }
 
-int find_signature(lua_State* L) {
+int find_signature(lua_State* L)
+{
     pid_t p_pid = process.pid;
     const char* signature = lua_tostring(L, 1);
     int offset = lua_tointeger(L, 2); // Get the offset as an integer directly
