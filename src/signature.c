@@ -163,6 +163,8 @@ int find_signature(lua_State* L)
                 free(pattern);
                 free(regions);
 
+
+                // Even though this function returns an integer, we can return a string as Lua will automatically handle the conversion.
                 lua_pushstring(L, hex_str); // Push the hexadecimal string onto the Lua stack
                 return 1; // Return the number of values pushed onto the stack
             }
@@ -175,5 +177,5 @@ int find_signature(lua_State* L)
     free(regions);
 
     lua_pushinteger(L, 0); // Push 0 if no match is found in any region
-    return 1; // Return the number of values pushed onto the stack
+    return 1;
 }

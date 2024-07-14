@@ -287,16 +287,18 @@ end
         * Cheat Engine is a tool that allows you to easily find Addresses and Pointer Paths for those Addresses, so you don't need to debug the game to figure out the structure of the memory.
 
 ## sig_scan
-sig_scan performs a signature/pattern scan on the provided IDA-style byte array and optional integer offset and returns the found address
+sig_scan performs a signature/pattern scan on the provided IDA-style byte array and optional integer offset and returns a string representation of the found address
 
 Example:
 `signature = sig_scan("89 5C 24 ?? 89 44 24 ?? 74 ?? 48 8D 15", 4)`
 
 Returns:
-`14123ce19`
+`"14123ce19"`
 
-* Note: Until the address is found, sig_scan returns a 0.
-* Note: Signature scanning is an expensive action. So, once an address has been found, it's recommended to reassign the sig_scan variable with the result of the sig_scan function to stop the scanning.
+### Notes
+* Lua automatically handles the conversion of hexadecimal strings to numbers so parsing/casting it manually is not required.
+* Until the address is found, sig_scan returns a 0.
+* Signature scanning is an expensive action. So, once an address has been found, it's recommended to reassign the sig_scan variable with the result of the sig_scan function to stop the scanning.
 
 
 Mini example script with the game SPRAWL:
