@@ -293,10 +293,10 @@ Example:
 `signature = sig_scan("89 5C 24 ?? 89 44 24 ?? 74 ?? 48 8D 15", 4)`
 
 Returns:
-`"14123ce19"`
+`"0x14123ce19"`
 
 ### Notes
-* Lua automatically handles the conversion of hexadecimal strings to numbers so parsing/casting it manually is not required.
+* Lua automatically handles the conversion of hexadecimal strings to numbers (as long as the '0x' prefix is present) so parsing/casting it manually is not required.
 * Until the address is found, sig_scan returns a 0.
 * Signature scanning is an expensive action. So, once an address has been found, it's recommended to reassign the sig_scan variable with the result of the sig_scan function to stop the scanning.
 
