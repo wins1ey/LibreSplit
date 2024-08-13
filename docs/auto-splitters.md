@@ -11,319 +11,139 @@
         * This means you can run external functions outside of the ones LibreSplit executes.
     * Support for the entire Lua language, including the importing of libraries for tasks such as performance monitoring.
 
-# How to make LibreSplit auto splitters 
+# Documentation
 
-* It's somewhat easy if you know what you are doing or are porting an already existing one.
-
-* First in the lua script goes a `process` function call with the name of the games process:
+## `State`
+* First in the lua script goes a State table where you will define an executable(s) and their addresses:
 
 ```lua
-process('GameBlaBlaBla.exe')
+State = {
+	Quake_x64_steam = {
+		map = { "string255", "0x18DDE30" },
+		intermission = { "int", "0x9DD3AEC" },
+		menu = { "int", "0xE7AC84" },
+	},
+}
 ```
-* With this line, LibreSplit will repeatedly attempt to find this process and will not continue script execution until it is found.
+To define an executable, you create a table inside the block with the name of the executable.\
+You then define your variables and assign addresses to them. The first field is where you define the variable type.\
+You can use any of these types:
+1. `sbyte`: signed 8 bit integer
+2. `byte`: unsigned 8 bit integer
+3. `short`: signed 16 bit integer
+4. `ushort`: unsigned 16 bit integer
+5. `int`: signed 32 bit integer
+6. `uint`: unsigned 32 bit integer
+7. `long`: signed 64 bit integer
+8. `ulong`: unsigned 64 bit integer
+9. `float`: 32 bit floating point number
+10. `double`: 64 bit floating point number
+11. `bool`: Boolean (true or false)
+12. `stringX`, A string of characters. Its usage is different compared the rest, you type "stringX" where the X is how long the string can be plus 1, this is to allocate the NULL terminator which defines when the string ends, for example, if the longest possible string to return is "cheese", you would define it as "string7". Setting X lower can result in the string terminating incorrectly and getting an incorrect result, setting it higher doesnt have any difference (aside from wasting memory).\
+\
+You then define the address and its offsets (seperate each with a comma.)
+```lua
+variable = { "type", "address", "offset1", "offset2"}
+```
 
-* Next we have to define the basic functions. Not all are required and the ones that are required may change depending on the game or end goal, like if loading screens are included or not.
-    * The order at which these run is the same as they are documented below.
-
-### `startup`
+## `Startup`
  The purpose of this function is to specify how many times LibreSplit checks memory values and executes functions each second, the default is 60Hz. Usually, 60Hz is fine and this function can remain undefined. However, it's there if you need it.
 ```lua
-process('GameBlaBlaBla.exe')
-
-function startup()
-    refreshRate = 120
+function Startup()
+    RefreshRate = 120
 end
 ```
 
-### `state`
- The main purpose of this function is to assign memory values to Lua variables.
-* Runs every 1000 / `refreshRate` milliseconds and when the script is enabled/loaded.
 
+## `Update`
+ The purpose of this function is to perform whatever actions you want on each cycle.
+ This function is most commonly used for updating local variables and debugging purposes.
+* Runs every 1000 / `RefreshRate` milliseconds.
 ```lua
-process('GameBlaBlaBla.exe')
-
-local isLoading = false;
-
-function startup()
-    refreshRate = 120
-end
-
-function state()
-    isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+function Update()
+  print("Current map: " .. tostring(current.map))
 end
 ```
 
-* You may have noticed that we're assigning this `isLoading` variable with the result of the function `readAddress`. This function is part of LibreSplit's Lua context and its purpose is to read memory values. It's explained in detail at the bottom of this document.
 
-### `update`
- The purpose of this function is to update local variables.
-* Runs every 1000 / `refreshRate` milliseconds.
-```lua
-process('GameBlaBlaBla.exe')
-
-local current = {isLoading = false};
-local old = {isLoading = false};
-local loadCount = 0
-
-function startup()
-    refreshRate = 120
-end
-
-function state()
-    old.isLoading = current.isLoading;
-
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-end
-
-function update()
-    if not current.isLoading and old.isLoading then
-        loadCount = loadCount + 1;
-    end
-end
-```
-* We now have 3 variables, one represents the current state while the other the old state of isLoading, we also have loadCount getting updated in the `update` function which will store how many times we've entered the loading screen
-
-### `start`
+## `Start`
 This tells LibreSplit when to start the timer.\
 _Note: LibreSplit will ignore any start calls if the timer is running._
-* Runs every 1000 / `refreshRate` milliseconds.
+* Runs every 1000 / `RefreshRate` milliseconds.
 ```lua
-process('GameBlaBlaBla.exe')
+function Start()
+	if not current.map then
+		print("Warning: current.map is nil")
+		return false
+	end
 
-local current = {isLoading = false};
-local old = {isLoading = false};
-local loadCount = 0
-
-function startup()
-    refreshRate = 120
-end
-
-function state()
-    old.isLoading = current.isLoading;
-
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-end
-
-function update()
-    if not current.isLoading and old.isLoading then
-        loadCount = loadCount + 1;
-    end
-end
-
-function start()
-    return current.isLoading
+	local startMaps = settings.episodeRun and vars.episodeStarts or vars.fullGameStarts
+	if indexOf(startMaps, current.map) > 0 then
+		vars.lastMap = current.map
+		return true
+	end
+	return false
 end
 ```
 
-### `split`
+## `Split`
 Tells LibreSplit to execute a split whenever it gets a true return.
-    * Runs every 1000 / `refreshRate` milliseconds.
+    * Runs every 1000 / `RefreshRate` milliseconds.
 ```lua
-process('GameBlaBlaBla.exe')
-
-local current = {isLoading = false};
-local old = {isLoading = false};
-local loadCount = 0
-
-function startup()
-    refreshRate = 120
-end
-
-function state()
-    old.isLoading = current.isLoading;
-
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-end
-
-function update()
-    if not current.isLoading and old.isLoading then
-        loadCount = loadCount + 1;
+function Split()
+    if current.level_id > old.level_id then
+        return true
     end
-end
-
-function start()
-    return current.isLoading
-end
-
-function split()
-    local shouldSplit = false;
-    if current.isLoading and not old.isLoading then
-        loadCount = loadCount + 1;
-        shouldSplit = loadCount > 1;
-    end
-
-    return shouldSplit;
 end
 ```
-* Whoa lots of code, why didnt we just return if we are currently in a loading screen like in start? Because if we do, we will do multiple splits a second, the function runs multiple times and it would do lots of unwanted splits.
-* To solve that, we only want to split when we enter a loading screen (old is false, current is true), but we also don't want to split on the first loading screen as we have the assumption that the first loading screen is when the run starts. So that's where our loadCount comes in handy, we can just check if we are on the first one and only split when we aren't.
+* A common pitfall with this function is the autosplitter splitting more times than it should. The solution to this is to make it so the function only returns true for one cycle.
+* One of the best ways to do this is to compare your current variable with its old version.
 
-### `isLoading`
+## `IsLoading`
 Pauses the timer whenever true is being returned.
-* Runs every 1000 / `refreshRate` milliseconds.
+* Runs every 1000 / `RefreshRate` milliseconds.
 ```lua
-process('GameBlaBlaBla.exe')
-
-local current = {isLoading = false, scene = ""};
-local old = {isLoading = false, scene = ""};
-local loadCount = 0
-
-function startup()
-    refreshRate = 120
-end
-
-function state()
-    old.isLoading = current.isLoading;
-    old.scene = current.scene;
-
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.scene = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xBB, 0xEE, 0x55, 0xDD, 0xBA, 0x6A);
-end
-
-function update()
-    if not current.isLoading and old.isLoading then
-        loadCount = loadCount + 1;
-    end
-end
-
-function start()
-    return current.isLoading
-end
-
-function split()
-    local shouldSplit = false;
-    if current.isLoading and not old.isLoading then
-        loadCount = loadCount + 1;
-        shouldSplit = loadCount > 1;
-    end
-
-    return shouldSplit;
-end
-
-function isLoading()
+function IsLoading()
     return current.isLoading
 end
 ```
-* Pretty self explanatory, since we want to return whenever we are currently in a loading screen, we can just send our current isLoading status, same as start.
+* Pretty self explanatory, since we want to return whenever we are currently in a loading screen, we can just send our current isLoading status.
 
-# `reset`
+## `Reset`
 Instantly resets the timer. Use with caution.
 * Runs every 1000 / `refreshRate` milliseconds.
 ```lua
-process('GameBlaBlaBla.exe')
-
-local current = {isLoading = false};
-local old = {isLoading = false};
-local loadCount = 0
-local didReset = false
-
-function startup()
-    refreshRate = 120
-end
-
-function state()
-    old.isLoading = current.isLoading;
-
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-end
-
-function update()
-    if not current.isLoading and old.isLoading then
-        loadCount = loadCount + 1;
-    end
-end
-
-function start()
-    return current.isLoading
-end
-
-function split()
-    local shouldSplit = false;
-    if current.isLoading and not old.isLoading then
-        loadCount = loadCount + 1;
-        shouldSplit = loadCount > 1;
-    end
-
-    return shouldSplit;
-end
-
-function isLoading()
-    return current.isLoading
-end
-
-function reset()
-    if not old.scene == "MenuScene" and current.scene == "MenuScene" then
-        return true
-    end
-    return false
+function Reset()
+	if current.menu == 1 and (not current.map or #current.map == 0) then
+		vars.lastVisitedMaps = {}
+		return true
+	end
+	return false
 end
 ```
-* In this example we are checking for the scene, of course, the address is completely arbitrary and doesnt mean anything for this example. Specifically we are checking if we are entering the MenuScene scene.
 
-## readAddress
-* `readAddress` is the second function that LibreSplit defines for us and its globally available, its job is to read the memory value of a specified address.
-* The first value defines what kind of value we will read:
-    1. `sbyte`: signed 8 bit integer
-    2. `byte`: unsigned 8 bit integer
-    3. `short`: signed 16 bit integer
-    4. `ushort`: unsigned 16 bit integer
-    5. `int`: signed 32 bit integer
-    6. `uint`: unsigned 32 bit integer
-    7. `long`: signed 64 bit integer
-    8. `ulong`: unsigned 64 bit integer
-    9. `float`: 32 bit floating point number
-    10. `double`: 64 bit floating point number
-    11. `bool`: Boolean (true or false)
-    12. `stringX`, A string of characters. Its usage is different compared the rest, you type "stringX" where the X is how long the string can be plus 1, this is to allocate the NULL terminator which defines when the string ends, for example, if the longest possible string to return is "cheese", you would define it as "string7". Setting X lower can result in the string terminating incorrectly and getting an incorrect result, setting it higher doesnt have any difference (aside from wasting memory).
 
-* The second argument can be 2 things, a string or a number.
-    * If its a number: The value in that memory address of the main process will be used.
-    * If its a string: It will find the corresponding map of that string, for example "UnityPlayer.dll", This means that instead of reading the memory of the main map of the process (main binary .exe), it will instead read the memory of UnityPlayer.dll's memory space.
-        * Next you have to add another argument, this will be the offset at which to read from from the perspective of the base address of the module, meaning if the module is mapped to 0x1000 to 0xFFFF and you put 0x0100 in the offset, it will read the value in the address 0x1010.
-
-* The rest of arguments are memory offsets or pointer paths.
-    * A Pointer Path is a list of Offsets + a Base Address. The auto splitter reads the value at the base address and interprets the value as yet another address. It adds the first offset to this address and reads the value of the calculated address. It does this over and over until there are no more offsets. At that point, it has found the value it was searching for. This resembles the way objects are stored in memory. Every object has a clearly defined layout where each variable has a consistent offset within the object, so you basically follow these variables from object to object.
-
-        * Cheat Engine is a tool that allows you to easily find Addresses and Pointer Paths for those Addresses, so you don't need to debug the game to figure out the structure of the memory.
-
-## getPID
+## GetPID
 * Returns the current PID
 
 # Experimental stuff
-## `mapsCacheCycles`
-* When a readAddress that uses a memory map the biggest bottleneck is reading every line of `/proc/pid/maps` and checking if that line is the corresponding module. This option allows you to set for how many cycles the cache of that file should be used. The cache is global so it gets reset every x number of cycles.
+## `MapsCacheCycles`
+* The biggest bottleneck with reading memory is having to read every line of `/proc/pid/maps` and checking if that line is the corresponding module. This option allows you to set for how many cycles the cache of that file should be used. The cache is global so it gets reset every x number of cycles.
     * `0` (default): Disabled completely
     * `1`: Enabled for the current cycle
     * `2`: Enabled for the current cycle and the next one
     * `3`: Enabled for the current cycle and the 2 next ones
     * You get the idea
-  
+
 ### Performance
 * Every uncached map finding takes around 1ms (depends a lot on your ram and cpu)
 * Every cached map finding takes around 100us
 
-* Mainly useful for lots of readAddresses and the game has uncapped game state update rate, where literally every millisecond matters
-
-### Example
+* Mainly useful for autosplitters that use a lot of memory read calls and the game the autosplitter is for has an uncapped game state update rate, where literally every millisecond matters.
+* You define `MapsCacheCycles` in the startup function.
 ```lua
-function startup()
-    refreshRate = 60;
-    mapsCacheCycles = 1;
+function Startup()
+    RefreshRate = 60;
+    MapsCacheCycles = 1;
 end
-
--- Assume all this readAddresses are different, 
--- Instead of taking near 10ms it will instead take 1-2ms, because only this cycle is cached and the first readAddress is a cache miss, if the mapsCacheCycles were higher than 1 then a cycle could take less than half a millisecond
-function state()
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
-end
-
 ```
