@@ -36,7 +36,7 @@ LSComponent* ls_component_title_new()
     gtk_widget_set_valign(self->attempt_count, GTK_ALIGN_START);
     gtk_container_add(GTK_CONTAINER(self->header), self->attempt_count);
     gtk_widget_show(self->attempt_count);
-    
+
     self->finished_count = gtk_label_new(NULL);
     add_class(self->finished_count, "finished_count");
     gtk_widget_set_margin_start(self->finished_count, 8);

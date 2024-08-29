@@ -215,7 +215,7 @@ int ls_game_create(ls_game** game_ptr, const char* path, char** error_msg)
     if (ref) {
         game->attempt_count = json_integer_value(ref);
     }
-    //get finished count
+    // get finished count
     ref = json_object_get(json, "finished_count");
     if (ref) {
         game->finished_count = json_integer_value(ref);
@@ -648,7 +648,7 @@ int ls_timer_split(ls_timer* timer)
             ++timer->curr_split;
             // stop timer if last split
             if (timer->curr_split == timer->game->split_count) {
-                //Increment finished_count
+                // Increment finished_count
                 ++*timer->finished_count;
                 ls_timer_stop(timer);
                 ls_game_update_splits((ls_game*)timer->game, timer);
