@@ -1,4 +1,4 @@
-# <img src="libresplit.svg" width=43 align=top> LibreSplit
+# <img src="libresplit.svg" width=43 align=top> [LibreSplit](https://libresplit.loomeh.is-a.dev)
 
 LibreSplit brings auto splitting functionality to [urn](https://github.com/3snowp7im/urn) with Lua-based auto splitters that are easy to port from asl.
 

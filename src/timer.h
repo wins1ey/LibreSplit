@@ -12,6 +12,7 @@ struct ls_game {
     char* theme;
     char* theme_variant;
     int attempt_count;
+    int finished_count;
     int width;
     int height;
     long long world_record;
@@ -44,6 +45,7 @@ struct ls_timer {
     long long* best_segments;
     const ls_game* game;
     int* attempt_count;
+    int* finished_count;
 };
 typedef struct ls_timer ls_timer;
 
