@@ -215,6 +215,11 @@ int ls_game_create(ls_game** game_ptr, const char* path, char** error_msg)
     if (ref) {
         game->attempt_count = json_integer_value(ref);
     }
+    // get finished count
+    ref = json_object_get(json, "finished_count");
+    if (ref) {
+        game->finished_count = json_integer_value(ref);
+    }
     // get width
     ref = json_object_get(json, "width");
     if (ref) {
@@ -377,6 +382,10 @@ int ls_game_save(const ls_game* game)
         json_object_set_new(json, "attempt_count",
             json_integer(game->attempt_count));
     }
+    if (game->finished_count) {
+        json_object_set_new(json, "finished_count",
+            json_integer(game->finished_count));
+    }
     if (game->world_record) {
         ls_time_string_serialized(str, game->world_record);
         json_object_set_new(json, "world_record", json_string(str));
@@ -486,6 +495,7 @@ int ls_timer_create(ls_timer** timer_ptr, ls_game* game)
     }
     timer->game = game;
     timer->attempt_count = &game->attempt_count;
+    timer->finished_count = &game->finished_count;
     // alloc splits
     timer->split_times = calloc(timer->game->split_count,
         sizeof(long long));
@@ -638,6 +648,8 @@ int ls_timer_split(ls_timer* timer)
             ++timer->curr_split;
             // stop timer if last split
             if (timer->curr_split == timer->game->split_count) {
+                // Increment finished_count
+                ++*timer->finished_count;
                 ls_timer_stop(timer);
                 ls_game_update_splits((ls_game*)timer->game, timer);
             }
