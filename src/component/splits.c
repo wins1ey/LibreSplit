@@ -142,7 +142,7 @@ static void splits_show_game(LSComponent* self_, ls_game* game,
             self->split_times[i]);
 
         if (game->split_times[i]) {
-            ls_split_string(str, game->split_times[i]);
+            ls_split_string(str, game->split_times[i], 0);
             gtk_label_set_text(GTK_LABEL(self->split_times[i]), str);
         }
 
@@ -210,12 +210,12 @@ static void splits_draw(LSComponent* self_, ls_game* game, ls_timer* timer)
             add_class(self->split_times[i], "done");
             if (timer->split_times[i]) {
                 add_class(self->split_times[i], "time");
-                ls_split_string(str, timer->split_times[i]);
+                ls_split_string(str, timer->split_times[i], 0);
                 gtk_label_set_text(GTK_LABEL(self->split_times[i]), str);
             }
         } else if (game->split_times[i]) {
             add_class(self->split_times[i], "time");
-            ls_split_string(str, game->split_times[i]);
+            ls_split_string(str, game->split_times[i], 0);
             gtk_label_set_text(GTK_LABEL(self->split_times[i]), str);
         }
 
