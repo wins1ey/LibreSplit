@@ -286,6 +286,44 @@ end
 
         * Cheat Engine is a tool that allows you to easily find Addresses and Pointer Paths for those Addresses, so you don't need to debug the game to figure out the structure of the memory.
 
+## sig_scan
+sig_scan performs a signature/pattern scan on the provided IDA-style byte array and optional integer offset and returns a string representation of the found address
+
+Example:
+`signature = sig_scan("89 5C 24 ?? 89 44 24 ?? 74 ?? 48 8D 15", 4)`
+
+Returns:
+`"0x14123ce19"`
+
+### Notes
+* Lua automatically handles the conversion of hexadecimal strings to numbers (as long as the '0x' prefix is present) so parsing/casting it manually is not required.
+* Until the address is found, sig_scan returns a 0.
+* Signature scanning is an expensive action. So, once an address has been found, it's recommended to reassign the sig_scan variable with the result of the sig_scan function to stop the scanning.
+
+
+Mini example script with the game SPRAWL:
+```lua
+process('Sprawl-Win64-Shipping.exe')
+
+local featuretest = 0
+
+function state()
+    -- Perform the signature scan to find the initial address
+    featuretest = sig_scan("89 5C 24 ?? 89 44 24 ?? 74 ?? 48 8D 15", 4)
+
+    if featuretest == 0 then
+        print("Signature scan did not find the address.")
+    else
+        -- Read an integer value from the found address
+        local readValue = readAddress('int', 'Sprawl-Win64-Shipping.exe', featuretest)
+        print("Feature test address: ", featuretest)
+        print("Read value: ", readValue)
+    end
+end
+```
+
+
+
 ## getPID
 * Returns the current PID
 
