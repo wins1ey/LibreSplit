@@ -107,9 +107,9 @@ void ls_time_millis_string(char* seconds, char* millis, long long time)
     ls_time_string_format(seconds, millis, time, 0, 0, 0);
 }
 
-void ls_split_string(char* string, long long time)
+void ls_split_string(char* string, long long time, int compact)
 {
-    ls_time_string_format(string, NULL, time, 0, 0, 1);
+    ls_time_string_format(string, NULL, time, 0, 0, compact);
 }
 
 void ls_delta_string(char* string, long long time)

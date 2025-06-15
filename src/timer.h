@@ -57,7 +57,7 @@ void ls_time_string(char* string, long long time);
 
 void ls_time_millis_string(char* seconds, char* millis, long long time);
 
-void ls_split_string(char* string, long long time);
+void ls_split_string(char* string, long long time, int compact);
 
 void ls_delta_string(char* string, long long time);
 
