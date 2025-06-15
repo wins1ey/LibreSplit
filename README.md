@@ -1,4 +1,5 @@
 # <img src="libresplit.svg" width=43 align=top> [LibreSplit](https://libresplit.loomeh.is-a.dev)
+[![Discord](https://img.shields.io/discord/1381914148585078804?style=flat-square&logo=discord&label=LibreSplit&color=%237289da)](https://discord.gg/qbzD7MBjyw)
 
 LibreSplit brings auto splitting functionality to [urn](https://github.com/3snowp7im/urn) with Lua-based auto splitters that are easy to port from asl.
 
