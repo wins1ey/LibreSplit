@@ -27,13 +27,32 @@ long long ls_time_value(const char* string)
     if (!string || !strlen(string)) {
         return 0;
     }
-    sscanf(string, "%[^.]%lf", seconds_part, &subseconds_part);
-    string = seconds_part;
-    if (string[0] == '-') {
-        sign = -1;
-        ++string;
+
+    // Split at the decimal point manually
+    char* dot_pos = strchr(string, '.');
+    if (dot_pos) {
+        strncpy(seconds_part, string, dot_pos - string);
+        seconds_part[dot_pos - string] = '\0';
+
+        // Manually parse the fractional part to avoid locale issues
+        char* frac_part = dot_pos + 1;
+        subseconds_part = 0.0;
+        double multiplier = 0.1;
+
+        for (char* p = frac_part; *p && *p >= '0' && *p <= '9'; p++) {
+            subseconds_part += (*p - '0') * multiplier;
+            multiplier *= 0.1;
+        }
+    } else {
+        strcpy(seconds_part, string);
+        subseconds_part = 0.0;
     }
-    switch (sscanf(string, "%d:%d:%d", &hours, &minutes, &seconds)) {
+
+    if (seconds_part[0] == '-') {
+        sign = -1;
+        memmove(seconds_part, seconds_part + 1, strlen(seconds_part));
+    }
+    switch (sscanf(seconds_part, "%d:%d:%d", &hours, &minutes, &seconds)) {
         case 2:
             seconds = minutes;
             minutes = hours;
@@ -45,7 +64,8 @@ long long ls_time_value(const char* string)
             hours = 0;
             break;
     }
-    return sign * ((hours * 60 * 60 + minutes * 60 + seconds) * 1000000LL + (int)(subseconds_part * 1000000.));
+
+    return sign * ((hours * 60 * 60 + minutes * 60 + seconds) * 1000000LL + (long long)(subseconds_part * 1000000.));
 }
 
 static void ls_time_string_format(char* string,
