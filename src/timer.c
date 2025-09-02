@@ -23,18 +23,18 @@ long long ls_time_value(const char* string)
     if (!string || !strlen(string)) {
         return 0;
     }
-
+    
     // Split at the decimal point manually
     char* dot_pos = strchr(string, '.');
     if (dot_pos) {
         strncpy(seconds_part, string, dot_pos - string);
         seconds_part[dot_pos - string] = '\0';
-
+        
         // Manually parse the fractional part to avoid locale issues
         char* frac_part = dot_pos + 1;
         subseconds_part = 0.0;
         double multiplier = 0.1;
-
+        
         for (char* p = frac_part; *p && *p >= '0' && *p <= '9'; p++) {
             subseconds_part += (*p - '0') * multiplier;
             multiplier *= 0.1;
@@ -43,7 +43,7 @@ long long ls_time_value(const char* string)
         strcpy(seconds_part, string);
         subseconds_part = 0.0;
     }
-
+    
     if (seconds_part[0] == '-') {
         sign = -1;
         memmove(seconds_part, seconds_part + 1, strlen(seconds_part));
@@ -60,7 +60,7 @@ long long ls_time_value(const char* string)
             hours = 0;
             break;
     }
-
+    
     return sign * ((hours * 60 * 60 + minutes * 60 + seconds) * 1000000LL + (long long)(subseconds_part * 1000000.));
 }
 
@@ -418,25 +418,25 @@ int ls_game_save(const ls_game* game)
         json_t* split = json_object();
         json_object_set_new(split, "title",
             json_string(game->split_titles[i]));
-
+        
         // Only save "time" if it's not zero
         if (game->split_times[i] != 0) {
             ls_time_string_serialized(str, game->split_times[i]);
             json_object_set_new(split, "time", json_string(str));
         }
-
+        
         // Only save "best_time" if it's not zero
         if (game->best_splits[i] != 0) {
             ls_time_string_serialized(str, game->best_splits[i]);
             json_object_set_new(split, "best_time", json_string(str));
         }
-
+        
         // Only save "best_segment" if it's not zero
         if (game->best_segments[i] != 0) {
             ls_time_string_serialized(str, game->best_segments[i]);
             json_object_set_new(split, "best_segment", json_string(str));
         }
-
+        
         json_array_append_new(splits, split);
     }
     json_object_set_new(json, "splits", splits);
