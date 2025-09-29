@@ -206,10 +206,9 @@ static void splits_draw(LSComponent* self_, ls_game* game, ls_timer* timer)
 
         remove_class(self->split_times[i], "time");
         remove_class(self->split_times[i], "done");
-        
-        //Set split_times label to -
-        gtk_label_set_text(GTK_LABEL(self->split_times[i]), "-");
 
+        // Set split_times label to -
+        gtk_label_set_text(GTK_LABEL(self->split_times[i]), "-");
 
         if (i < timer->curr_split) {
             add_class(self->split_times[i], "done");
