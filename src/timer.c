@@ -423,8 +423,12 @@ int ls_game_save(const ls_game* game)
         if (game->split_times[i] != 0 && game->split_times[i] != LLONG_MAX) {
             ls_time_string_serialized(str, game->split_times[i]);
             json_object_set_new(split, "time", json_string(str));
+        }
+        if (game->best_splits[i] == 0 && game->best_splits[i] != LLONG_MAX) {
             ls_time_string_serialized(str, game->best_splits[i]);
             json_object_set_new(split, "best_time", json_string(str));
+        }
+        if (game->best_segments[i] != 0 && game->best_segments[i] != LLONG_MAX) {
             ls_time_string_serialized(str, game->best_segments[i]);
             json_object_set_new(split, "best_segment", json_string(str));
         }
