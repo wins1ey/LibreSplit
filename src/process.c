@@ -83,7 +83,6 @@ void stock_process_id(const char* pid_command)
     while (atomic_load(&auto_splitter_enabled)) {
         execute_command(pid_command, pid_output);
         process.pid = strtoul(pid_output, NULL, 10);
-        printf("\033[2J\033[1;1H"); // Clear the console
         if (process.pid) {
             size_t newlinePos = strcspn(pid_output, "\n");
             if (newlinePos != strlen(pid_output) - 1 && pid_output[0] != '\0') {
@@ -104,10 +103,30 @@ void stock_process_id(const char* pid_command)
 
 int find_process_id(lua_State* L)
 {
-    process.name = lua_tostring(L, 1);
-    char command[256];
     printf("\033[2J\033[1;1H"); // Clear the console
-    snprintf(command, sizeof(command), "pgrep \"%.*s\"", (int)strnlen(process.name, 15), process.name);
+
+    process.name = lua_tostring(L, 1);
+    const char* sort = lua_tostring(L, 2);
+    char sortCmd[16] = "";
+
+    if (!sort) {
+        sort = "first";
+    } else {
+        if (strcmp(sort, "first") != 0 && strcmp(sort, "last") != 0) {
+            printf("Invalid sort argument '%s'. Use 'first' or 'last'. Falling back to first\n", sort);
+            sort = "first";
+        }
+    }
+
+    if (strcmp(sort, "first") == 0) {
+        sortCmd[0] = '\0'; // No sorting
+    }
+    if (strcmp(sort, "last") == 0) {
+        strcpy(sortCmd, " | sort -r"); // Reverse the sorting to get latest PID
+    }
+
+    char command[256];
+    snprintf(command, sizeof(command), "pgrep \"%.*s\"%s", (int)strnlen(process.name, 15), process.name, sortCmd);
 
     stock_process_id(command);
 
