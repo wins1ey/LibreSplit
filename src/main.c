@@ -13,6 +13,7 @@
 #include "bind.h"
 #include "component/components.h"
 #include "main.h"
+#include "main_css.h"
 #include "settings.h"
 #include "timer.h"
 
