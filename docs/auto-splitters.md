@@ -292,8 +292,8 @@ end
 # Experimental stuff
 ## `mapsCacheCycles`
 * When a readAddress that uses a memory map the biggest bottleneck is reading every line of `/proc/pid/maps` and checking if that line is the corresponding module. This option allows you to set for how many cycles the cache of that file should be used. The cache is global so it gets reset every x number of cycles.
-    * `0` (default): Disabled completely
-    * `1`: Enabled for the current cycle
+    * `0`: Disabled completely
+    * `1` (default): Enabled for the current cycle
     * `2`: Enabled for the current cycle and the next one
     * `3`: Enabled for the current cycle and the 2 next ones
     * You get the idea
