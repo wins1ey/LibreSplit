@@ -12,7 +12,6 @@
 #include "auto-splitter.h"
 #include "bind.h"
 #include "component/components.h"
-#include "main.h"
 #include "settings.h"
 #include "timer.h"
 
@@ -33,6 +32,12 @@ typedef struct _LSAppWindowClass LSAppWindowClass;
 #define WINDOW_PAD (8)
 
 atomic_bool exit_requested = 0;
+
+static const unsigned char css_data[] = {
+#embed "main.css"
+};
+
+static const size_t css_data_len = sizeof(css_data);
 
 typedef struct
 {
@@ -573,7 +578,7 @@ static void ls_app_window_init(LSAppWindow* win)
         GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_css_provider_load_from_data(
         GTK_CSS_PROVIDER(provider),
-        (char*)__src_main_css, __src_main_css_len, NULL);
+        (char*)css_data, css_data_len, NULL);
     g_object_unref(provider);
 
     // Load theme
@@ -1044,7 +1049,7 @@ static void ls_app_class_init(LSAppClass* class)
     G_APPLICATION_CLASS(class)->open = ls_app_open;
 }
 
-static void* ls_auto_splitter()
+static void* ls_auto_splitter(void* arg)
 {
     while (1) {
         if (atomic_load(&auto_splitter_enabled) && auto_splitter_file[0] != '\0') {

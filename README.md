@@ -19,6 +19,7 @@ LibreSplit is a speedrun timer based on [urn](https://github.com/3snowp7im/urn) 
 
 LibreSplit requires the following dependencies on your system to compile:
 
+- `meson`
 - `libgtk+-3.0`
 - `x11`
 - `libjansson`
@@ -26,20 +27,21 @@ LibreSplit requires the following dependencies on your system to compile:
 
 ## Installation
 
+### Package manager (recommended)
+* AUR/Arch based distro: [libresplit-git](https://aur.archlinux.org/packages/libresplit-git)
+
+### Manual install
 ```bash
 git clone https://github.com/wins1ey/LibreSplit
 cd LibreSplit
-make
-sudo make install
-```
-or
-```bash
-git clone https://github.com/wins1ey/LibreSplit && cd LibreSplit && make && sudo make install
+meson setup build -Dbuildtype=release
+meson compile -C build
+meson install -C build
 ```
 
 ## Getting Started
 
-1. Launch LibreSplit by executing the compiled binary. `./libresplit`
+1. Launch LibreSplit by executing the compiled binary. `libresplit` inside build
 2. When first launched, LibreSplit will create the `libresplit` directory in your config directory. Auto splitters, splits and themes go in their respective folders inside.
 3. The initial window is undecorated, but you can toggle window decorations by pressing the right Control key.
 4. Control the timer using the following key presses:
