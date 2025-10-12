@@ -19,6 +19,9 @@
 
 char auto_splitter_file[PATH_MAX];
 int refresh_rate = 60;
+bool use_game_time = false;
+atomic_bool update_game_time = false;
+atomic_llong game_time_value = 0;
 int maps_cache_cycles = 1; // 0=off, 1=current cycle, +1=multiple cycles
 int maps_cache_cycles_value = 1; // same as `maps_cache_cycles` but this one represents the current value that changes on each cycle rather than the reference from the script
 atomic_bool auto_splitter_enabled = true;
@@ -263,6 +266,12 @@ void startup(lua_State* L)
         maps_cache_cycles_value = maps_cache_cycles;
     }
     lua_pop(L, 1); // Remove 'mapsCacheCycles' from the stack
+
+    lua_getglobal(L, "useGameTime");
+    if (lua_isboolean(L, -1)) {
+        use_game_time = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1); // Remove 'useGameTime' from the stack
 }
 
 void state(lua_State* L)
@@ -311,6 +320,17 @@ void reset(lua_State* L)
     if (call_va(L, "reset", ">b", &shouldReset)) {
         if (shouldReset)
             atomic_store(&call_reset, true);
+    }
+    lua_pop(L, 1); // Remove the return value from the stack
+}
+
+void gameTime(lua_State* L)
+{
+    int gameTime;
+    if (call_va(L, "gameTime", ">i", &gameTime)) {
+        // Convert gameTime from milliseconds to the expected time format and update the timer
+        atomic_store(&game_time_value, (long long)gameTime * 1000);
+        atomic_store(&update_game_time, true);
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -380,6 +400,10 @@ void run_auto_splitter()
     bool update_exists = lua_isfunction(L, -1);
     lua_pop(L, 1); // Remove 'update' from the stack
 
+    lua_getglobal(L, "gameTime");
+    bool gameTime_exists = lua_isfunction(L, -1);
+    lua_pop(L, 1); // Remove 'gameTime' from the stack
+
     if (startup_exists) {
         startup(L);
     }
@@ -401,6 +425,10 @@ void run_auto_splitter()
 
         if (update_exists) {
             update(L);
+        }
+
+        if (gameTime_exists && use_game_time) {
+            gameTime(L);
         }
 
         if (start_exists) {

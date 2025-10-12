@@ -172,6 +172,11 @@ static gboolean ls_app_window_step(gpointer data)
                 timer_reset(win);
                 atomic_store(&call_reset, 0);
             }
+            if (atomic_load(&update_game_time)) {
+                // Update the timer with the game time from auto-splitter
+                win->timer->time = atomic_load(&game_time_value);
+                atomic_store(&update_game_time, false);
+            }
         }
     }
 
