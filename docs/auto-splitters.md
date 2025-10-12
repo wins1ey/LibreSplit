@@ -26,12 +26,13 @@ process('GameBlaBlaBla.exe')
     * The order at which these run is the same as they are documented below.
 
 ### `startup`
- The purpose of this function is to specify how many times LibreSplit checks memory values and executes functions each second, the default is 60Hz. Usually, 60Hz is fine and this function can remain undefined. However, it's there if you need it.
+ The purpose of this function is to specify how many times LibreSplit checks memory values and executes functions each second, the default is 60Hz. Usually, 60Hz is fine and this function can remain undefined. However, it's there if you need it. Its also useful to change other configuration about the script.
 ```lua
 process('GameBlaBlaBla.exe')
 
 function startup()
     refreshRate = 120
+    useGameTime = true
 end
 ```
 
@@ -259,6 +260,68 @@ function reset()
 end
 ```
 * In this example we are checking for the scene, of course, the address is completely arbitrary and doesnt mean anything for this example. Specifically we are checking if we are entering the MenuScene scene.
+
+# `gameTime`
+Function that is used to set the current timer time when `useGameTime` is `true` (`false` by default)
+* The return value of this function should be the current time in milliseconds
+* Runs every 1000 / `refreshRate` milliseconds.
+```lua
+process('GameBlaBlaBla.exe')
+
+local current = {isLoading = false};
+local old = {isLoading = false};
+local loadCount = 0
+local didReset = false
+local IGT = 0
+
+function startup()
+    refreshRate = 120
+end
+
+function state()
+    old.isLoading = current.isLoading;
+
+    current.isLoading = readAddress("bool", "UnityPlayer.dll", 0x019B4878, 0xD0, 0x8, 0x60, 0xA0, 0x18, 0xA0);
+    IGT = readAddress("int", "UnityPlayer.dll", 0x019B4878, ...);
+end
+
+function update()
+    if not current.isLoading and old.isLoading then
+        loadCount = loadCount + 1;
+    end
+end
+
+function start()
+    return current.isLoading
+end
+
+function split()
+    local shouldSplit = false;
+    if current.isLoading and not old.isLoading then
+        loadCount = loadCount + 1;
+        shouldSplit = loadCount > 1;
+    end
+
+    return shouldSplit;
+end
+
+function isLoading()
+    return current.isLoading
+end
+
+function reset()
+    if not old.scene == "MenuScene" and current.scene == "MenuScene" then
+        return true
+    end
+    return false
+end
+
+function gameTime()
+    return IGT -- Assuming IGT is the current time in milliseconds tracked by the game
+end
+```
+* In this example we added `IGT`, which is the variable in which the game keeps track of how long you've played for by some way or another, later this IGT variable is used as a return value to the `gameTime` function. Also the `useGameTime` is set to true to be able to use this feature
+
 
 ## readAddress
 * `readAddress` is the second function that LibreSplit defines for us and its globally available, its job is to read the memory value of a specified address.
