@@ -348,6 +348,14 @@ static void timer_stop_reset(LSAppWindow* win)
         if (win->timer->running) {
             ls_timer_stop(win->timer);
         } else {
+            const bool was_asl_enabled = atomic_load(&auto_splitter_enabled);
+            atomic_store(&auto_splitter_enabled, false);
+            while (atomic_load(&auto_splitter_running) && was_asl_enabled) {
+                // wait, this will be very fast so its ok to just spin
+            }
+            if (was_asl_enabled)
+                atomic_store(&auto_splitter_enabled, true);
+
             if (ls_timer_reset(win->timer)) {
                 ls_app_window_clear_game(win);
                 ls_app_window_show_game(win);
@@ -1020,8 +1028,10 @@ static void* ls_auto_splitter()
 {
     while (1) {
         if (atomic_load(&auto_splitter_enabled) && auto_splitter_file[0] != '\0') {
+            atomic_store(&auto_splitter_running, true);
             run_auto_splitter();
         }
+        atomic_store(&auto_splitter_running, false);
         if (atomic_load(&exit_requested))
             return 0;
         usleep(50000);

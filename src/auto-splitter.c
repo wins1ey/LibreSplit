@@ -22,6 +22,7 @@ int refresh_rate = 60;
 int maps_cache_cycles = 0; // 0=off, 1=current cycle, +1=multiple cycles
 int maps_cache_cycles_value = 0; // same as `maps_cache_cycles` but this one represents the current value rather than the reference from the script
 atomic_bool auto_splitter_enabled = true;
+atomic_bool auto_splitter_running = false;
 atomic_bool call_start = false;
 atomic_bool call_split = false;
 atomic_bool toggle_loading = false;
