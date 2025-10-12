@@ -13,4 +13,3 @@ jobs:
       - uses: Andrew-Chen-Wang/github-wiki-action@v4.3.0
         with:
           path: docs/
-          token: ${{ secrets.ACCESS_TOKEN }}
