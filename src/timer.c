@@ -449,7 +449,7 @@ int ls_game_save(const ls_game* game)
         json_object_set_new(json, "height", json_integer(game->height));
     }
     const int json_dump_result = json_dump_file(json, game->path, JSON_PRESERVE_ORDER | JSON_INDENT(2));
-    if (!json_dump_result) {
+    if (json_dump_result) {
         printf("Error dumping JSON:\n%s\n", json_dumps(json, JSON_PRESERVE_ORDER | JSON_INDENT(2)));
         printf("Error: '%d'\n", json_dump_result);
         printf("Path: %s\n", game->path);
