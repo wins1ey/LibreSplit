@@ -1,23 +1,23 @@
 on: [push, pull_request]
 
 jobs:
-  format-check:
-    runs-on: ubuntu-latest
+    format-check:
+        runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-    - name: Format files
-      run: |
-        clang-format -i $(find src -name '*.c' -or -name '*.h')
+            - name: Format files
+              run: |
+                  clang-format -i $(find src -name '*.c' -or -name '*.h')
 
-    - name: Check for changes
-      run: |
-        changed_files=$(git diff --name-only)
-        if [ -n "$changed_files" ]; then
-          echo "The following files require formatting:"
-          echo "$changed_files"
-          echo "Run 'make format' and commit the changes."
-          exit 1
-        fi
+            - name: Check for changes
+              run: |
+                  changed_files=$(git diff --name-only)
+                  if [ -n "$changed_files" ]; then
+                    echo "The following files require formatting:"
+                    echo "$changed_files"
+                    echo "Run 'make format' and commit the changes."
+                    exit 1
+                  fi
