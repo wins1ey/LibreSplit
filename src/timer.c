@@ -1,6 +1,9 @@
 #include "timer.h"
+#include "auto-splitter.h"
 #include <jansson.h>
 #include <limits.h>
+#include <stdatomic.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -648,7 +651,7 @@ int ls_timer_start(ls_timer* timer)
 
 int ls_timer_split(ls_timer* timer)
 {
-    if (timer->running && timer->time > 0) {
+    if (timer->time > 0) {
         if (timer->curr_split < timer->game->split_count) {
             int i;
             // check for best split and segment
@@ -732,6 +735,7 @@ int ls_timer_unsplit(ls_timer* timer)
 void ls_timer_stop(ls_timer* timer)
 {
     timer->running = 0;
+    atomic_store(&run_started, false);
 }
 
 int ls_timer_reset(ls_timer* timer)

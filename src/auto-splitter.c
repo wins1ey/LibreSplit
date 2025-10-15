@@ -27,6 +27,7 @@ int maps_cache_cycles_value = 1; // same as `maps_cache_cycles` but this one rep
 atomic_bool auto_splitter_enabled = true;
 atomic_bool auto_splitter_running = false;
 atomic_bool call_start = false;
+atomic_bool run_started = false;
 atomic_bool call_split = false;
 atomic_bool toggle_loading = false;
 atomic_bool call_reset = false;
@@ -289,6 +290,9 @@ void start(lua_State* L)
     bool ret;
     if (call_va(L, "start", ">b", &ret)) {
         atomic_store(&call_start, ret);
+        if (ret) {
+            atomic_store(&run_started, true);
+        }
     }
     lua_pop(L, 1); // Remove the return value from the stack
 }
@@ -427,7 +431,7 @@ void run_auto_splitter()
             update(L);
         }
 
-        if (gameTime_exists && use_game_time) {
+        if (gameTime_exists && use_game_time && atomic_load(&run_started)) {
             gameTime(L);
         }
 
@@ -435,7 +439,7 @@ void run_auto_splitter()
             start(L);
         }
 
-        if (split_exists) {
+        if (split_exists && atomic_load(&run_started)) {
             split(L);
         }
 

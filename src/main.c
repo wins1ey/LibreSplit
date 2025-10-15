@@ -129,9 +129,9 @@ static void ls_app_window_clear_game(LSAppWindow* win)
 }
 
 // Forward declarations
-static void timer_start(LSAppWindow* win);
+static void timer_start(LSAppWindow* win, bool updateComponents);
 static void timer_stop(LSAppWindow* win);
-static void timer_split(LSAppWindow* win);
+static void timer_split(LSAppWindow* win, bool updateComponents);
 static void timer_reset(LSAppWindow* win);
 
 static gboolean ls_app_window_step(gpointer data)
@@ -152,11 +152,11 @@ static gboolean ls_app_window_step(gpointer data)
 
         if (atomic_load(&auto_splitter_enabled)) {
             if (atomic_load(&call_start) && !win->timer->loading) {
-                timer_start(win);
+                timer_start(win, true);
                 atomic_store(&call_start, 0);
             }
             if (atomic_load(&call_split)) {
-                timer_split(win);
+                timer_split(win, true);
                 atomic_store(&call_split, 0);
             }
             if (atomic_load(&toggle_loading)) {
@@ -164,12 +164,13 @@ static gboolean ls_app_window_step(gpointer data)
                 if (win->timer->running && win->timer->loading) {
                     timer_stop(win);
                 } else if (win->timer->started && !win->timer->running && !win->timer->loading) {
-                    timer_start(win);
+                    timer_start(win, true);
                 }
                 atomic_store(&toggle_loading, 0);
             }
             if (atomic_load(&call_reset)) {
                 timer_reset(win);
+                atomic_store(&run_started, false);
                 atomic_store(&call_reset, 0);
             }
             if (atomic_load(&update_game_time)) {
@@ -285,7 +286,7 @@ static void timer_start_split(LSAppWindow* win)
                 save_game(win->game);
             }
         } else {
-            ls_timer_split(win->timer);
+            timer_split(win, false);
         }
         for (l = win->components; l != NULL; l = l->next) {
             LSComponent* component = l->data;
@@ -296,7 +297,7 @@ static void timer_start_split(LSAppWindow* win)
     }
 }
 
-static void timer_start(LSAppWindow* win)
+static void timer_start(LSAppWindow* win, bool updateComponents)
 {
     if (win->timer) {
         GList* l;
@@ -304,22 +305,24 @@ static void timer_start(LSAppWindow* win)
             if (ls_timer_start(win->timer)) {
                 save_game(win->game);
             }
-            for (l = win->components; l != NULL; l = l->next) {
-                LSComponent* component = l->data;
-                if (component->ops->start_split) {
-                    component->ops->start_split(component, win->timer);
+            if (updateComponents) {
+                for (l = win->components; l != NULL; l = l->next) {
+                    LSComponent* component = l->data;
+                    if (component->ops->start_split) {
+                        component->ops->start_split(component, win->timer);
+                    }
                 }
             }
         }
     }
 }
 
-static void timer_split(LSAppWindow* win)
+static void timer_split(LSAppWindow* win, bool updateComponents)
 {
     if (win->timer) {
         GList* l;
-        if (win->timer->running) {
-            ls_timer_split(win->timer);
+        ls_timer_split(win->timer);
+        if (updateComponents) {
             for (l = win->components; l != NULL; l = l->next) {
                 LSComponent* component = l->data;
                 if (component->ops->start_split) {
@@ -350,7 +353,7 @@ static void timer_stop_reset(LSAppWindow* win)
 {
     if (win->timer) {
         GList* l;
-        if (win->timer->running) {
+        if (atomic_load(&run_started)) {
             ls_timer_stop(win->timer);
         } else {
             const bool was_asl_enabled = atomic_load(&auto_splitter_enabled);
@@ -808,6 +811,18 @@ static void open_auto_splitter(GSimpleAction* action,
         char* filename = gtk_file_chooser_get_filename(chooser);
         strcpy(auto_splitter_file, filename);
         ls_update_setting("auto_splitter_file", json_string(filename));
+
+        // Restart auto-splitter if it was running
+        const bool was_asl_enabled = atomic_load(&auto_splitter_enabled);
+        if (was_asl_enabled) {
+            atomic_store(&auto_splitter_enabled, false);
+            while (atomic_load(&auto_splitter_running) && was_asl_enabled) {
+                // wait, this will be very fast so its ok to just spin
+            }
+            if (was_asl_enabled)
+                atomic_store(&auto_splitter_enabled, true);
+        }
+
         g_free(filename);
     }
     gtk_widget_destroy(dialog);
