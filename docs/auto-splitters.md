@@ -262,6 +262,7 @@ end
 * In this example we are checking for the scene, of course, the address is completely arbitrary and doesnt mean anything for this example. Specifically we are checking if we are entering the MenuScene scene.
 
 # `gameTime`
+### **When using `gameTime`, `isLoading` has to ALWAYS return true**
 Function that is used to set the current timer time when `useGameTime` is `true` (`false` by default)
 * The return value of this function should be the current time in milliseconds
 * Runs every 1000 / `refreshRate` milliseconds.
@@ -306,7 +307,7 @@ function split()
 end
 
 function isLoading()
-    return current.isLoading
+    return true
 end
 
 function reset()
