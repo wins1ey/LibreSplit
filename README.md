@@ -6,6 +6,8 @@ LibreSplit is a speedrun timer based on [urn](https://github.com/3snowp7im/urn) 
 <img src="https://github.com/wins1ey/LibreSplit/assets/34382191/2adfdae5-9a21-4bdf-a4c4-f1d5962a0b63" width=350>
 <img src="https://github.com/wins1ey/LibreSplit/assets/34382191/4455f57a-3d34-4fa3-9dff-2b342b6c56da" width=350>
 
+### If you are looking for the public repository of splits, autosplitters and themes. They are located [here](https://github.com/LibreSplitDev/LibreSplit-resources)
+
 ## Features
 
 - **Split Tracking and Timing:** Accurately track and time your speedruns with ease.
