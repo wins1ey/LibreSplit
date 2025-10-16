@@ -435,7 +435,7 @@ void run_auto_splitter()
             gameTime(L);
         }
 
-        if (start_exists) {
+        if (start_exists && !atomic_load(&run_started)) {
             start(L);
         }
 
