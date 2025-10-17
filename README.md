@@ -77,6 +77,8 @@ git clone https://github.com/wins1ey/LibreSplit && cd LibreSplit && make && sudo
 Keybind strings should be parseable by
 [gtk_accelerator_parse](https://developer.gnome.org/gtk3/stable/gtk3-Keyboard-Accelerators.html#gtk-accelerator-parse).
 
+For more information: [here](https://docs.gtk.org/gtk4/func.accelerator_parse.html) and [here](https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h)
+
 ## Auto Splitters
 
 LibreSplit supports auto splitters written in Lua to automate split timing based on in-game events. Feel free to make your own, Documentation can be found [here](docs/auto-splitters.md)
