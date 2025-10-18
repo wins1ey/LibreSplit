@@ -1,8 +1,4 @@
-# Compiled files
-libresplit
-obj/
-src/main.h
-
+build/
 .vscode/
 .cache/
 compile_commands.json
