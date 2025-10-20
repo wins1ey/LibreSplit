@@ -128,7 +128,7 @@ void ls_delta_string(char* string, long long time)
     ls_time_string_format(string, NULL, time, 0, 1, 1);
 }
 
-void ls_game_release(ls_game* game)
+void ls_game_release(const ls_game* game)
 {
     int i;
     if (game->path) {
@@ -380,7 +380,7 @@ void ls_game_update_splits(ls_game* game,
     }
 }
 
-void ls_game_update_bests(ls_game* game,
+void ls_game_update_bests(const ls_game* game,
     const ls_timer* timer)
 {
     if (timer->curr_split) {
@@ -462,7 +462,7 @@ int ls_game_save(const ls_game* game)
     return error;
 }
 
-void ls_timer_release(ls_timer* timer)
+void ls_timer_release(const ls_timer* timer)
 {
     if (timer->split_times) {
         free(timer->split_times);

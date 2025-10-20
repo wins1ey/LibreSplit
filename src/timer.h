@@ -65,15 +65,15 @@ int ls_game_create(ls_game** game_ptr, const char* path, char** error_msg);
 
 void ls_game_update_splits(ls_game* game, const ls_timer* timer);
 
-void ls_game_update_bests(ls_game* game, const ls_timer* timer);
+void ls_game_update_bests(const ls_game* game, const ls_timer* timer);
 
 int ls_game_save(const ls_game* game);
 
-void ls_game_release(ls_game* game);
+void ls_game_release(const ls_game* game);
 
 int ls_timer_create(ls_timer** timer_ptr, ls_game* game);
 
-void ls_timer_release(ls_timer* timer);
+void ls_timer_release(const ls_timer* timer);
 
 int ls_timer_start(ls_timer* timer);
 

@@ -51,7 +51,7 @@ static GtkWidget* best_sum_widget(LSComponent* self)
 }
 
 static void best_sum_show_game(LSComponent* self_,
-    ls_game* game, ls_timer* timer)
+    const ls_game* game, const ls_timer* timer)
 {
     LSBestSum* self = (LSBestSum*)self_;
     char str[256];
@@ -68,7 +68,7 @@ static void best_sum_clear_game(LSComponent* self_)
 }
 
 static void best_sum_draw(LSComponent* self_, ls_game* game,
-    ls_timer* timer)
+    const ls_timer* timer)
 {
     LSBestSum* self = (LSBestSum*)self_;
     char str[256];

@@ -145,7 +145,7 @@ int process_exists()
     return result == 0;
 }
 
-bool parseMapsLine(char* line, ProcessMap* map)
+bool parseMapsLine(const char* line, ProcessMap* map)
 {
     size_t end;
     char mode[8];
