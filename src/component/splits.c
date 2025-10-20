@@ -191,7 +191,7 @@ static void splits_clear_game(LSComponent* self_)
 }
 
 #define SHOW_DELTA_THRESHOLD (-30 * 1000000LL)
-static void splits_draw(LSComponent* self_, ls_game* game, ls_timer* timer)
+static void splits_draw(LSComponent* self_, const ls_game* game, const ls_timer* timer)
 {
     LSSplits* self = (LSSplits*)self_;
     char str[256];
@@ -289,7 +289,7 @@ static void splits_draw(LSComponent* self_, ls_game* game, ls_timer* timer)
     splits_trailer(self_);
 }
 
-static void splits_scroll_to_split(LSComponent* self_, ls_timer* timer)
+static void splits_scroll_to_split(LSComponent* self_, const ls_timer* timer)
 {
     LSSplits* self = (LSSplits*)self_;
     int split_x, split_y;
@@ -334,17 +334,17 @@ static void splits_scroll_to_split(LSComponent* self_, ls_timer* timer)
     }
 }
 
-void splits_start_split(LSComponent* self, ls_timer* timer)
+void splits_start_split(LSComponent* self, const ls_timer* timer)
 {
     splits_scroll_to_split(self, timer);
 }
 
-void splits_skip(LSComponent* self, ls_timer* timer)
+void splits_skip(LSComponent* self, const ls_timer* timer)
 {
     splits_scroll_to_split(self, timer);
 }
 
-void splits_unsplit(LSComponent* self, ls_timer* timer)
+void splits_unsplit(LSComponent* self, const ls_timer* timer)
 {
     splits_scroll_to_split(self, timer);
 }

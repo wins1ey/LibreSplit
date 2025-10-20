@@ -48,7 +48,7 @@ static GtkWidget* wr_widget(LSComponent* self)
 }
 
 static void wr_show_game(LSComponent* self_,
-    ls_game* game, ls_timer* timer)
+    const ls_game* game, ls_timer* timer)
 {
     LSWr* self = (LSWr*)self_;
     gtk_widget_set_halign(self->world_record_label, GTK_ALIGN_START);
@@ -69,8 +69,8 @@ static void wr_clear_game(LSComponent* self_)
     gtk_widget_hide(self->world_record);
 }
 
-static void wr_draw(LSComponent* self_, ls_game* game,
-    ls_timer* timer)
+static void wr_draw(LSComponent* self_, const ls_game* game,
+    const ls_timer* timer)
 {
     LSWr* self = (LSWr*)self_;
     char str[256];

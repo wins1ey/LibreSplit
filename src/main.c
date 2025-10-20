@@ -184,7 +184,7 @@ static gboolean ls_app_window_step(gpointer data)
     return TRUE;
 }
 
-static int ls_app_window_find_theme(LSAppWindow* win,
+static int ls_app_window_find_theme(const LSAppWindow* win,
     const char* theme_name,
     const char* theme_variant,
     char* str)

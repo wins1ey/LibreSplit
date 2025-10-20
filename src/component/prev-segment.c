@@ -70,8 +70,8 @@ static void prev_segment_clear_game(LSComponent* self_)
     gtk_label_set_text(GTK_LABEL(self->previous_segment), "");
 }
 
-static void prev_segment_draw(LSComponent* self_, ls_game* game,
-    ls_timer* timer)
+static void prev_segment_draw(LSComponent* self_, const ls_game* game,
+    const ls_timer* timer)
 {
     LSPrevSegment* self = (LSPrevSegment*)self_;
     const char* label;

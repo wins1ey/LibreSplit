@@ -25,6 +25,6 @@ uintptr_t find_base_address(const char* module);
 int process_exists();
 int find_process_id(lua_State* L);
 int getPid(lua_State* L);
-bool parseMapsLine(char* line, ProcessMap* map);
+bool parseMapsLine(const char* line, ProcessMap* map);
 
 #endif /* __PROCESS_H__ */

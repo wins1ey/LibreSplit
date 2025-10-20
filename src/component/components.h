@@ -23,11 +23,11 @@ struct _LSComponentOps {
     void (*resize)(LSComponent* self, int win_width, int win_height);
     void (*show_game)(LSComponent* self, ls_game* game, ls_timer* timer);
     void (*clear_game)(LSComponent* self);
-    void (*draw)(LSComponent* self, ls_game* game, ls_timer* timer);
+    void (*draw)(LSComponent* self, const ls_game* game, const ls_timer* timer);
 
-    void (*start_split)(LSComponent* self, ls_timer* timer);
-    void (*skip)(LSComponent* self, ls_timer* timer);
-    void (*unsplit)(LSComponent* self, ls_timer* timer);
+    void (*start_split)(LSComponent* self, const ls_timer* timer);
+    void (*skip)(LSComponent* self, const ls_timer* timer);
+    void (*unsplit)(LSComponent* self, const ls_timer* timer);
     void (*stop_reset)(LSComponent* self, ls_timer* timer);
     void (*cancel_run)(LSComponent* self, ls_timer* timer);
 };
