@@ -111,10 +111,31 @@ static void splits_show_game(LSComponent* self_, ls_game* game,
     char str[256];
     int i;
     self->split_count = game->split_count;
+
     self->split_rows = calloc(self->split_count, sizeof(GtkWidget*));
+    if (!self->split_rows)
+        return;
+
     self->split_titles = calloc(self->split_count, sizeof(GtkWidget*));
+    if (!self->split_titles) {
+        free(self->split_rows);
+        return;
+    }
+
     self->split_deltas = calloc(self->split_count, sizeof(GtkWidget*));
+    if (!self->split_deltas) {
+        free(self->split_rows);
+        free(self->split_titles);
+        return;
+    }
+
     self->split_times = calloc(self->split_count, sizeof(GtkWidget*));
+    if (!self->split_times) {
+        free(self->split_rows);
+        free(self->split_titles);
+        free(self->split_deltas);
+        return;
+    }
 
     for (i = 0; i < self->split_count; ++i) {
         self->split_rows[i] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
