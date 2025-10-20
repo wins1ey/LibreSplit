@@ -1,3 +1,5 @@
+# PROJECT TRANSFERED OVER [HERE](https://github.com/LibreSplitDev/LibreSplit), DONT OPEN ANY ISSUES/PRS
+
 # <img src="libresplit.svg" width=43 align=top> [LibreSplit](https://libresplit.loomeh.is-a.dev)
 [![Discord](https://img.shields.io/discord/1381914148585078804?style=flat-square&logo=discord&label=LibreSplit&color=%237289da)](https://discord.gg/qbzD7MBjyw)
 
