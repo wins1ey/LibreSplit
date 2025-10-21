@@ -607,7 +607,8 @@ static void ls_app_window_init(LSAppWindow* win)
     g_signal_connect(win, "configure-event",
         G_CALLBACK(ls_app_window_resize), win);
 
-    if (win->global_hotkeys) {
+    // As a crash workaround, only enable global hotkeys if not on Wayland
+    if (win->global_hotkeys && !getenv("WAYLAND_DISPLAY")) {
         keybinder_init();
         keybinder_bind(
             g_settings_get_string(settings, "keybind-start-split"),
