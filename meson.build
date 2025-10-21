@@ -34,6 +34,7 @@ executable(
         'src/component/splits.c',
         'src/component/title.c',
         'src/component/wr.c',
+        'src/component/detailed-timer.c',
     ],
     dependencies: [threads, gtk, luajit, x11, jansson],
     c_args: [
