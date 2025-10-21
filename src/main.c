@@ -358,7 +358,7 @@ static void timer_stop_reset(LSAppWindow* win)
 {
     if (win->timer) {
         GList* l;
-        if (atomic_load(&run_started)) {
+        if (atomic_load(&run_started) || win->timer->running) {
             ls_timer_stop(win->timer);
         } else {
             const bool was_asl_enabled = atomic_load(&auto_splitter_enabled);
