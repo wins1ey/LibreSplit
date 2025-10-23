@@ -28,6 +28,7 @@ atomic_bool auto_splitter_enabled = true;
 atomic_bool auto_splitter_running = false;
 atomic_bool call_start = false;
 atomic_bool run_started = false;
+atomic_bool run_finished = false; // Disallows starting the timer again after finishing until reset
 atomic_bool call_split = false;
 atomic_bool toggle_loading = false;
 atomic_bool call_reset = false;
@@ -431,11 +432,11 @@ void run_auto_splitter()
             update(L);
         }
 
-        if (gameTime_exists && use_game_time && atomic_load(&run_started)) {
+        if (gameTime_exists && use_game_time && atomic_load(&run_started) && !atomic_load(&run_finished)) {
             gameTime(L);
         }
 
-        if (start_exists && !atomic_load(&run_started)) {
+        if (start_exists && !atomic_load(&run_started) && !atomic_load(&run_finished)) {
             start(L);
         }
 

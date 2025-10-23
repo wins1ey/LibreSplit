@@ -114,6 +114,8 @@ static void ls_app_window_clear_game(LSAppWindow* win)
     GdkScreen* screen;
     GList* l;
 
+    atomic_store(&run_finished, false);
+
     gtk_widget_hide(win->box);
 
     for (l = win->components; l != NULL; l = l->next) {

@@ -689,6 +689,7 @@ int ls_timer_split(ls_timer* timer)
                 // Increment finished_count
                 ++*timer->finished_count;
                 ls_timer_stop(timer);
+                atomic_store(&run_finished, true);
                 ls_game_update_splits((ls_game*)timer->game, timer);
             }
             return timer->curr_split;
