@@ -67,7 +67,7 @@ static void best_sum_clear_game(LSComponent* self_)
     gtk_label_set_text(GTK_LABEL(self->sum_of_bests), "");
 }
 
-static void best_sum_draw(LSComponent* self_, ls_game* game,
+static void best_sum_draw(LSComponent* self_, const ls_game* game,
     const ls_timer* timer)
 {
     LSBestSum* self = (LSBestSum*)self_;

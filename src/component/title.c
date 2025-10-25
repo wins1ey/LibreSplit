@@ -76,8 +76,8 @@ static void title_resize(LSComponent* self_, int win_width, int win_height)
     gtk_widget_set_allocation(self->title, &rect);
 }
 
-static void title_show_game(LSComponent* self_, ls_game* game,
-    ls_timer* timer)
+static void title_show_game(LSComponent* self_, const ls_game* game,
+    const ls_timer* timer)
 {
     char str[64];
     LSTitle* self = (LSTitle*)self_;
@@ -86,7 +86,7 @@ static void title_show_game(LSComponent* self_, ls_game* game,
     gtk_label_set_text(GTK_LABEL(self->attempt_count), str);
 }
 
-static void title_draw(LSComponent* self_, ls_game* game, ls_timer* timer)
+static void title_draw(LSComponent* self_, const ls_game* game, const ls_timer* timer)
 {
     char attempt_str[64];
     char finished_str[64];
