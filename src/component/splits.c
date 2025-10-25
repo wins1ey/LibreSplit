@@ -104,8 +104,8 @@ static void splits_trailer(LSComponent* self_)
     g_object_unref(self->split_rows[last]);
 }
 
-static void splits_show_game(LSComponent* self_, ls_game* game,
-    ls_timer* timer)
+static void splits_show_game(LSComponent* self_, const ls_game* game,
+    const ls_timer* timer)
 {
     LSSplits* self = (LSSplits*)self_;
     char str[256];

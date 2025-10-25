@@ -21,7 +21,7 @@ struct _LSComponentOps {
     GtkWidget* (*widget)(LSComponent* self);
 
     void (*resize)(LSComponent* self, int win_width, int win_height);
-    void (*show_game)(LSComponent* self, ls_game* game, ls_timer* timer);
+    void (*show_game)(LSComponent* self, const ls_game* game, const ls_timer* timer);
     void (*clear_game)(LSComponent* self);
     void (*draw)(LSComponent* self, const ls_game* game, const ls_timer* timer);
 

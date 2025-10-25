@@ -129,7 +129,7 @@ static void detailed_timer_clear_game(LSComponent* self_)
     remove_class(self->time, "losing");
 }
 
-static void detailed_timer_draw(LSComponent* self_, ls_game* game, ls_timer* timer)
+static void detailed_timer_draw(LSComponent* self_, const ls_game* game, const ls_timer* timer)
 {
     LSDetailedTimer* self = (LSDetailedTimer*)self_;
     char str[256], millis[256], seg[256], seg_millis[256];

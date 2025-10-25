@@ -48,7 +48,7 @@ static GtkWidget* wr_widget(LSComponent* self)
 }
 
 static void wr_show_game(LSComponent* self_,
-    const ls_game* game, ls_timer* timer)
+    const ls_game* game, const ls_timer* timer)
 {
     LSWr* self = (LSWr*)self_;
     gtk_widget_set_halign(self->world_record_label, GTK_ALIGN_START);
