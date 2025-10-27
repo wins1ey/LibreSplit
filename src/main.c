@@ -288,12 +288,12 @@ static void timer_start_split(LSAppWindow* win)
 {
     if (win->timer) {
         GList* l;
-        if (!win->timer->running) {
+        if (win->timer->running) {
+            timer_split(win, false);
+        } else {
             if (ls_timer_start(win->timer)) {
                 save_game(win->game);
             }
-        } else {
-            timer_split(win, false);
         }
         for (l = win->components; l != NULL; l = l->next) {
             LSComponent* component = l->data;
