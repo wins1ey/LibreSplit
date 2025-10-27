@@ -12,6 +12,7 @@
 #include "auto-splitter.h"
 #include "bind.h"
 #include "component/components.h"
+#include "gio/gio.h"
 #include "settings.h"
 #include "timer.h"
 
@@ -48,7 +49,8 @@ typedef struct
 struct _LSAppWindow {
     GtkApplicationWindow parent;
     char data_path[PATH_MAX];
-    int decorated;
+    gboolean decorated;
+    gboolean win_on_top;
     ls_game* game;
     ls_timer* timer;
     GdkDisplay* display;
@@ -64,6 +66,7 @@ struct _LSAppWindow {
     Keybind keybind_unsplit;
     Keybind keybind_skip_split;
     Keybind keybind_toggle_decorations;
+    Keybind keybind_toggle_win_on_top;
 };
 
 struct _LSAppWindowClass {
@@ -465,6 +468,12 @@ static void toggle_decorations(LSAppWindow* win)
     win->decorated = !win->decorated;
 }
 
+static void toggle_win_on_top(LSAppWindow* win)
+{
+    gtk_window_set_keep_above(GTK_WINDOW(win), !win->win_on_top);
+    win->win_on_top = !win->win_on_top;
+}
+
 static void keybind_start_split(GtkWidget* widget, LSAppWindow* win)
 {
     timer_start_split(win);
@@ -495,6 +504,11 @@ static void keybind_toggle_decorations(const char* str, LSAppWindow* win)
     toggle_decorations(win);
 }
 
+static void keybind_toggle_win_on_top(const char* str, LSAppWindow* win)
+{
+    toggle_win_on_top(win);
+}
+
 static gboolean ls_app_window_keypress(GtkWidget* widget,
     GdkEvent* event,
     gpointer data)
@@ -512,6 +526,8 @@ static gboolean ls_app_window_keypress(GtkWidget* widget,
         timer_skip(win);
     } else if (keybind_match(win->keybind_toggle_decorations, event->key)) {
         toggle_decorations(win);
+    } else if (keybind_match(win->keybind_toggle_win_on_top, event->key)) {
+        toggle_win_on_top(win);
     }
     return TRUE;
 }
@@ -570,6 +586,10 @@ static void ls_app_window_init(LSAppWindow* win)
         g_settings_get_string(settings, "keybind-toggle-decorations"));
     win->decorated = g_settings_get_boolean(settings, "start-decorated");
     gtk_window_set_decorated(GTK_WINDOW(win), win->decorated);
+    win->keybind_toggle_win_on_top = parse_keybind(
+        g_settings_get_string(settings, "keybind-toggle-win-on-top"));
+    win->win_on_top = g_settings_get_boolean(settings, "start-on-top");
+    gtk_window_set_keep_above(GTK_WINDOW(win), win->win_on_top);
 
     // Load CSS defaults
     provider = gtk_css_provider_new();
@@ -635,6 +655,10 @@ static void ls_app_window_init(LSAppWindow* win)
         keybinder_bind(
             g_settings_get_string(settings, "keybind-toggle-decorations"),
             (KeybinderHandler)keybind_toggle_decorations,
+            win);
+        keybinder_bind(
+            g_settings_get_string(settings, "keybind-toggle-win-on-top"),
+            (KeybinderHandler)keybind_toggle_win_on_top,
             win);
     } else {
         g_signal_connect(win, "key_press_event",
