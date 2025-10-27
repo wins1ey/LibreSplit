@@ -12,7 +12,7 @@
       <description>Hides the cursor when it hovers over the window.</description>
     </key>
     <key name="theme" type="s">
-      <default>'standard'</default>
+      <default>''</default>
       <summary>Theme</summary>
       <description>Window theme.</description>
     </key>
