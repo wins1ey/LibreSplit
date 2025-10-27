@@ -514,6 +514,7 @@ static void reset_timer(ls_timer* timer)
     timer->started = 0;
     timer->start_time = 0;
     timer->curr_split = 0;
+    timer->last_paused_stamp = 0;
     timer->time = -timer->game->start_delay;
     size = timer->game->split_count * sizeof(long long);
     memcpy(timer->split_times, timer->game->split_times, size);
@@ -665,6 +666,12 @@ int ls_timer_start(ls_timer* timer)
             timer->started = 1;
         }
         timer->running = 1;
+        // if was paused before, add in-pause time to start time
+        // so the timer properly resumes
+        if (timer->last_paused_stamp) {
+            timer->start_time += timer->now - timer->last_paused_stamp;
+        }
+        timer->last_paused_stamp = 0;
     }
     return timer->running;
 }
@@ -756,6 +763,7 @@ int ls_timer_unsplit(ls_timer* timer)
 void ls_timer_stop(ls_timer* timer)
 {
     timer->running = 0;
+    timer->last_paused_stamp = ls_time_now();
     atomic_store(&run_started, false);
 }
 
