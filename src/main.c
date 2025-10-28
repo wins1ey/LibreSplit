@@ -979,10 +979,10 @@ static void menu_toggle_win_on_top(GtkCheckMenuItem* menu_item,
 static gboolean button_right_click(GtkWidget* widget, GdkEventButton* event, gpointer app)
 {
     if (event->button == GDK_BUTTON_SECONDARY) {
-        GList *windows;
-        LSAppWindow *win;
+        GList* windows;
+        LSAppWindow* win;
         windows = gtk_application_get_windows(GTK_APPLICATION(app));
-        if (windows){
+        if (windows) {
             win = LS_APP_WINDOW(windows->data);
         } else {
             win = ls_app_window_new(LS_APP(app));
