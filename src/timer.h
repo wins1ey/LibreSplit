@@ -18,6 +18,8 @@ struct ls_game {
     long long world_record;
     long long start_delay;
     char** split_titles;
+    char** split_icon_paths; // null if no icons
+    bool contains_icons;
     int split_count;
     long long* split_times;
     long long* segment_times;

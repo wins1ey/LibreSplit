@@ -12,8 +12,10 @@ typedef struct _LSSplits {
     GtkWidget* split_viewport;
     GtkWidget** split_rows;
     GtkWidget** split_titles;
+    GtkWidget** split_icons;
     GtkWidget** split_deltas;
     GtkWidget** split_times;
+    GtkCssProvider* icons_css_provider;
 } LSSplits;
 extern LSComponentOps ls_splits_operations;
 
@@ -45,6 +47,8 @@ LSComponent* ls_component_splits_new()
     gtk_widget_set_hexpand(self->splits, TRUE);
     gtk_container_add(GTK_CONTAINER(self->split_viewport), self->splits);
     gtk_widget_show(self->splits);
+
+    self->icons_css_provider = NULL;
 
     self->split_last = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     add_class(self->split_last, "split-last");
@@ -122,6 +126,12 @@ static void splits_show_game(LSComponent* self_, const ls_game* game,
         return;
     }
 
+    self->split_icons = calloc(self->split_count, sizeof(GtkWidget*));
+    if (!self->split_titles) {
+        free(self->split_rows);
+        return;
+    }
+
     self->split_deltas = calloc(self->split_count, sizeof(GtkWidget*));
     if (!self->split_deltas) {
         free(self->split_rows);
@@ -137,6 +147,8 @@ static void splits_show_game(LSComponent* self_, const ls_game* game,
         return;
     }
 
+    GString* icons_css_src = g_string_new(".split-icon { background-repeat: no-repeat; background-position: center; min-width: 20px; min-height: 20px; background-size: 20px; margin-right: 4px; }");
+
     for (i = 0; i < self->split_count; ++i) {
         self->split_rows[i] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         add_class(self->split_rows[i], "split");
@@ -148,25 +160,6 @@ static void splits_show_game(LSComponent* self_, const ls_game* game,
         add_class(self->split_titles[i], "split-title");
         gtk_widget_set_halign(self->split_titles[i], GTK_ALIGN_START);
         gtk_widget_set_hexpand(self->split_titles[i], TRUE);
-        gtk_container_add(GTK_CONTAINER(self->split_rows[i]),
-            self->split_titles[i]);
-
-        self->split_deltas[i] = gtk_label_new(NULL);
-        add_class(self->split_deltas[i], "split-delta");
-        gtk_widget_set_size_request(self->split_deltas[i], 1, -1);
-        gtk_container_add(GTK_CONTAINER(self->split_rows[i]),
-            self->split_deltas[i]);
-
-        self->split_times[i] = gtk_label_new(NULL);
-        add_class(self->split_times[i], "split-time");
-        gtk_widget_set_halign(self->split_times[i], GTK_ALIGN_END);
-        gtk_container_add(GTK_CONTAINER(self->split_rows[i]),
-            self->split_times[i]);
-
-        if (game->split_times[i]) {
-            ls_split_string(str, game->split_times[i], 0);
-            gtk_label_set_text(GTK_LABEL(self->split_times[i]), str);
-        }
 
         if (game->split_titles[i]
             && strlen(game->split_titles[i])) {
@@ -185,7 +178,65 @@ static void splits_show_game(LSComponent* self_, const ls_game* game,
             }
         }
 
+        if (game->contains_icons) {
+            if (game->split_icon_paths[i]) {
+                // g_string_append_printf(icons_css_src, ".split:nth-child(%d) .split-icon { background-image: url('%s'); }", i+1, game->split_icon_paths[i]);
+                g_string_append_printf(
+                    icons_css_src,
+                    ".%s .split-icon { background-image: url('%s'); }",
+                    str, game->split_icon_paths[i]);
+            }
+            self->split_icons[i] = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+            add_class(self->split_icons[i], "split-icon");
+            // set size but allow to dinamically change it from css with min-width and min-height
+            gtk_widget_set_size_request(self->split_icons[i], 20, 20);
+            gtk_container_add(GTK_CONTAINER(self->split_rows[i]), self->split_icons[i]);
+            gtk_widget_show(self->split_icons[i]);
+        }
+        gtk_container_add(GTK_CONTAINER(self->split_rows[i]), self->split_titles[i]);
+
+        self->split_deltas[i] = gtk_label_new(NULL);
+        add_class(self->split_deltas[i], "split-delta");
+        gtk_widget_set_size_request(self->split_deltas[i], 1, -1);
+        gtk_container_add(GTK_CONTAINER(self->split_rows[i]),
+            self->split_deltas[i]);
+
+        self->split_times[i] = gtk_label_new(NULL);
+        add_class(self->split_times[i], "split-time");
+        gtk_widget_set_halign(self->split_times[i], GTK_ALIGN_END);
+        gtk_container_add(GTK_CONTAINER(self->split_rows[i]),
+            self->split_times[i]);
+
+        if (game->split_times[i]) {
+            ls_split_string(str, game->split_times[i], 0);
+            gtk_label_set_text(GTK_LABEL(self->split_times[i]), str);
+        }
+
         gtk_widget_show_all(self->split_rows[i]);
+    }
+
+    if (self->icons_css_provider) {
+        // remove old css provider
+        gtk_style_context_remove_provider_for_screen(
+            gdk_screen_get_default(),
+            GTK_STYLE_PROVIDER(self->icons_css_provider));
+        g_object_unref(self->icons_css_provider);
+        self->icons_css_provider = NULL;
+    }
+
+    if (icons_css_src->len > 0) {
+        self->icons_css_provider = gtk_css_provider_new();
+        gtk_css_provider_load_from_data(
+            self->icons_css_provider,
+            icons_css_src->str,
+            icons_css_src->len,
+            NULL);
+        // add new css provider
+        gtk_style_context_add_provider_for_screen(
+            gdk_screen_get_default(),
+            GTK_STYLE_PROVIDER(self->icons_css_provider),
+            GTK_STYLE_PROVIDER_PRIORITY_USER);
+        g_string_free(icons_css_src, TRUE);
     }
 
     gtk_widget_show(self->splits);
