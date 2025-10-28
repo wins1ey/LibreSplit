@@ -1,12 +1,29 @@
-# <img src="assets/libresplit.svg" width=43 align=top> [LibreSplit](https://libresplit.loomeh.is-a.dev)
+<p align="center">
+<img src="assets/libresplit.svg" width="100" height="100" align="top"/>
+</p>
+<h1 align="center"><a href="https://libresplit.loomeh.is-a.dev">LibreSplit</a></h1>
 
-[![Discord](https://img.shields.io/discord/1381914148585078804?style=flat-square&logo=discord&label=LibreSplit&color=%237289da)](https://discord.gg/qbzD7MBjyw)
-[![Build Status](https://github.com/LibreSplit/LibreSplit/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/LibreSplit/LibreSplit/actions)
+<p align="center">
+<img src="https://img.shields.io/badge/Code-00599C?style=for-the-badge&logo=c&logoColor=white"</img>
+<img src="https://img.shields.io/badge/AutoSplitters-000081?style=for-the-badge&logo=lua&logoColor=white"</img>
+<img src="https://img.shields.io/github/stars/LibreSplit/LibreSplit?style=for-the-badge&logo=GitHub"</img>
+<img src="https://img.shields.io/static/v1?label=Made%20with&message=GTK%203.0&color=725d9c&style=for-the-badge&logo=GTK&logoColor=white"/>
+<img src="https://img.shields.io/github/license/LibreSplit/LibreSplit?label=license&style=for-the-badge&logo=GNU&logoColor=white&color=b85353"/>
+<p>
+
+<p align="center">
+<a href="https://discord.gg/qbzD7MBjyw"><img src="https://img.shields.io/discord/1381914148585078804?style=for-the-badge&logo=Discord&label=LibreSplit&color=7289da"</img></a>
+<a href="https://github.com/LibreSplit/LibreSplit/actions"><img src="https://img.shields.io/github/actions/workflow/status/LibreSplit/LibreSplit/build.yml?style=for-the-badge&logo=GitHub"</img></a>
+</p>
+
+## About
 
 LibreSplit is a speedrun timer based on [urn](https://github.com/3snowp7im/urn) that adds support for Lua-based auto splitters that are easy to port from ASL.
 
-<img src="https://github.com/wins1ey/LibreSplit/assets/34382191/2adfdae5-9a21-4bdf-a4c4-f1d5962a0b63" width=350>
-<img src="https://github.com/wins1ey/LibreSplit/assets/34382191/4455f57a-3d34-4fa3-9dff-2b342b6c56da" width=350>
+<p align="center">
+<img src="https://github.com/wins1ey/LibreSplit/assets/34382191/2adfdae5-9a21-4bdf-a4c4-f1d5962a0b63" width="350">
+<img src="https://github.com/wins1ey/LibreSplit/assets/34382191/4455f57a-3d34-4fa3-9dff-2b342b6c56da" width="350">
+</p>
 
 ### If you are looking for the public repository of splits, autosplitters and themes. They are located [here](https://github.com/LibreSplit/LibreSplit-resources)
 
@@ -16,8 +33,35 @@ LibreSplit is a speedrun timer based on [urn](https://github.com/3snowp7im/urn) 
 - **Auto Splitter Support:** Utilize Lua-based auto splitters to automate split timing based on in-game events.
 - **Customizable Themes:** Personalize your timer's appearance by creating and applying custom themes.
 - **Flexible Configuration:** Configure keybindings and various settings to suit your preferences.
+- **Icon support for splits.**
+- **Always on Top support.**
+- **Auto Splitter Support:** Use Lua to write your own auto splitters or easily port them from LiveSplit's ASL.
 
-## Dependencies
+----
+
+## Quick Start and Installation
+
+### Install using your distro's package manager (recommended)
+
+<details>
+<summary>Arch-based Distros</summary>
+
+See the [libresplit-git](https://aur.archlinux.org/packages/libresplit-git) package on the Arch User Repository (AUR).
+
+If you're using an AUR helper (like `yay`) you can use it to install LibreSplit, for example:
+
+```sh
+yay libresplit-git
+```
+</details>
+
+<details>
+<summary>NixOS</summary>
+
+See the [libresplit](https://search.nixos.org/packages?channel=25.05&show=libresplit&query=libresplit) package, courtesy of [@fgaz](https://github.com/fgaz).
+</details>
+
+### Building Manually
 
 LibreSplit requires the following dependencies on your system to compile:
 
@@ -27,19 +71,46 @@ LibreSplit requires the following dependencies on your system to compile:
 - `libjansson`
 - `luajit`
 
-## Installation
+Install the required dependencies:
 
-### Package manager (recommended)
-* AUR/Arch based distro: [libresplit-git](https://aur.archlinux.org/packages/libresplit-git)
+<details>
+<summary>Debian-based systems</summary>
 
-### Manual install
-```bash
-git clone https://github.com/wins1ey/LibreSplit
+```sh
+sudo apt update
+sudo apt install build-essential libgtk3-dev libjansson-dev meson luajit
+```
+</details>
+
+<details>
+<summary>Arch-based systems</summary>
+
+```sh
+sudo pacman -Syu
+sudo pacman -S gtk3 jansson luajit git meson
+```
+</details>
+
+Clone the project:
+
+```sh
+git clone https://github.com/LibreSplit/LibreSplit
 cd LibreSplit
+```
+
+Now compile and install:
+
+```sh
 meson setup build -Dbuildtype=release
 meson compile -C build
 meson install -C build
 ```
+
+All done! Now you can start the desktop **LibreSplit** or run `/usr/local/bin/libresplit`.
+
+----
+
+<!-- TODO: Finish -->
 
 ## Getting Started
 
