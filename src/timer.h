@@ -34,7 +34,6 @@ struct ls_timer {
     long long now;
     long long start_time;
     long long time;
-    long long last_paused_stamp;
     long long sum_of_bests;
     long long world_record;
     long long* split_times;
