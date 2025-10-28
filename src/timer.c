@@ -167,6 +167,7 @@ void ls_game_release(const ls_game* game)
         for (i = 0; i < game->split_count; ++i) {
             if (game->split_titles[i]) {
                 free(game->split_titles[i]);
+                free(game->split_icon_paths[i]);
             }
         }
         free(game->split_titles);
@@ -291,6 +292,11 @@ int ls_game_create(ls_game** game_ptr, const char* path, char** error_msg)
             error = 1;
             goto game_create_done;
         }
+        game->split_icon_paths = calloc(game->split_count, sizeof(char*));
+        if (!game->split_icon_paths) {
+            error = 1;
+            goto game_create_done;
+        }
         game->segment_times = calloc(game->split_count,
             sizeof(long long));
         if (!game->segment_times) {
@@ -309,6 +315,7 @@ int ls_game_create(ls_game** game_ptr, const char* path, char** error_msg)
             error = 1;
             goto game_create_done;
         }
+        game->contains_icons = false;
         // copy splits
         for (i = 0; i < game->split_count; ++i) {
             json_t* split;
@@ -323,11 +330,23 @@ int ls_game_create(ls_game** game_ptr, const char* path, char** error_msg)
                     goto game_create_done;
                 }
             }
+
+            split_ref = json_object_get(split, "icon");
+            if (split_ref) {
+                game->split_icon_paths[i] = strdup(json_string_value(split_ref));
+                if (!game->split_icon_paths[i]) {
+                    error = 1;
+                    goto game_create_done;
+                }
+                game->contains_icons = true;
+            }
+
             split_ref = json_object_get(split, "time");
             if (split_ref) {
                 game->split_times[i] = ls_time_value(
                     json_string_value(split_ref));
             }
+
             // Check whether the split time is 0, if it is set it to max value
             if (game->split_times[i] == 0) {
                 game->split_times[i] = LLONG_MAX;
@@ -439,8 +458,8 @@ int ls_game_save(const ls_game* game)
     }
     for (i = 0; i < game->split_count; ++i) {
         json_t* split = json_object();
-        json_object_set_new(split, "title",
-            json_string(game->split_titles[i]));
+        json_object_set_new(split, "title", json_string(game->split_titles[i]));
+        json_object_set_new(split, "icon", json_string(game->split_icon_paths[i]));
 
         // Only save the split if it's above 0. Otherwise it's impossible to beat 0
         if (game->split_times[i] > 0 && game->split_times[i] < LLONG_MAX) {
