@@ -12,7 +12,6 @@
 #include "auto-splitter.h"
 #include "bind.h"
 #include "component/components.h"
-#include "gio/gio.h"
 #include "settings.h"
 #include "timer.h"
 
