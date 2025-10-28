@@ -64,20 +64,21 @@ meson install -C build
 
 4. Customize keybindings by setting the values in `com.github.wins1ey.libresplit` path with `gsettings`.
 
-   | Key                        | Type    | Description                          |
-   |----------------------------|---------|--------------------------------------|
-   | start-decorated            | Boolean | Start with window decorations        |
-   | start-on-top               | Boolean | Start with window as "Always on top" |
-   | hide-cursor                | Boolean | Hide cursor in window                |
-   | global-hotkeys             | Boolean | Enables global hotkeys               |
-   | theme                      | String  | Default theme name                   |
-   | theme-variant              | String  | Default theme variant                |
-   | keybind-start-split        | String  | Start/split keybind                  |
-   | keybind-stop-reset         | String  | Stop/Reset keybind                   |
-   | keybind-cancel             | String  | Cancel keybind                       |
-   | keybind-unsplit            | String  | Unsplit keybind                      |
-   | keybind-skip-split         | String  | Skip split keybind                   |
-   | keybind-toggle-decorations | String  | Toggle window decorations keybind    |
+   | Key                        | Type    | Description                                    |
+   |----------------------------|---------|------------------------------------------------|
+   | start-decorated            | Boolean | Start with window decorations                  |
+   | start-on-top               | Boolean | Start with window as "Always on top"           |
+   | hide-cursor                | Boolean | Hide cursor in window                          |
+   | global-hotkeys             | Boolean | Enables global hotkeys                         |
+   | theme                      | String  | Default theme name                             |
+   | theme-variant              | String  | Default theme variant                          |
+   | keybind-start-split        | String  | Start/split keybind                            |
+   | keybind-stop-reset         | String  | Stop/Reset keybind                             |
+   | keybind-cancel             | String  | Cancel keybind                                 |
+   | keybind-unsplit            | String  | Unsplit keybind                                |
+   | keybind-skip-split         | String  | Skip split keybind                             |
+   | keybind-toggle-decorations | String  | Toggle window decorations keybind              |
+   | keybind-toggle-win-on-top  | String  | Toggle window "Always on top" state keybind    |
 
 Keybind strings should be parseable by
 [gtk_accelerator_parse](https://developer.gnome.org/gtk3/stable/gtk3-Keyboard-Accelerators.html#gtk-accelerator-parse).
