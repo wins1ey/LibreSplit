@@ -739,7 +739,7 @@ int ls_timer_split(ls_timer* timer)
 
 int ls_timer_skip(ls_timer* timer)
 {
-    if (timer->running && timer->time > 0) {
+    if (timer->time > 0) {
         if (timer->curr_split < timer->game->split_count) {
             timer->split_times[timer->curr_split] = 0;
             timer->split_deltas[timer->curr_split] = 0;
