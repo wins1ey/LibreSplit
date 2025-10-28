@@ -959,16 +959,42 @@ static void toggle_auto_splitter(GtkCheckMenuItem* menu_item, gpointer user_data
     }
 }
 
+static void menu_toggle_win_on_top(GtkCheckMenuItem* menu_item,
+    gpointer app)
+{
+    gboolean active = gtk_check_menu_item_get_active(menu_item);
+    GList* windows;
+    LSAppWindow* win;
+    windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    if (windows) {
+        win = LS_APP_WINDOW(windows->data);
+    } else {
+        win = ls_app_window_new(LS_APP(app));
+    }
+    gtk_window_set_keep_above(GTK_WINDOW(win), !win->win_on_top);
+    win->win_on_top = active;
+}
+
 // Create the context menu
 static gboolean button_right_click(GtkWidget* widget, GdkEventButton* event, gpointer app)
 {
     if (event->button == GDK_BUTTON_SECONDARY) {
+        GList *windows;
+        LSAppWindow *win;
+        windows = gtk_application_get_windows(GTK_APPLICATION(app));
+        if (windows){
+            win = LS_APP_WINDOW(windows->data);
+        } else {
+            win = ls_app_window_new(LS_APP(app));
+        }
         GtkWidget* menu = gtk_menu_new();
         GtkWidget* menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
         GtkWidget* menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
         GtkWidget* menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
         GtkWidget* menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), atomic_load(&auto_splitter_enabled));
+        GtkWidget* menu_enable_win_on_top = gtk_check_menu_item_new_with_label("Always on Top");
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_win_on_top), win->win_on_top);
         GtkWidget* menu_reload = gtk_menu_item_new_with_label("Reload");
         GtkWidget* menu_close = gtk_menu_item_new_with_label("Close");
         GtkWidget* menu_quit = gtk_menu_item_new_with_label("Quit");
@@ -978,6 +1004,7 @@ static gboolean button_right_click(GtkWidget* widget, GdkEventButton* event, gpo
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save_splits);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_auto_splitter);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_enable_auto_splitter);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_enable_win_on_top);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_reload);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_close);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_quit);
@@ -987,6 +1014,7 @@ static gboolean button_right_click(GtkWidget* widget, GdkEventButton* event, gpo
         g_signal_connect(menu_save_splits, "activate", G_CALLBACK(save_activated), app);
         g_signal_connect(menu_open_auto_splitter, "activate", G_CALLBACK(open_auto_splitter), app);
         g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_auto_splitter), NULL);
+        g_signal_connect(menu_enable_win_on_top, "toggled", G_CALLBACK(menu_toggle_win_on_top), app);
         g_signal_connect(menu_reload, "activate", G_CALLBACK(reload_activated), app);
         g_signal_connect(menu_close, "activate", G_CALLBACK(close_activated), app);
         g_signal_connect(menu_quit, "activate", G_CALLBACK(quit_activated), app);
