@@ -35,7 +35,7 @@ LibreSplit is a speedrun timer based on [urn](https://github.com/3snowp7im/urn) 
 - **Flexible Configuration:** Configure keybindings and various settings to suit your preferences.
 - **Icon support for splits.**
 - **Always on Top support.**
-- **Auto Splitter Support:** Use Lua to write your own auto splitters or easily port them from LiveSplit's ASL.
+- **Support for in-game time.**
 
 ----
 
@@ -101,8 +101,8 @@ All done! Now you can start the desktop **LibreSplit** or run `/usr/local/bin/li
 
 When you start **LibreSplit** for the first time, it will create the `libresplit` directory in your config directory (it will usually be `~/.config/libresplit`). Such directory will contain:
 
-- Splits;
-- Auto Splitters;
+- Splits.
+- Auto Splitters.
 - Themes.
 
 All 3 directories will start empty, so you may want to download the [resource repository](https://github.com/LibreSplit/LibreSplit-resources/) first and clone it in `~/.config/libresplit/` before starting LibreSplit for the first time.
@@ -224,9 +224,9 @@ For more information, check the [Themes documentation](docs/themes.md).
 
     You can contribute in many ways:
 
-    - By making [pull requests](https://github.com/LibreSplit/LibreSplit/pulls);
-    - By creating new themes, split files or auto splitters and add them to our [resource repository](https://github.com/LibreSplit/LibreSplit-resources/);
-    - By [reporting issues](https://github.com/LibreSplit/LibreSplit/pulls);
+    - By making [pull requests](https://github.com/LibreSplit/LibreSplit/pulls).
+    - By creating new themes, split files or auto splitters and add them to our [resource repository](https://github.com/LibreSplit/LibreSplit-resources/).
+    - By [reporting issues](https://github.com/LibreSplit/LibreSplit/pulls).
     - By sending us suggestions, feature requests, improve the documentation and more. Feel free to join our [discord server](https://discord.gg/qbzD7MBjyw) to follow LibreSplit's development up close.
 
 ---
