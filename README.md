@@ -39,32 +39,23 @@ LibreSplit is a speedrun timer based on [urn](https://github.com/3snowp7im/urn) 
 
 ----
 
-## Quick Start and Installation
+## Installation
 
-### Install using your distro's package manager (recommended)
+- Arch-based Distros
+    - `yay libresplit-git`
+    - `paru libresplit-git`
 
-<details>
-<summary>Arch-based Distros</summary>
+    See the [libresplit-git](https://aur.archlinux.org/packages/libresplit-git) package on the Arch User Repository (AUR).
 
-See the [libresplit-git](https://aur.archlinux.org/packages/libresplit-git) package on the Arch User Repository (AUR).
+- NixOS
 
-If you're using an AUR helper (like `yay`) you can use it to install LibreSplit, for example:
+    See the [libresplit](https://search.nixos.org/packages?channel=25.05&show=libresplit&query=libresplit) package, courtesy of [@fgaz](https://github.com/fgaz).
 
-```sh
-yay libresplit-git
-```
-</details>
-
-<details>
-<summary>NixOS</summary>
-
-See the [libresplit](https://search.nixos.org/packages?channel=25.05&show=libresplit&query=libresplit) package, courtesy of [@fgaz](https://github.com/fgaz).
-</details>
-
-### Building Manually
+## Building
 
 LibreSplit requires the following dependencies on your system to compile:
 
+- `git`
 - `meson`
 - `libgtk+-3.0`
 - `x11`
@@ -73,23 +64,19 @@ LibreSplit requires the following dependencies on your system to compile:
 
 Install the required dependencies:
 
-<details>
-<summary>Debian-based systems</summary>
+- Debian-based systems
 
-```sh
-sudo apt update
-sudo apt install build-essential libgtk3-dev libjansson-dev meson luajit
-```
-</details>
+    ```sh
+    sudo apt update
+    sudo apt install build-essential libgtk3-dev libjansson-dev meson luajit
+    ```
 
-<details>
-<summary>Arch-based systems</summary>
+- Arch-based systems
 
-```sh
-sudo pacman -Syu
-sudo pacman -S gtk3 jansson luajit git meson
-```
-</details>
+    ```sh
+    sudo pacman -Sy
+    sudo pacman -S gtk3 jansson luajit git meson
+    ```
 
 Clone the project:
 
@@ -117,6 +104,8 @@ When you start **LibreSplit** for the first time, it will create the `libresplit
 - Splits;
 - Auto Splitters;
 - Themes.
+
+All 3 directories will start empty, so you may want to download the [resource repository](https://github.com/LibreSplit/LibreSplit-resources/) first and clone it in `~/.config/libresplit/` before starting LibreSplit for the first time.
 
 A file dialog will then appear, asking you to select a Split JSON file (see [Split files](#split-files)).
 

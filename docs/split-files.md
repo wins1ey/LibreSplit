@@ -45,15 +45,15 @@ Here is a quick example of how a simple split file would look:
     "splits": [
         {
             "title": "Maths",
-            "time": 05:12:55.123456,
-            "best_time": 05:12:55.123456,
-            "best_segment": 05:12:55.123456,
+            "time": "05:12:55.123456",
+            "best_time": "05:12:55.123456",
+            "best_segment": "05:12:55.123456",
         },
         {
             "title": "Science",
-            "time": 02:23:35.123456,
-            "best_time": 01:15:35.789520,
-            "best_segment": 01:15:35.789520,
+            "time": "02:23:35.123456",
+            "best_time": "01:15:35.789520",
+            "best_segment": "01:15:35.789520",
         }
     ],
     "width": 250,
