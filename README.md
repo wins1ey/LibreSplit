@@ -31,7 +31,7 @@ LibreSplit is a speedrun timer based on [urn](https://github.com/3snowp7im/urn) 
 
 - **Split Tracking and Timing:** Accurately track and time your speedruns with ease.
 - **Auto Splitter Support:** Utilize Lua-based auto splitters to automate split timing based on in-game events.
-- **Customizable Themes:** Personalize your timer's appearance by creating and applying custom themes.
+- **Customizable Themes:** Customize your timer's appearance by creating and applying custom themes.
 - **Flexible Configuration:** Configure keybindings and various settings to suit your preferences.
 - **Icon support for splits.**
 - **Always on Top support.**
@@ -108,127 +108,145 @@ meson install -C build
 
 All done! Now you can start the desktop **LibreSplit** or run `/usr/local/bin/libresplit`.
 
-----
+---
 
-<!-- TODO: Finish -->
+## Usage
 
-## Getting Started
+When you start **LibreSplit** for the first time, it will create the `libresplit` directory in your config directory (it will usually be `~/.config/livesplit`). Such directory will contain:
 
-1. Launch LibreSplit by executing the compiled binary. `libresplit` inside build
-2. When first launched, LibreSplit will create the `libresplit` directory in your config directory. Auto splitters, splits and themes go in their respective folders inside.
-3. The initial window is undecorated, but you can toggle window decorations by pressing the right Control key.
-4. Control the timer using the following key presses:
+- Splits;
+- Auto Splitters;
+- Themes.
 
-   | Key        | Stopped Action | Started Action |
-   |------------|----------------|----------------|
-   | Spacebar   | Start          | Split          |
-   | Backspace  | Reset          | Stop           |
-   | Delete     | Cancel         | -              |
+A file dialog will then appear, asking you to select a Split JSON file (see [Split files](#split-files)).
 
-- The "Cancel" action resets the timer and decrements the attempt counter. A run reset before the start delay is automatically cancelled.
-- To manually modify the current split, use the following key actions:
+Initially the window is undecorated. You can toggle window decorations by pressing the `Right Control` key.
 
-   | Key         | Action        |
-   |-------------|---------------|
-   | Page Up     | Unsplit       |
-   | Page Down   | Skip split    |
+### Default Keybinds
 
-4. Customize keybindings by setting the values in `com.github.wins1ey.libresplit` path with `gsettings`.
+The timer is controlled with the following keys
+(note that their action **depends on the state of the timer**):
 
-   | Key                        | Type    | Description                       |
-   |----------------------------|---------|-----------------------------------|
-   | start-decorated            | Boolean | Start with window decorations     |
-   | hide-cursor                | Boolean | Hide cursor in window             |
-   | global-hotkeys             | Boolean | Enables global hotkeys            |
-   | theme                      | String  | Default theme name                |
-   | theme-variant              | String  | Default theme variant             |
-   | keybind-start-split        | String  | Start/split keybind               |
-   | keybind-stop-reset         | String  | Stop/Reset keybind                |
-   | keybind-cancel             | String  | Cancel keybind                    |
-   | keybind-unsplit            | String  | Unsplit keybind                   |
-   | keybind-skip-split         | String  | Skip split keybind                |
-   | keybind-toggle-decorations | String  | Toggle window decorations keybind |
+| Key                   | Timer is Stopped   | Timer is running   |
+| --------------------- | ------------------ | ------------------ |
+| <kbd>Spacebar</kbd>   | Start timer        | Split              |
+| <kbd>Backspace</kbd>  | Reset timer        | Stop timer         |
+| <kbd>Delete</kbd>     | Cancel             | -                  |
 
-Keybind strings should be parseable by
-[gtk_accelerator_parse](https://developer.gnome.org/gtk3/stable/gtk3-Keyboard-Accelerators.html#gtk-accelerator-parse).
+Cancel will **reset the timer** and **decrement the attempt counter**. A run that is reset before the start delay is automatically cancelled.
 
-For more information: [here](https://docs.gtk.org/gtk4/func.accelerator_parse.html) and [here](https://gitlab.gnome.org/GNOME/gtk/-/blob/main/gdk/gdkkeysyms.h)
+If forget to split, or accidentally split twice, you can manually change the current split:
+
+| Key                  | Action     |
+| -------------------- | ---------- |
+| <kbd>Page Up</kbd>   | Unsplit    |
+| <kbd>Page Down</kbd> | Skip Split |
+
+### Colors
+
+The color of a time or delta has a special meaning.
+
+| Color         | Meaning                                  |
+| ------------- | ---------------------------------------- |
+| Dark red      | Behind splits in PB and losing time      |
+| Light red     | Behind splits in PB and gaining time     |
+| Dark green    | Ahead of splits in PB and gaining time   |
+| Light green   | Ahead of splits in PB and losing time    |
+| Blue          | Best split time in any run               |
+| Gold          | Best segment time in any run             |
+
+---
+
+## Settings and Keybinds
+
+If you want to change the default settings or keybinds, you can check the [Settings and Keybinds documentation](docs/settings-keybinds.md)
+
+---
 
 ## Auto Splitters
 
-LibreSplit supports auto splitters written in Lua to automate split timing based on in-game events. Feel free to make your own, Documentation can be found [here](docs/auto-splitters.md)
+LibreSplit supports auto splitters written in Lua to automate split timing based on in-game events.
+
+Feel free to make your own, Documentation can be found [here](docs/auto-splitters.md)
+
+---
 
 ## Split Files
 
-Split files in LibreSplit are stored as well-formed JSON. The split file must contain a main object. The following keys are optional:
+Split files in LibreSplit are stored as well-formed JSON.
 
-| Key           | Value                                 |
-|---------------|---------------------------------------|
-| title         | Title string at top of window         |
-| start_delay   | Non-negative delay until timer starts |
-| world_record  | Best known time                       |
-| splits        | Array of split objects                |
-| theme         | Window theme                          |
-| theme_variant | Window theme variant                  |
-| width         | Window width                          |
-| height        | Window height                         |
+Check the [Split Files documentation](docs/split-files.md) for more information.
 
-Each split object within the `splits` array has the following keys:
-
-| Key          | Value                  |
-|--------------|------------------------|
-| title        | Split title            |
-| time         | Split time             |
-| best_time    | Your best split time   |
-| best_segment | Your best segment time |
-
-Times are strings in HH:MM:SS.mmmmmm format
+---
 
 ## Themes
 
-LibreSplit supports customizable themes, allowing you to personalize the timer's appearance. To create a theme:
+You can customize LibreSplit to your liking using themes.
 
-1. Create a CSS stylesheet with your desired styles.
-2. Place the stylesheet in the `~/.config/libresplit/themes/<name>/<name>.css` directory. (If you have `XDG_CONFIG_HOME` env var pointing somewher else than .config it will be wherever it points to)
-3. Set the global theme by modifying the `theme` value in `gsettings`.
-4. Theme variants should follow the pattern `<name>-<variant>.css`.
-5. Individual splits can apply their own themes by specifying a `theme` key in the main split object.
+For more information, check the [Themes documentation](docs/themes.md).
 
-For a list of supported CSS properties, refer to the [GtkCssProvider](https://developer.gnome.org/gtk3/stable/GtkCssProvider.html) documentation.
+---
 
-## CSS Classes
+## FAQ
 
-The following CSS classes can be used to style the elements of the LibreSplit interface:
+- **How do I resize the application window?**
 
-```css
-.window
-.header
-.title
-.attempt-count
-.time
-.delta
-.timer
-.timer-seconds
-.timer-millis
-.delay
-.splits
-.split
-.current-split
-.split-title
-.split-time
-.split-delta
-.split-last
-.done
-.behind
-.losing
-.best-segment
-.best-split
-.footer
-.prev-segment-label
-.prev-segment
-.sum-of-bests-label
-.sum-of-bests
-.personal-best-label
-.personal-best
-.world-record-label
-.world-record
+    You can edit the `width` and `height` properties in the [Split JSON File](docs/split-files.md)
+
+- **How do I change the default keybinds?**
+
+    You can change the keybinds using the `gsettings` command.
+
+    See [Settings and Keybinds](docs/settings-keybinds.md) for some examples and more information.
+
+- **How do I make the keybinds global?**
+
+    You can set the `global-hotkeys` property as `true` using `gsettings`. See [Settings and Keybinds](docs/settings-keybinds.md).
+
+    Wayland users experienced crashes when enabled `global-hotkeys`, so this settings is ignored for Wayland desktops. We are working towards a way to bring global hotkeys to everyone.
+
+- **Can I modify LibreSplit's appearance?**
+
+    Yes. You can [create your own theme](docs/themes.md) or [download themes online](https://github.com/LibreSplit/LibreSplit-resources/tree/main/themes).
+
+- **How can I make my own split file?**
+
+    You can use any existing JSON split file as an example from our [resource repository](https://github.com/LibreSplit/LibreSplit-resources/tree/main/splits) and refer to the [Split Files Documentation](docs/split-files.md) for more information.
+
+    You can place the split files wherever you prefer, just open them when starting LibreSplit.
+
+- **Can I define custom icons for my splits?**
+
+    Yes! You can use local files or web urls. See the `icon` key in the [split object](docs/split-files.md#split-object).
+
+    The default icon size is 20x20px, but you can change it like so:
+
+    ```css
+    .split-icon {
+        min-width: 24px;
+        min-height: 24px;
+        background-size: 24px;
+    }
+    ```
+
+- **Can I contribute?**
+
+    Absolutely!
+
+    You can contribute in many ways:
+
+    - By making [pull requests](https://github.com/LibreSplit/LibreSplit/pulls);
+    - By creating new themes, split files or auto splitters and add them to our [resource repository](https://github.com/LibreSplit/LibreSplit-resources/);
+    - By [reporting issues](https://github.com/LibreSplit/LibreSplit/pulls);
+    - By sending us suggestions, feature requests, improve the documentation and more. Feel free to join our [discord server](https://discord.gg/qbzD7MBjyw) to follow LibreSplit's development up close.
+
+---
+
+## Uninstall LibreSplit
+
+You can uninstall LibreSplit using your package manager or, if you built it manually, by running
+
+```sh
+cd build
+sudo ninja uninstall
+```
