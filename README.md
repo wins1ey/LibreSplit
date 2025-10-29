@@ -112,7 +112,7 @@ All done! Now you can start the desktop **LibreSplit** or run `/usr/local/bin/li
 
 ## Usage
 
-When you start **LibreSplit** for the first time, it will create the `libresplit` directory in your config directory (it will usually be `~/.config/livesplit`). Such directory will contain:
+When you start **LibreSplit** for the first time, it will create the `libresplit` directory in your config directory (it will usually be `~/.config/libresplit`). Such directory will contain:
 
 - Splits;
 - Auto Splitters;
