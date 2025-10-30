@@ -48,7 +48,8 @@ typedef struct
 struct _LSAppWindow {
     GtkApplicationWindow parent;
     char data_path[PATH_MAX];
-    int decorated;
+    gboolean decorated;
+    gboolean win_on_top;
     ls_game* game;
     ls_timer* timer;
     GdkDisplay* display;
@@ -64,6 +65,7 @@ struct _LSAppWindow {
     Keybind keybind_unsplit;
     Keybind keybind_skip_split;
     Keybind keybind_toggle_decorations;
+    Keybind keybind_toggle_win_on_top;
 };
 
 struct _LSAppWindowClass {
@@ -465,6 +467,12 @@ static void toggle_decorations(LSAppWindow* win)
     win->decorated = !win->decorated;
 }
 
+static void toggle_win_on_top(LSAppWindow* win)
+{
+    gtk_window_set_keep_above(GTK_WINDOW(win), !win->win_on_top);
+    win->win_on_top = !win->win_on_top;
+}
+
 static void keybind_start_split(GtkWidget* widget, LSAppWindow* win)
 {
     timer_start_split(win);
@@ -495,6 +503,11 @@ static void keybind_toggle_decorations(const char* str, LSAppWindow* win)
     toggle_decorations(win);
 }
 
+static void keybind_toggle_win_on_top(const char* str, LSAppWindow* win)
+{
+    toggle_win_on_top(win);
+}
+
 static gboolean ls_app_window_keypress(GtkWidget* widget,
     GdkEvent* event,
     gpointer data)
@@ -512,6 +525,8 @@ static gboolean ls_app_window_keypress(GtkWidget* widget,
         timer_skip(win);
     } else if (keybind_match(win->keybind_toggle_decorations, event->key)) {
         toggle_decorations(win);
+    } else if (keybind_match(win->keybind_toggle_win_on_top, event->key)) {
+        toggle_win_on_top(win);
     }
     return TRUE;
 }
@@ -570,6 +585,10 @@ static void ls_app_window_init(LSAppWindow* win)
         g_settings_get_string(settings, "keybind-toggle-decorations"));
     win->decorated = g_settings_get_boolean(settings, "start-decorated");
     gtk_window_set_decorated(GTK_WINDOW(win), win->decorated);
+    win->keybind_toggle_win_on_top = parse_keybind(
+        g_settings_get_string(settings, "keybind-toggle-win-on-top"));
+    win->win_on_top = g_settings_get_boolean(settings, "start-on-top");
+    gtk_window_set_keep_above(GTK_WINDOW(win), win->win_on_top);
 
     // Load CSS defaults
     provider = gtk_css_provider_new();
@@ -635,6 +654,10 @@ static void ls_app_window_init(LSAppWindow* win)
         keybinder_bind(
             g_settings_get_string(settings, "keybind-toggle-decorations"),
             (KeybinderHandler)keybind_toggle_decorations,
+            win);
+        keybinder_bind(
+            g_settings_get_string(settings, "keybind-toggle-win-on-top"),
+            (KeybinderHandler)keybind_toggle_win_on_top,
             win);
     } else {
         g_signal_connect(win, "key_press_event",
@@ -935,16 +958,42 @@ static void toggle_auto_splitter(GtkCheckMenuItem* menu_item, gpointer user_data
     }
 }
 
+static void menu_toggle_win_on_top(GtkCheckMenuItem* menu_item,
+    gpointer app)
+{
+    gboolean active = gtk_check_menu_item_get_active(menu_item);
+    GList* windows;
+    LSAppWindow* win;
+    windows = gtk_application_get_windows(GTK_APPLICATION(app));
+    if (windows) {
+        win = LS_APP_WINDOW(windows->data);
+    } else {
+        win = ls_app_window_new(LS_APP(app));
+    }
+    gtk_window_set_keep_above(GTK_WINDOW(win), !win->win_on_top);
+    win->win_on_top = active;
+}
+
 // Create the context menu
 static gboolean button_right_click(GtkWidget* widget, GdkEventButton* event, gpointer app)
 {
     if (event->button == GDK_BUTTON_SECONDARY) {
+        GList* windows;
+        LSAppWindow* win;
+        windows = gtk_application_get_windows(GTK_APPLICATION(app));
+        if (windows) {
+            win = LS_APP_WINDOW(windows->data);
+        } else {
+            win = ls_app_window_new(LS_APP(app));
+        }
         GtkWidget* menu = gtk_menu_new();
         GtkWidget* menu_open_splits = gtk_menu_item_new_with_label("Open Splits");
         GtkWidget* menu_save_splits = gtk_menu_item_new_with_label("Save Splits");
         GtkWidget* menu_open_auto_splitter = gtk_menu_item_new_with_label("Open Auto Splitter");
         GtkWidget* menu_enable_auto_splitter = gtk_check_menu_item_new_with_label("Enable Auto Splitter");
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_auto_splitter), atomic_load(&auto_splitter_enabled));
+        GtkWidget* menu_enable_win_on_top = gtk_check_menu_item_new_with_label("Always on Top");
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_enable_win_on_top), win->win_on_top);
         GtkWidget* menu_reload = gtk_menu_item_new_with_label("Reload");
         GtkWidget* menu_close = gtk_menu_item_new_with_label("Close");
         GtkWidget* menu_quit = gtk_menu_item_new_with_label("Quit");
@@ -954,6 +1003,7 @@ static gboolean button_right_click(GtkWidget* widget, GdkEventButton* event, gpo
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_save_splits);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_open_auto_splitter);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_enable_auto_splitter);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_enable_win_on_top);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_reload);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_close);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_quit);
@@ -963,6 +1013,7 @@ static gboolean button_right_click(GtkWidget* widget, GdkEventButton* event, gpo
         g_signal_connect(menu_save_splits, "activate", G_CALLBACK(save_activated), app);
         g_signal_connect(menu_open_auto_splitter, "activate", G_CALLBACK(open_auto_splitter), app);
         g_signal_connect(menu_enable_auto_splitter, "toggled", G_CALLBACK(toggle_auto_splitter), NULL);
+        g_signal_connect(menu_enable_win_on_top, "toggled", G_CALLBACK(menu_toggle_win_on_top), app);
         g_signal_connect(menu_reload, "activate", G_CALLBACK(reload_activated), app);
         g_signal_connect(menu_close, "activate", G_CALLBACK(close_activated), app);
         g_signal_connect(menu_quit, "activate", G_CALLBACK(quit_activated), app);
