@@ -1,15 +1,24 @@
 # Themes
 
-Create a theme stylesheet and place it in `themes/<name>/<name>.css` or
-directly in `~/.config/libresplit/themes/<name>/<name>.css`, where `name` is the name of your theme.
+LibreSplit can be customized using themes, which are made of CSS stylesheets.
 
-You can set the global theme by changing the `theme` value in gsettings.
+## Changing the theme
 
-Theme variants should follow the pattern `<name>-<variant>.css`.
-Each split file can apply their own themes by specifying a `theme` key in the main object.
+You can set the global theme by changing the `theme` value using `gsettings`.
 
-See [this](https://docs.gtk.org/gtk3/css-properties.html) for a list of supported
-CSS properties. Note that you can also modify the default font-family.
+```sh
+gsettings set com.github.wins1ey.libresplit theme <theme-name>
+```
+
+Also each split JSON file can apply their own themes by specifying a `theme` key in the main object, see [the split files documentation](split-files.md) for more information.
+
+## Creating your own theme
+
+1. Create a CSS stylesheet with your desired styles.
+2. Place the stylesheet under the `~/.config/libresplit/themes/<name>/<name>.css`directory where `name` is the name of your theme. If you have your `XDG_CONFIG_HOME` env var pointing somewhere else, you may need to change the directory accordingly.
+3. Theme variants should follow the pattern `<name>-<variant>.css`.
+
+See the [GtkCssProvider documentation](https://docs.gtk.org/gtk3/css-properties.html) for a list of supported CSS properties. Note that you can also modify the default font-family.
 
 | LibreSplit CSS classes        | Explanation Where needed                        |
 | ----------------------------- | ----------------------------------------------- |
