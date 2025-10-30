@@ -132,7 +132,7 @@ The timer is controlled with the following keys
 
 Cancel will **reset the timer** and **decrement the attempt counter**. A run that is reset before the start delay is automatically cancelled.
 
-If forget to split, or accidentally split twice, you can manually change the current split:
+If you forget to split, or accidentally split twice, you can manually change the current split:
 
 | Key                  | Action     |
 | -------------------- | ---------- |
