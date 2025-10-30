@@ -5,10 +5,18 @@
 
 <p align="center">
 <img src="https://img.shields.io/badge/Code-00599C?style=for-the-badge&logo=c&logoColor=white"</img>
-<img src="https://img.shields.io/badge/AutoSplitters-000081?style=for-the-badge&logo=lua&logoColor=white"</img>
+<a href="https://github.com/LibreSplit/LibreSplit-resources/tree/main/auto-splitters">
+<img src="https://img.shields.io/badge/Auto%20Splitters-000081?style=for-the-badge&logo=lua&logoColor=white"</img>
+</a>
+<a href="https://github.com/LibreSplit/LibreSplit/stargazers">
 <img src="https://img.shields.io/github/stars/LibreSplit/LibreSplit?style=for-the-badge&logo=GitHub"</img>
+</a>
+<a href="https://docs.gtk.org/gtk3/getting_started.html">
 <img src="https://img.shields.io/static/v1?label=Made%20with&message=GTK%203.0&color=725d9c&style=for-the-badge&logo=GTK&logoColor=white"/>
+</a>
+<a href="https://github.com/LibreSplit/LibreSplit/blob/main/LICENSE">
 <img src="https://img.shields.io/github/license/LibreSplit/LibreSplit?label=license&style=for-the-badge&logo=GNU&logoColor=white&color=b85353"/>
+</a>
 <p>
 
 <p align="center">
@@ -25,7 +33,7 @@ LibreSplit is a speedrun timer based on [urn](https://github.com/3snowp7im/urn) 
 <img src="https://github.com/wins1ey/LibreSplit/assets/34382191/4455f57a-3d34-4fa3-9dff-2b342b6c56da" width="350">
 </p>
 
-### If you are looking for the public repository of splits, autosplitters and themes. They are located [here](https://github.com/LibreSplit/LibreSplit-resources)
+### If you are looking for the public repository of splits, auto splitters and themes. They are located [here](https://github.com/LibreSplit/LibreSplit-resources)
 
 ## Features
 
