@@ -108,14 +108,14 @@ static void ls_time_string_format(char* string,
             sprintf(string, "%s%d:%02d:%02d", sign, hours, minutes, seconds);
         } else {
             sprintf(string, "%s%d:%02d:%02d%s",
-                    sign, hours, minutes, seconds, dot_subsecs);
+                sign, hours, minutes, seconds, dot_subsecs);
         }
     } else if (minutes) {
         if (compact) {
             sprintf(string, "%s%d:%02d", sign, minutes, seconds);
         } else {
             sprintf(string, "%s%d:%02d%s",
-                    sign, minutes, seconds, dot_subsecs);
+                sign, minutes, seconds, dot_subsecs);
         }
     } else {
         sprintf(string, "%s%d%s", sign, seconds, dot_subsecs);
