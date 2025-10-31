@@ -740,7 +740,11 @@ int ls_timer_split(ls_timer* timer)
 int ls_timer_skip(ls_timer* timer)
 {
     if (timer->time > 0) {
-        if (timer->curr_split + 1 < timer->game->split_count) {
+        if (timer->curr_split + 1 == timer->game->split_count) {
+            // This is the last split, do a normal split instead of skipping
+            return ls_timer_split(timer);
+        }
+        if (timer->curr_split < timer->game->split_count) {
             timer->split_times[timer->curr_split] = 0;
             timer->split_deltas[timer->curr_split] = 0;
             timer->split_info[timer->curr_split] = 0;
