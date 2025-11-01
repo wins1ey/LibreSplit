@@ -8,11 +8,13 @@
 
 #include <luajit.h>
 
+#include "glib.h"
 #include "memory.h"
 #include "process.h"
 
 bool memory_error;
 extern game_process process;
+gboolean display_non_capable_mem_read_dialog(void* data);
 
 #define READ_MEMORY_FUNCTION(value_type)                                                         \
     value_type read_memory_##value_type(uint64_t mem_address, int32_t* err)                      \
@@ -51,7 +53,7 @@ READ_MEMORY_FUNCTION(float)
 READ_MEMORY_FUNCTION(double)
 READ_MEMORY_FUNCTION(bool)
 
-char* read_memory_string(uint64_t mem_address, int buffer_size)
+char* read_memory_string(uint64_t mem_address, int buffer_size, int32_t* err)
 {
     char* buffer = (char*)malloc(buffer_size);
     if (buffer == NULL) {
@@ -70,6 +72,8 @@ char* read_memory_string(uint64_t mem_address, int buffer_size)
     ssize_t mem_n_read = process_vm_readv(process.pid, &mem_local, 1, &mem_remote, 1, 0);
     if (mem_n_read == -1) {
         buffer[0] = '\0';
+        *err = (int32_t)errno;
+        memory_error = true;
     } else if (mem_n_read != (ssize_t)mem_remote.iov_len) {
         printf("Error reading process memory: short read of %ld bytes\n", (long)mem_n_read);
         exit(1);
@@ -85,6 +89,7 @@ char* read_memory_string(uint64_t mem_address, int buffer_size)
 */
 bool handle_memory_error(uint32_t err)
 {
+    static bool shownDialog = false;
     if (err == 0)
         return false;
     switch (err) {
@@ -99,6 +104,12 @@ bool handle_memory_error(uint32_t err)
             break;
         case EPERM:
             printf("EPERM: Permission denied\n");
+
+            if (!shownDialog) {
+                shownDialog = true;
+                g_idle_add(display_non_capable_mem_read_dialog, NULL);
+            }
+
             break;
         case ESRCH:
             printf("ESRCH: No process with specified PID exists\n");
@@ -180,10 +191,9 @@ int read_address(lua_State* L)
             printf("Invalid string size, please read documentation");
             exit(1);
         }
-        char* value = read_memory_string(address, buffer_size);
+        char* value = read_memory_string(address, buffer_size, &error);
         lua_pushstring(L, value != NULL ? value : "");
         free(value);
-        return 1;
     } else {
         printf("Invalid value type: %s\n", value_type);
         exit(1);
